@@ -1,0 +1,111 @@
+[
+    {
+        "name" : "marmita de frango",
+        "category" : "Ignite",
+        "price" : "50.00",
+        "imgSrc" : "images/blog.png"
+    },
+    {
+        "name" : "marmita Mista",
+        "category" : "marmita",
+        "price" : "15.00",
+        "imgSrc" : "images/marmita1.jpg"
+    },
+    {
+        "name" : "marmita de Calabresa",
+        "category" : "Bed",
+        "price" : "23.75",
+        "imgSrc" : "images/marmita2.jpg"
+    },
+    {
+        "name" : "marmita carne simples",
+        "category" : "marmita",
+        "price" : "50.00",
+        "imgSrc" : "images/marmita3.jpg"
+    },
+    {
+        "name" : "marmita picanha",
+        "category" : "marmita premium",
+        "price" : "90.00",
+        "imgSrc" : "images/marmita4.png"
+    },
+    {
+        "name" : "marmita Lasanha",
+        "category" : "marmita premium",
+        "price" : "40.50",
+        "imgSrc" : "images/marmita5.png"
+    },
+    {
+        "name" : "marmita frango misto",
+        "category" : "marmita simples ",
+        "price" : "25.00",
+        "imgSrc" : "images/marmita6.png"
+    },
+    {
+        "name" : "marmita de frango",
+        "category" : "marmita premium",
+        "price" : "49.00",
+        "imgSrc" : "images/marmita7.png"
+    },
+    {
+        "name" : "marmita carne com cebola",
+        "category" : "marmita premium",
+        "price" : "40.99",
+        "imgSrc" : "images/marmita9.png"
+    },
+    {
+        "name" : "marmita carne assada.",
+        "category" : "marmita premium",
+        "price" : "29.20",
+        "imgSrc" : "images/marmita10.jpg"
+    },
+    {
+        "name" : "marmita",
+        "category" : "marmita premium",
+        "price" : "24.99",
+        "imgSrc" : "images/marmita11.jpg"
+    },
+    {
+        "name" : "marmita Ignite",
+        "category" : "marmita premium",
+        "price" : "90.25",
+        "imgSrc" : "images/marmita12.png"
+    },
+   
+    {
+        "name" : "Copo da Felicidade",
+        "category" : "Sobremesa",
+        "price" : "20.80",
+        "imgSrc" : "images/sobre1.png"
+    },
+    {
+        "name" : "Copo da Felicidade",
+        "category" : "Sobremesa",
+        "price" : "20.80",
+        "imgSrc" : "images/sobre2.jpeg"
+    },
+    {
+        "name" : "Copo da Felicidade",
+        "category" : "Sobremesa",
+        "price" : "20.80",
+        "imgSrc" : "images/sobre3.jpg"
+    },
+    {
+        "name" : "Copo da Felicidade",
+        "category" : "Sobremesa",
+        "price" : "20.80",
+        "imgSrc" : "images/sobre4.jpeg"
+    },
+    {
+        "name" : "Água Natural",
+        "category" : "Bebida",
+        "price" : "7.50",
+        "imgSrc" : "images/agua.png"
+    },
+    {
+        "name" : "Coca-cola 2Lt",
+        "category" : "Bebida",
+        "price" : "13.99",
+        "imgSrc" : "images/coca.png"
+    }
+]

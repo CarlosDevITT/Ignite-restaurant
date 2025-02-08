@@ -203,6 +203,10 @@ header .container{
     height: 140px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.877);
 }
+.cart-item .img{
+    display: grid;
+    align-items: center;
+}
 .cart-item:last-child{
     border-bottom: none;
 }
@@ -222,7 +226,7 @@ header .container{
     -o-border-radius: 5px;
 }
 .cart-item img{
-    width: 60px;
+    width: 80px;
 }
 .cart-item-info{
     text-align: center;

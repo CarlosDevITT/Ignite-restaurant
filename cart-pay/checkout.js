@@ -93,31 +93,42 @@ function redirectToWhatsApp() {
     📦 *Deseja finalizar a compra?*📦
     `;
 
-    // Exibir uma confirmação ao usuário antes de redirecionar para o WhatsApp
-    if (confirm(`Seu pedido está pronto para ser enviado. Deseja finalizar? \n\n${confirmationMessage}`)) {
-        // Criar a mensagem para o WhatsApp
-        let message = `*Olá! Gostaria de fazer um pedido:*%0A%0A`;
-        
-        products.forEach(product => {
-            message += `Produto: ${product.name}%0A`;
-            message += `Categoria: ${product.category}%0A`;
-            message += `Preço: ${product.price}%0A%0A`;
-        });
+// Exibir uma confirmação ao usuário antes de redirecionar para o WhatsApp
+if (confirm(`Seu pedido está pronto para ser enviado. Deseja finalizar? \n\n${confirmationMessage}`)) {
+    // Criar a mensagem para o WhatsApp com uma estrutura mais organizada e visualmente atraente
+    let message = `*Olá, gostaria de fazer um pedido!*%0A%0A`;
 
-        message += `Total: $${cartInfo.total}%0A%0A`;
-        message += `Gostaria de confirmar a compra?`;
+    message += `Aqui estão os detalhes do seu pedido: %0A%0A`;
 
-        // URL para redirecionar ao WhatsApp com a mensagem formatada
-        const phoneNumber = '559285130951'; // Número do WhatsApp sem o '+' e código do país
-        const messageEncoded = encodeURIComponent(message); // Codifica a mensagem para URL
-        const whatsappLink = `https://wa.me/${phoneNumber}?text=${messageEncoded}`;
+    // Adicionar os produtos ao corpo da mensagem com uma lista numerada
+    products.forEach((product, index) => {
+        message += `*Produto ${index + 1}:*%0A`;
+        message += `• *Nome:* ${product.name}%0A`;
+        message += `• *Categoria:* ${product.category}%0A`;
+        message += `• *Preço:* R$ ${product.price}%0A%0A`;
+    });
 
-        // Fechar a tela de "Processando" antes de redirecionar
-        document.getElementById('processing-modal').remove();
+    // Adicionar o total da compra com destaque
+    message += `*Resumo da Compra:*%0A`;
+    message += `• *Total:* R$ ${cartInfo.total}%0A%0A`;
 
-        // Redirecionar para o WhatsApp
-        window.open(whatsappLink, '_blank');
-    } else {
+    // Incluir uma chamada à ação para confirmar ou cancelar a compra
+    message += `*Deseja confirmar a compra?*%0A`;
+    message += `Responda com *'Sim'* para confirmar ou *'Não'* para cancelar. %0A%0A`;
+
+    message += `Aguardo sua resposta! 🙂%0A`;
+
+    // URL para redirecionar ao WhatsApp com a mensagem formatada
+    const phoneNumber = '559285130951'; // Número do WhatsApp sem o '+' e código do país
+    const messageEncoded = encodeURIComponent(message); // Codifica a mensagem para URL
+    const whatsappLink = `https://wa.me/${phoneNumber}?text=${messageEncoded}`;
+
+    // Fechar a tela de "Processando" antes de redirecionar
+    document.getElementById('processing-modal').remove();
+
+    // Redirecionar para o WhatsApp
+    window.open(whatsappLink, '_blank');
+} else {
         alert("A compra foi cancelada.");
         // Fechar a tela de "Processando" caso o usuário cancele
         document.getElementById('processing-modal').remove();

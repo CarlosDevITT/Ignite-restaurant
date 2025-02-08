@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <!--=============== BOXICONS ===============-->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <!--=============== Favicon ===============-->
+    <link
+      rel="shortcut icon"
+      href="./images/mac.jpeg"z
+      type="image/png"
+    />
+    <!--=============== Swiper CSS ===============-->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swiper/swiper-bundle.min.css"
+    />
+    <!--=============== Boxicons ===============-->
+    <link
+      href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <!--=============== Custom StyleSheet ===============-->
+    <link rel="stylesheet" href="./css/styles.css" />
+    <title>Mac Pub Delivery</title>
+  </head>
+  <body>
+
+    <!--=============== Recipes ===============-->
+    <section class="section recipes" id="recipes">
+      <h2>Experimente nossas receitas especiais</h2>
+      <div class="row container">
+        <div class="filters d-flex">
+          <span data-filter="All Product">Ver todos os produtos</span>
+          <span data-filter="Fast Food">Fast Food</span>
+          <span data-filter="Rice Menu">Marmitar Menu</span>
+          <span data-filter="Desserts">Sobremesas</span>
+          <span data-filter="Coffee">Bebidas</span>
+          <span data-filter="Pizza">Pizza</span>
+        </div>
+        <div class="products">
+          <div class="swiper mySwiper">
+            <div class="swiper-wrapper" id="products-wrapper">
+              <!-- <div class="swiper-slide">
+                <div class="card">
+                  <div class="image"><img src="./images/blog.png" alt=""></div>
+                  <div class="rating">
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  </div>
+                  <h4>Crispy Fried Chicken</h4>
+                  <div class="price">
+                    <span>Preço</span><span class="color">$13.00</span>
+                  </div>
+                  <div class="button">Add To Cart+</div>
+                </div>
+              </div> -->
+            </div>
+          </div>
+          <div class="pagination">
+            <div class="custom-pagination"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--=============== Swiper JS ===============-->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+    <!--=============== Custom JS ===============-->
+
+    <script src="products.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>

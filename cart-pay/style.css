@@ -1,20 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
 
 :root{
     --ghost-white: #f8f9fd;
     --fire-bush: #048654;
-    --granite-gray: #626a6a;
-    --baltic-sea: #000000;
+    --granite-gray: #ffffff;
+    --baltic-sea: #000000a9;
     --trans: all 0.5s ease-in-out;
 }
 
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    font-family: 'Barlow', sans-serif;
+
+
+html {
+  font-size: 82%;
+ 
 }
+
 body{
     line-height: 1.5;
     font-weight: 400;
@@ -23,7 +24,7 @@ body{
 /* resets and resuable stylings */
 img{
     display: block;
-    width: 100%;
+    width: 90%;
 }
 button{
     cursor: pointer;
@@ -70,7 +71,7 @@ header .container{
     grid-template-columns: repeat(3, 1fr);
     align-items: center;
     padding: 1.5rem 0;
-    background: var(--ghost-white);
+    background: #000;
     z-index: 999;
 }
 .navbar-brand{
@@ -111,6 +112,8 @@ header .container{
     -moz-transition: var(--trans);
     -ms-transition: var(--trans);
     -o-transition: var(--trans);
+    background-color: rgba(0, 0, 0, 0.596);
+   
 }
 /* js related class */
 .show-navbar{
@@ -119,15 +122,18 @@ header .container{
 /*  */
 .navbar-collapse ul{
     list-style-type: none;
+   
 }
 .navbar-collapse li{
     margin: 0.7rem 0;
     letter-spacing: 2px;
     text-align: center;
+   
 }
 .navbar-collapse a{
     font-size: 1.15rem;
     opacity: 0.7;
+    color:#fff;
 }
 .cart{
     justify-self: flex-end;
@@ -303,6 +309,7 @@ header .container{
     color: rgb(0, 0, 0);
 }
 
+
 /* products */
 .products{
     padding: 6rem 0;
@@ -312,7 +319,7 @@ header .container{
     font-size: 2.2rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: var(--granite-gray);
+    color: #000;
     margin-bottom: 3rem;
 }
 .product-item{
@@ -407,10 +414,10 @@ header .container{
 }
 
 footer{
-    background-color: var(--baltic-sea);
+    background: #000 ;
 }
 .footer-banner{
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(images/footer-banner.jpg) center/cover no-repeat;
+    background: linear-gradient(rgb(0, 0, 0), rgba(0, 0, 0, 0.4)), url(images/ignite2.png) ;
     padding: 3rem 0;
 }
 .footer-banner{
@@ -426,8 +433,15 @@ footer{
 .footer-banner .btn:hover{
     background: #fff;
     color: var(--fire-bush);
-    background: transparent;
 }
+
+.footer__copy{
+    text-align: center;
+ 
+    color: #fff;
+    margin-top: 3.5rem;
+  }
+  
 footer > .container{
     display: flex;
     align-items: center;
@@ -455,10 +469,6 @@ footer > .container{
 .social-icons a:hover{
     color: #fff;
 }
-
-
-
-
 
 
 /* Media Queries for responsiveness */
@@ -532,4 +542,58 @@ footer > .container{
     .product-list{
         grid-template-columns: repeat(4, 1fr);
     }
+}
+
+#processing-modal {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.processing-container {
+    animation: bounce 0.5s ease-out;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(-20px); }
+    50% { transform: translateY(10px); }
+    100% { transform: translateY(0); }
+}
+
+.cart-feedback {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #28a745;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    z-index: 9999;
+    animation: fadeInOut 3s ease;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+
+.checkout-btn {
+    transition: background-color 0.3s ease;
+}
+
+.checkout-btn.processing {
+    background-color: #4caf50;
+    cursor: not-allowed;
 }

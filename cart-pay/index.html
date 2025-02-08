@@ -5,7 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Add no Carrinho - Ignite</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="images/ignite.jpg" type="image/x-icon">
+
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="../src/css/styles.css">
+    <link rel="stylesheet" href="../src/css/styles.css.map">
+
     <!-- font awesome cdn -->
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
     <link rel="stylesheet" href="style.css">
   </head>
@@ -23,6 +30,8 @@
           <div class = "navbar-collapse">
             <ul>
               <li><a href = "../index.html">Home</a></li>
+              <li ><a href = "#bom">Menu</a></li>
+              <li ><a href = "#sobre">Sobre</a></li>
              
             </ul>
           </div>
@@ -62,13 +71,13 @@
         <!-- end of navbar -->
 
         <!-- banner -->
-        <div class = "banner">
+        <div class = "banner" id="banner">
           <div class = "banner-content">
             <h1>Sabores e ingredientes do Norte
                 como você nunca sentiu </h1>
             <p class = "text"> Viva uma experiência sofisticada e exclusiva da gastronomia amazônica!</p>
             <div class = "btns">
-              <button type = "button" class = "btn">Saiba mais !</button>
+              <button type = "button" class = "btn"><a href="#produtos">Saiba mais !</a></button>
               <button type = "button" class = "btn" ><a href="#bom">Bom apetite</a></button>
             </div>
           </div>
@@ -82,10 +91,57 @@
     </header>
     <!-- end of header -->
 
+
+    <!--=============== Recipes ===============-->
+    <section class="section recipes" id="produtos">
+      <h2>Experimente nossas receitas especiais</h2>
+      <div class="row container">
+        <div class="filters d-flex">
+          <span data-filter="All Product">Promoção Ignite</span>
+          <span data-filter="Fast Food">Fast Food</span>
+          <span data-filter="Rice Menu">Marmitar Menu</span>
+          <span data-filter="Desserts">Sobremesas</span>
+          <span data-filter="Coffee">Bebidas</span>
+          <span data-filter="Pizza">Pizza</span>
+        </div>
+        <div class="products">
+          <div class="swiper mySwiper">
+            <div class="swiper-wrapper" id="products-wrapper">
+              <!-- <div class="swiper-slide">
+                <div class="card" >
+                  <div class="image"><img src="./images/blog.png" alt="">
+                                    </div>
+                 
+                  <div class="rating">
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  <span><i class="bx bxs-star"></i></span>
+                  </div>
+                  <h4>Crispy Fried Chicken</h4>
+                  <div class="price">
+                    <span>Preço</span><span class="color">$13.00</span>
+                  </div>
+                   
+                       <div class="button"><a href="https://www.instagram.com/ignite_restaurant/?utm_source=ig_web_button_share_sheet">Add To Cart+</a></div>
+                
+                </div>
+              </div> -->
+            </div>
+          </div>
+          <div class="pagination">
+            <div class="custom-pagination"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
     <!-- products section  -->
     <section class = "products" id="bom">
       <div class = "container">
-        <h2>Cardápio Delicioso</h2>
+        <h2>Cardápio Marmitas Epecial</h2>
         <div class = "product-list">
           <!-- single item -->
           <!-- <div class = "product-item">
@@ -109,43 +165,48 @@
     <!-- end of products section -->
 
     <!-- footer -->
-    <footer>
+    <footer id="sobre">
       <div class = "footer-banner">
         <div class = "container">
-          <h2>Unlimited Furniture Collection</h2>
-          <p class = "text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores est quod maxime nisi possimus corporis qui aliquid molestias sit iusto itaque, cum delectus tempore, distinctio velit. Repellat reiciendis suscipit quidem aliquid ipsam, nemo minus repudiandae quas eligendi natus voluptate nostrum?</p>
-          <button type = "button" class = "btn">View More</button>
+          <h2 >Grupo Ignite</h2>
+          <p class = "text">O Grupo Ignite nasceu da paixão da Família Domingos pela gastronomia artesanal e de alta qualidade. Reconhecido internacionalmente, o grupo oferece experiências únicas e memoráveis da culinária do Norte, priorizando a sustentabilidade e o apoio aos fornecedores locais das comunidades de Manaus.</p>
+          <button type = "button" class = "btn"><a href="https://wa.me/p/9150303315061573/559285130951">Faça parte da equipe</a></button>
         </div>
+        
       </div>
 
-      <div class = "container">
+      <div >
         <div class = "social-icons">
-          <a href = "#">
+          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
             <i class = "fab fa-facebook-f"></i>
           </a>
-          <a href = "#">
+          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
             <i class = "fab fa-twitter"></i>
           </a>
-          <a href = "#">
+          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
             <i class = "fab fa-instagram"></i>
           </a>
-          <a href = "#">
+          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
             <i class = "fab fa-pinterest"></i>
           </a>
-          <a href = "#">
+          <a href = "https://wa.me/p/9150303315061573/559285130951">
             <i class = "fab fa-linkedin"></i>
           </a>
+    
         </div>
       </div>
+      <p class="footer__copy">&#169; All right reserved</p>
     </footer>
     <!-- end of footer -->
+    <!--=============== Swiper JS ===============-->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
-    
-
-
-
-    
-    
+    <!--=============== Custom JS ===============-->
+  
+    <script src="../src/products.js"></script>
+  
+ <!--===============Main JS ===============-->
+    <script src="checkout.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

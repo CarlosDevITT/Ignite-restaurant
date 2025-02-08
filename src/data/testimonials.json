@@ -1,0 +1,61 @@
+{
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Rosele Desoza",
+      "firstName": "rosele",
+      "position": "Coordenadora de Marketing",
+      "info": "“O Mac Pub é o lugar perfeito para relaxar e desfrutar de uma boa comida e bebida. A atmosfera é acolhedora e os atendentes são sempre atenciosos. O serviço de delivery é excelente, trazendo a mesma qualidade dos pratos para a sua casa. Recomendo a todos!”",
+      "class": "active"
+    },
+    {
+      "id": 2,
+      "name": "Marvin McKinney",
+      "firstName": "marvin",
+      "position": "Designer Web",
+      "info": "“A comida é deliciosa e a seleção de bebidas é fantástica. O delivery é rápido e eficiente, permitindo que eu desfrute dos meus pratos favoritos no conforto da minha casa. Sempre que vou lá, me sinto em casa.”"
+    },
+    {
+      "id": 3,
+      "name": "Guy Hawkins",
+      "firstName": "guy",
+      "position": "Presidente de Vendas",
+      "info": "“As avaliações positivas sobre o Mac Pub são merecidas. O ambiente é ótimo e o serviço de delivery é muito prático. É uma ótima opção para quem quer saborear uma boa refeição sem sair de casa.”"
+    },
+    {
+      "id": 4,
+      "name": "Kathryn Murphy",
+      "firstName": "kathryn",
+      "position": "Coordenadora de Marketing",
+      "info": "“O Mac Pub se destaca não apenas pela comida deliciosa, mas também pelo seu serviço de delivery. É uma maneira conveniente de aproveitar as melhores opções do cardápio, mesmo em casa. Recomendo fortemente!”"
+    },
+    {
+      "id": 5,
+      "name": "Lucas Almeida",
+      "firstName": "lucas",
+      "position": "Estudante",
+      "info": "“Adoro o Mac Pub! A comida é sempre fresca e saborosa. O delivery é super rápido e nunca tive problemas. É o meu lugar favorito para pedir comida quando estou estudando!”"
+    },
+    {
+      "id": 6,
+      "name": "Fernanda Silva",
+      "firstName": "fernanda",
+      "position": "Professora",
+      "info": "“O Mac Pub é uma ótima opção para um jantar em família. O ambiente é acolhedor e o atendimento é excepcional. O delivery também é muito prático, especialmente nos dias mais corridos!”"
+    },
+    {
+      "id": 7,
+      "name": "Carlos Mendes",
+      "firstName": "carlos",
+      "position": "Engenheiro",
+      "info": "“Sempre que quero relaxar após um longo dia de trabalho, vou ao Mac Pub. A comida é deliciosa e o serviço de delivery é muito eficiente. É uma experiência que recomendo a todos!”"
+    },
+    {
+      "id": 8,
+      "name": "Juliana Costa",
+      "firstName": "juliana",
+      "position": "Designer Gráfico",
+      "info": "“O Mac Pub é o meu lugar favorito para sair com amigos. A comida é incrível e o ambiente é super descontraído. O delivery é uma ótima opção para quando queremos uma noite de filmes em casa!”"
+    }
+  ]
+}

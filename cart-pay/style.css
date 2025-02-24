@@ -10,6 +10,10 @@
 }
 
 
+*,::before,::after{
+    box-sizing: border-box;
+  }
+ 
 
 html {
   font-size: 82%;
@@ -49,6 +53,7 @@ a{
 
 /* header */
 header{
+  
     background: var(--ghost-white);
 }
 header .container{
@@ -267,8 +272,9 @@ header .container{
 
 /* banner  */
 .banner{
+    
     flex: 1;
-    padding-top: 6rem;
+    padding-top: 50rem;
     text-align: center;
 }
 .banner > div{

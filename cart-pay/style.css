@@ -272,9 +272,8 @@ header .container{
 
 /* banner  */
 .banner{
-    
     flex: 1;
-    padding-top: 50rem;
+    padding-top: 7rem;
     text-align: center;
 }
 .banner > div{

@@ -1,214 +1,131 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Add no Carrinho - Ignite</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="images/ignite.jpg" type="image/x-icon">
-
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
-    <link rel="stylesheet" href="../src/css/styles.css">
-    <link rel="stylesheet" href="../src/css/styles.css.map">
-
-    <!-- font awesome cdn -->
-    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-
-    <!-- header  -->
-    <header>
-      <div class = "container">
-        <!-- navbar -->
-        <nav class = "navbar">
-          <a href = "index.html" class = "navbar-brand">Ignite.</a>
-          <button type = "button" class = "navbar-toggler">
-            <i class = "fas fa-bars"></i>
-          </button>
-          <div class = "navbar-collapse">
-            <ul>
-              <li><a href = "../index.html">Home</a></li>
-              <li ><a href = "#bom">Menu</a></li>
-              <li ><a href = "#sobre">Sobre</a></li>
-             
-            </ul>
-          </div>
-
-          <div class="cart">
-              <button type="button" id="cart-btn">
-                  <i class="fas fa-shopping-cart"></i>
-                  <span id="cart-count-info"></span>
-              </button>
-              
-              <div class="cart-container">
-                  <div class="cart-list">
-                      <!-- single item -->
-                      <!-- <div class="cart-item">
-                          <img src="images/armchair.png" alt="product image">
-                          <div class="cart-item-info">
-                              <h3 class="cart-item-name">Arm Chair</h3>
-                              <span class="cart-item-category">Chair</span>
-                              <span class="cart-item-price">$120.00</span>
-                          </div>
-          
-                          <button type="button" class="cart-item-del-btn">
-                              <i class="fas fa-times"></i>
-                          </button>
-                      </div> -->
-                      <!-- end of single item -->
-                  </div>
-          
-                  <div class="cart-total">
-                      <h3>Total: $</h3>
-                      <span id="cart-total-value"></span>
-                      <button id="checkout-btn" type="button" class="checkout-btn">Finalizar Compra</button> <!-- Botão para finalizar a compra -->
-                  </div>
-              </div>
-          </div>
-        </nav>
-        <!-- end of navbar -->
-
-        <!-- banner -->
-        <div class = "banner" id="banner">
-          <div class = "banner-content">
-            <h1>Sabores e ingredientes do Norte
-                como você nunca sentiu </h1>
-            <p class = "text"> Viva uma experiência sofisticada e exclusiva da gastronomia amazônica!</p>
-            <div class = "btns">
-              <button type = "button" class = "btn"><a href="#produtos">Promoções!</a></button>
-              <button type = "button" class = "btn" ><a href="#bom">Bom apetite</a></button>
-            </div>
-          </div>
-
-          <div class = "banner-img">
-            <img src = "images/ignite2.png" alt = "furniture banner image">
-          </div>
-        </div>
-        <!-- end of banner  -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
+  <title>Ignite - Cardápio Online</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Font Awesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Configuração do Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#069c54',
+            secondary: '#048654',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- CSS personalizado -->
+  <link href="styles.css" rel="stylesheet">
+  
+  <!-- Script principal como módulo -->
+  <script src="js/script.js" type="module"></script>
+</head>
+<body class="font-sans bg-gray-100">
+  <!-- Header -->
+  <header class="bg-primary text-white p-4 shadow-md sticky top-0 z-10">
+    <div class="container mx-auto flex flex-col items-center text-center">
+      <img src="./assets/logo.png" alt="Ignite Logo" class="w-17 h-16 rounded-full mb-2 object-cover">
+      <h1 class="text-2xl font-bold">Ignite - Cardápio Online</h1>
+      <div class="flex flex-wrap justify-center gap-x-4 mt-1">
+        <p class="text-sm flex items-center">
+          <i class="fas fa-map-marker-alt mr-1"></i> Vieiralves, 04 - Manaus - AM
+        </p>
+        <p class="text-sm flex items-center">
+          <i class="fas fa-map-marker-alt mr-1"></i> R. Fridolim Herthal Júnior, 97 - Itajaí - SC
+        </p>
       </div>
-    </header>
-    <!-- end of header -->
+      <p class="text-sm mt-1 flex items-center">
+        <i class="far fa-clock mr-1"></i> Seg á Dom - 09:00 às 22:00
+      </p>
 
+      <!-- Botão do carrinho responsivo -->
+      <button id="cart-button" class="fixed bottom-4 right-4 sm:relative sm:bottom-auto sm:right-auto flex items-center bg-primary hover:bg-secondary text-white px-4 py-3 rounded-full shadow-lg z-40 sm:rounded-lg transition-colors duration-200">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cart-count" class="ml-2 bg-white text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hidden">0</span>
+      </button>
+    </div>
+  </header>
 
-    <!--=============== Recipes ===============-->
-    <section class="section recipes" id="produtos">
-      <h2>Experimente nossas receitas especiais</h2>
-      <div class="row container">
-        <div class="filters d-flex">
-          <span data-filter="All Product">Promoção Ignite</span>
-          <span data-filter="Fast Food">Fast Food</span>
-          <span data-filter="Rice Menu">Marmitar Menu</span>
-          <span data-filter="Desserts">Sobremesas</span>
-          <span data-filter="Coffee">Bebidas</span>
-          <span data-filter="Pizza">Pizza</span>
-        </div>
-        <div class="products">
-          <div class="swiper mySwiper">
-            <div class="swiper-wrapper" id="products-wrapper">
-              <!-- <div class="swiper-slide">
-                <div class="card" >
-                  <div class="image"><img src="./images/blog.png" alt="">
-                                    </div>
-                 
-                  <div class="rating">
-                  <span><i class="bx bxs-star"></i></span>
-                  <span><i class="bx bxs-star"></i></span>
-                  <span><i class="bx bxs-star"></i></span>
-                  <span><i class="bx bxs-star"></i></span>
-                  <span><i class="bx bxs-star"></i></span>
-                  </div>
-                  <h4>Crispy Fried Chicken</h4>
-                  <div class="price">
-                    <span>Preço</span><span class="color">$13.00</span>
-                  </div>
-                   
-                       <div class="button"><a href="https://www.instagram.com/ignite_restaurant/?utm_source=ig_web_button_share_sheet">Add To Cart+</a></div>
-                
-                </div>
-              </div> -->
-            </div>
-          </div>
-          <div class="pagination">
-            <div class="custom-pagination"></div>
-          </div>
-        </div>
+  <!-- Mensagem de status do horário -->
+  <div id="schedule-status" class="container mx-auto px-4"></div>
+
+  <main class="container mx-auto p-4">
+    <!-- Seção Novos Produtos -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+        <i class="fas fa-star mr-2 text-yellow-500"></i> Novidades
+      </h2>
+      <div id="new-products" class="flex overflow-x-auto pb-4 gap-4 scrollbar-hide">
+        <!-- Novos produtos serão carregados via JS -->
       </div>
     </section>
-
-
-    <!-- products section  -->
-    <section class = "products" id="bom">
-      <div class = "container">
-        <h2>Cardápio Marmitas Epecial</h2>
-        <div class = "product-list">
-          <!-- single item -->
-          <!-- <div class = "product-item">
-            <div class = "product-img">
-              <img src = "images/bed.png" alt = "product image">
-              <button type = "button" class = "add-to-cart-btn">
-                <i class = "fas fa-shopping-cart"></i>Add To Cart
-              </button>
-            </div>
-
-            <div class = "product-content">
-              <h3 class = "product-name">Wooden Bed</h3>
-              <span class = "product-category">Bed</span>
-              <p class = "product-price">$120.00</p>
-            </div>
-          </div> -->
-          <!-- end of single item -->
-        </div>
-      </div>
-    </section>
-    <!-- end of products section -->
-
-    <!-- footer -->
-    <footer id="sobre">
-      <div class = "footer-banner">
-        <div class = "container">
-          <h2 >Grupo Ignite</h2>
-          <p class = "text">O Grupo Ignite nasceu da paixão da Família Domingos pela gastronomia artesanal e de alta qualidade. Reconhecido internacionalmente, o grupo oferece experiências únicas e memoráveis da culinária do Norte, priorizando a sustentabilidade e o apoio aos fornecedores locais das comunidades de Manaus.</p>
-          <button type = "button" class = "btn"><a href="https://wa.me/p/9150303315061573/559285130951">Faça parte da equipe</a></button>
-        </div>
-        
-      </div>
-
-      <div >
-        <div class = "social-icons">
-          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
-            <i class = "fab fa-facebook-f"></i>
-          </a>
-          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
-            <i class = "fab fa-twitter"></i>
-          </a>
-          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
-            <i class = "fab fa-instagram"></i>
-          </a>
-          <a href = "https://www.instagram.com/ignite_restaurant/?hl=pt-br">
-            <i class = "fab fa-pinterest"></i>
-          </a>
-          <a href = "https://wa.me/p/9150303315061573/559285130951">
-            <i class = "fab fa-linkedin"></i>
-          </a>
     
-        </div>
+    <!-- Menu Principal -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+        <i class="fas fa-utensils mr-2 text-primary"></i> Cardápio
+      </h2>
+      <div id="menu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Produtos serão carregados via JS -->
       </div>
-      <p class="footer__copy">&#169; All right reserved</p>
-    </footer>
-    <!-- end of footer -->
+    </section>
+  </main>
 
+  <!-- Carrinho Sidebar -->
+  <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full">
+    <div class="p-4 border-b sticky top-0 bg-white z-10">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold flex items-center">
+          <i class="fas fa-shopping-cart mr-2"></i> Seu Pedido
+        </h2>
+        <button id="close-cart" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+    </div>
+    
+    <!-- Itens do carrinho -->
+    <div id="cart-items" class="flex-1 overflow-y-auto p-4">
+      <!-- Itens serão inseridos aqui pelo JavaScript -->
+    </div>
+    
+    <!-- Resumo e checkout -->
+    <div id="cart-summary" class="border-t p-4 bg-white sticky bottom-0">
+      <div class="mb-4">
+        <label for="delivery-address" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+          <i class="fas fa-map-marked-alt mr-2 text-primary"></i> Endereço de entrega:
+        </label>
+        <textarea 
+          id="delivery-address" 
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" 
+          rows="3" 
+          placeholder="Digite seu endereço completo (Rua, número, bairro, complemento)..."
+        ></textarea>
+      </div>
+      
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-bold text-lg">Total:</span>
+        <span id="cart-total" class="font-bold text-xl">R$ 0,00</span>
+      </div>
+      
+      <button id="checkout-button" class="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+        <i class="fab fa-whatsapp mr-2 text-xl"></i> Finalizar pedido via WhatsApp
+      </button>
+    </div>
+  </div>
 
-    <!--=============== chatbot - gordon ===============-->
-   <script src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"></script>
-   <script src="https://files.bpcontent.cloud/2025/02/23/18/20250223182920-GIQ6RVVM.js"></script>
-    <!--=============== Swiper JS ===============-->
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <!--=============== Custom JS ===============-->
-      <script src="products.js"></script>
-    <!--===============Main JS ===============-->
-    <script src="checkout.js"></script>
-    <script src="app.js"></script>
-  </body>
+  <!-- Overlay do carrinho -->
+  <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+</body>
 </html>

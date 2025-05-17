@@ -1,0 +1,24 @@
+/* Esconde a barra de rolagem horizontal mas mantém a funcionalidade */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Melhora a aparência do textarea */
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Transições suaves */
+button, a {
+  transition: all 0.2s ease;
+}
+
+/* Garante que o overlay cubra tudo */
+#cart-overlay {
+  backdrop-filter: blur(2px);
+}

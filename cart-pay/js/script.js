@@ -1,335 +1,378 @@
-// Variáveis globais
-let products = [];
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  // Configuração do Supabase - SUBSTITUA com suas credenciais
+  const supabaseUrl = 'https://qgnqztsxfeugopuhyioq.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnbnF6dHN4ZmV1Z29wdWh5aW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MTg4MjEsImV4cCI6MjA3MzA5NDgyMX0.mW88-7P_Af3WMVAUT7ha4Mf0nyKJoSiNjMfuXiCllIA';
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Função para carregar produtos
-async function loadProducts() {
-  try {
-    showLoading('Carregando cardápio...');
-    const response = await fetch('data/products.json');
-    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-    products = await response.json();
-    renderProducts();
-    Swal.close();
-  } catch (error) {
-    console.error('Falha ao carregar produtos:', error);
-    showAlert('Erro', 'Não foi possível carregar o cardápio', 'error');
-  }
-}
+  // Variáveis globais
+  let products = [];
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-// Exibe loading
-function showLoading(message) {
-  Swal.fire({
-    title: message,
-    allowOutsideClick: false,
-    showConfirmButton: false,
-    willOpen: () => Swal.showLoading()
+  // Inicialização
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadProducts();
+    updateCartCount();
+    setupEventListeners();
+    checkBusinessHours();
   });
-}
 
-// Alert personalizado
-function showAlert(title, text, icon, position = 'center') {
-  return Swal.fire({
-    position,
-    title,
-    text,
-    icon,
-    showConfirmButton: position === 'center',
-    timer: position !== 'center' ? 2000 : undefined,
-    toast: position !== 'center',
-    confirmButtonColor: '#069c54',
-    background: '#ffffff'
-  });
-}
+  // Carregar produtos do Supabase
+  async function loadProducts() {
+    try {
+      showLoading();
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('available', true)
+        .order('category')
+        .order('name');
 
-// Salva carrinho no localStorage
-function saveCart() {
-  localStorage.setItem('cart', JSON.stringify(cart));
-}
+      if (error) throw error;
 
-// Atualiza contador do carrinho
-function updateCartCount() {
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const cartCount = document.getElementById('cart-count');
-  if (cartCount) {
-    cartCount.textContent = count;
-    cartCount.classList.toggle('hidden', count === 0);
-  }
-}
-
-// Atualiza total do carrinho
-function updateCartTotal() {
-  const total = cart.reduce((sum, item) => {
-    const product = products.find(p => p.id === item.id);
-    return sum + (product?.price * item.quantity || 0);
-  }, 0);
-
-  const cartTotalElement = document.getElementById('cart-total');
-  if (cartTotalElement) {
-    cartTotalElement.textContent = `R$ ${total.toFixed(2)}`;
-  }
-}
-
-// Adiciona produto ao carrinho
-function addToCart(productId) {
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-
-  const existingItem = cart.find(item => item.id === productId);
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({id: productId, quantity: 1});
+      products = data;
+      renderProducts();
+      hideLoading();
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error);
+      hideLoading();
+      showError('Não foi possível carregar o cardápio. Tente novamente mais tarde.');
+    }
   }
 
-  saveCart();
-  renderCart();
-  animateCartIcon();
-  showAlert('✔ Adicionado', product.name, 'success', 'top-end');
-}
-
-// Remove produto do carrinho
-function removeFromCart(productId) {
-  cart = cart.filter(item => item.id !== productId);
-  saveCart();
-  renderCart();
-  showAlert('Removido', 'Item removido do carrinho', 'info', 'top-end');
-}
-
-// Atualiza quantidade
-function updateQuantity(productId, newQuantity) {
-  const item = cart.find(item => item.id === productId);
-  if (!item) return;
-
-  if (newQuantity < 1) {
-    removeFromCart(productId);
-  } else {
-    item.quantity = newQuantity;
-    saveCart();
-    renderCart();
-  }
-}
-
-// Anima ícone do carrinho
-function animateCartIcon() {
-  const cartIcon = document.getElementById('cart-count');
-  if (cartIcon) {
-    cartIcon.classList.add('animate-ping');
-    setTimeout(() => cartIcon.classList.remove('animate-ping'), 500);
-  }
-}
-
-// Renderiza produtos
-function renderProducts() {
-  const menuSection = document.getElementById('menu');
-  const newProductsSection = document.getElementById('new-products');
-
-  if (!products.length) {
-    menuSection.innerHTML = '<p class="text-center py-8 text-gray-500">Cardápio não disponível no momento</p>';
-    return;
+  // Renderizar produtos na página
+  function renderProducts() {
+    renderNewProducts();
+    renderMenuProducts();
   }
 
-  // Novos produtos
-  const newProducts = products.filter(product => product.isNew);
-  newProductsSection.innerHTML = newProducts.map(product => createProductCard(product, true)).join('');
-
-  // Produtos normais
-  const regularProducts = products.filter(product => !product.isNew);
-  menuSection.innerHTML = regularProducts.map(product => createProductCard(product, false)).join('');
-}
-
-// Cria card de produto
-function createProductCard(product, isNew) {
-  return `
-    <div class="${isNew ? 'flex-shrink-0 w-64' : 'w-full'} bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <img src="${product.image}" alt="${product.name}" class="w-full ${isNew ? 'h-40' : 'h-48'} object-cover">
-      <div class="p-4">
-        <h3 class="${isNew ? 'text-lg' : 'text-xl'} font-bold">${product.name}</h3>
-        <p class="text-gray-600 ${isNew ? 'text-sm' : ''} mt-2 ${isNew ? 'line-clamp-2' : ''}">${product.description}</p>
-        <div class="mt-4 flex justify-between items-center">
-          <span class="${isNew ? 'text-md' : 'text-lg'} font-bold">R$ ${product.price.toFixed(2)}</span>
-          <button class="add-to-cart bg-primary hover:bg-secondary text-white ${isNew ? 'px-3 py-1 text-sm' : 'px-4 py-2'} rounded transition-colors" data-id="${product.id}">
-            Adicionar
-          </button>
+  // Renderizar novos produtos (destaques)
+  function renderNewProducts() {
+    const newProductsContainer = document.getElementById('new-products');
+    const newProducts = products.filter(product => product.featured);
+    
+    if (newProducts.length === 0) {
+      newProductsContainer.innerHTML = '<p class="text-gray-500">Nenhum produto em destaque no momento.</p>';
+      return;
+    }
+    
+    newProductsContainer.innerHTML = newProducts.map(product => `
+      <div class="min-w-[200px] bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="w-full h-32 bg-gray-200 flex items-center justify-center">
+          ${product.image_url ? 
+            `<img src="${product.image_url}" alt="${product.name}" class="w-full h-32 object-cover">` : 
+            `<i class="fas fa-image text-4xl text-gray-400"></i>`
+          }
+        </div>
+        <div class="p-3">
+          <h3 class="font-bold text-gray-800">${product.name}</h3>
+          <p class="text-sm text-gray-600 mt-1 line-clamp-2">${product.description || 'Sem descrição'}</p>
+          <div class="flex justify-between items-center mt-2">
+            <span class="font-bold text-primary">R$ ${product.price.toFixed(2)}</span>
+            <button class="add-to-cart bg-primary text-white p-1 rounded-full w-8 h-8 flex items-center justify-center" data-id="${product.id}">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
-}
+    `).join('');
+  }
 
-// Renderiza carrinho
-function renderCart() {
-  const cartItemsContainer = document.getElementById('cart-items');
-  const cartSummary = document.getElementById('cart-summary');
+  // Renderizar produtos do menu
+  function renderMenuProducts() {
+    const menuContainer = document.getElementById('menu');
+    const categories = [...new Set(products.map(product => product.category))];
+    
+    if (products.length === 0) {
+      menuContainer.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <i class="fas fa-utensils text-4xl text-gray-400 mb-4"></i>
+          <p class="text-gray-500">Nenhum produto disponível no momento.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    menuContainer.innerHTML = categories.map(category => {
+      const categoryProducts = products.filter(product => product.category === category);
+      
+      return `
+        <div class="col-span-full mb-6">
+          <h3 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">${category}</h3>
+          <div class="grid grid-cols-1 gap-4">
+            ${categoryProducts.map(product => `
+              <div class="bg-white rounded-lg shadow-md overflow-hidden flex">
+                <div class="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                  ${product.image_url ? 
+                    `<img src="${product.image_url}" alt="${product.name}" class="w-24 h-24 object-cover">` : 
+                    `<i class="fas fa-image text-2xl text-gray-400"></i>`
+                  }
+                </div>
+                <div class="p-3 flex-1">
+                  <div class="flex justify-between">
+                    <h3 class="font-bold text-gray-800">${product.name}</h3>
+                    <span class="font-bold text-primary">R$ ${product.price.toFixed(2)}</span>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1">${product.description || ''}</p>
+                  <button class="add-to-cart mt-2 bg-primary text-white px-3 py-1 rounded-md text-sm" data-id="${product.id}">
+                    Adicionar ao carrinho
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
-  if (!cartItemsContainer || !cartSummary) return;
+  // Configurar event listeners
+  function setupEventListeners() {
+    // Botão do carrinho
+    document.getElementById('cart-button').addEventListener('click', toggleCart);
+    
+    // Fechar carrinho
+    document.getElementById('close-cart').addEventListener('click', toggleCart);
+    
+    // Overlay do carrinho
+    document.getElementById('cart-overlay').addEventListener('click', toggleCart);
+    
+    // Finalizar pedido
+    document.getElementById('checkout-button').addEventListener('click', checkout);
+    
+    // Adicionar produtos ao carrinho (delegation)
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) {
+        const button = e.target.classList.contains('add-to-cart') ? e.target : e.target.closest('.add-to-cart');
+        const productId = button.dataset.id;
+        addToCart(productId);
+      }
+    });
+  }
 
-  if (cart.length === 0) {
-    cartItemsContainer.innerHTML = `
-      <div class="text-center py-8">
-        <p class="text-gray-500">Seu carrinho está vazio</p>
-        <button class="mt-4 bg-primary hover:bg-secondary text-white px-4 py-2 rounded transition-colors" id="continue-shopping">
-          Continuar comprando
+  // Funções do carrinho
+  function addToCart(productId) {
+    const product = products.find(p => p.id == productId);
+    if (!product) return;
+    
+    const existingItem = cart.find(item => item.id == productId);
+    
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image_url,
+        quantity: 1
+      });
+    }
+    
+    updateCart();
+    showToast(`${product.name} adicionado ao carrinho!`);
+  }
+
+  function updateCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    renderCartItems();
+  }
+
+  function updateCartCount() {
+    const cartCount = document.getElementById('cart-count');
+    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    
+    if (totalItems > 0) {
+      cartCount.textContent = totalItems;
+      cartCount.classList.remove('hidden');
+    } else {
+      cartCount.classList.add('hidden');
+    }
+  }
+
+  function renderCartItems() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    
+    if (cart.length === 0) {
+      cartItems.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-full text-gray-500">
+          <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+          <p>Seu carrinho está vazio</p>
+        </div>
+      `;
+      cartTotal.textContent = 'R$ 0,00';
+      return;
+    }
+    
+    cartItems.innerHTML = cart.map(item => `
+      <div class="flex items-center mb-4 pb-4 border-b">
+        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+          ${item.image ? 
+            `<img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">` : 
+            `<i class="fas fa-image text-gray-400"></i>`
+          }
+        </div>
+        <div class="ml-4 flex-1">
+          <h3 class="font-bold">${item.name}</h3>
+          <p class="text-primary font-bold">R$ ${item.price.toFixed(2)}</p>
+          <div class="flex items-center mt-1">
+            <button class="decrease-quantity bg-gray-200 rounded-lg w-6 h-6" data-id="${item.id}">-</button>
+            <span class="mx-2">${item.quantity}</span>
+            <button class="increase-quantity bg-gray-200 rounded-lg w-6 h-6" data-id="${item.id}">+</button>
+          </div>
+        </div>
+        <button class="remove-item text-red-500 ml-2" data-id="${item.id}">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    `).join('');
+    
+    // Calcular total
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+    
+    // Adicionar event listeners para os botões de quantidade
+    document.querySelectorAll('.increase-quantity').forEach(button => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.id;
+        const item = cart.find(item => item.id == itemId);
+        if (item) {
+          item.quantity += 1;
+          updateCart();
+        }
+      });
+    });
+    
+    document.querySelectorAll('.decrease-quantity').forEach(button => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.id;
+        const item = cart.find(item => item.id == itemId);
+        if (item) {
+          item.quantity -= 1;
+          if (item.quantity <= 0) {
+            cart = cart.filter(i => i.id != itemId);
+          }
+          updateCart();
+        }
+      });
+    });
+    
+    document.querySelectorAll('.remove-item').forEach(button => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.id;
+        cart = cart.filter(item => item.id != itemId);
+        updateCart();
+      });
+    });
+  }
+
+  function toggleCart() {
+    const cartSidebar = document.getElementById('cart-sidebar');
+    const cartOverlay = document.getElementById('cart-overlay');
+    
+    if (cartSidebar.classList.contains('translate-x-full')) {
+      cartSidebar.classList.remove('translate-x-full');
+      cartOverlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      renderCartItems();
+    } else {
+      cartSidebar.classList.add('translate-x-full');
+      cartOverlay.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  function checkout() {
+    const address = document.getElementById('delivery-address').value.trim();
+    
+    if (cart.length === 0) {
+      showError('Seu carrinho está vazio!');
+      return;
+    }
+    
+    if (!address) {
+      showError('Por favor, informe o endereço de entrega.');
+      return;
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    // Criar mensagem para WhatsApp
+    let message = `*Pedido - Ignite Cardápio Online*%0A%0A`;
+    message += `*Endereço de entrega:*%0A${address}%0A%0A`;
+    message += `*Itens do pedido:*%0A`;
+    
+    cart.forEach(item => {
+      message += `➡️ ${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}%0A`;
+    });
+    
+    message += `%0A*Total: R$ ${total.toFixed(2)}*%0A%0A`;
+    message += `*Observações:* ...`;
+    
+    // Abrir WhatsApp (substitua pelo número correto)
+    window.open(`https://wa.me/+5592985130951?text=${message}`, '_blank');
+  }
+
+  function checkBusinessHours() {
+    const now = new Date();
+    const hour = now.getHours();
+    const statusElement = document.getElementById('schedule-status');
+    
+    if (hour >= 9 && hour < 22) {
+      statusElement.innerHTML = `
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong class="font-bold"><i class="fas fa-store mr-2"></i>Estamos abertos!</strong>
+          <span class="block sm:inline">Fazemos entregas até às 22:00.</span>
+        </div>
+      `;
+    } else {
+      statusElement.innerHTML = `
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong class="font-bold"><i class="fas fa-store-slash mr-2"></i>Estamos fechados no momento.</strong>
+          <span class="block sm:inline">Nosso horário de funcionamento é de Seg à Dom - 09:00 às 22:00</span>
+        </div>
+      `;
+    }
+  }
+
+  // Utilitários
+  function showLoading() {
+    const menu = document.getElementById('menu');
+    menu.innerHTML = `
+      <div class="col-span-full flex justify-center items-center py-12">
+        <div class="loading text-primary"></div>
+        <span class="ml-2 text-gray-600">Carregando cardápio...</span>
+      </div>
+    `;
+  }
+
+  function hideLoading() {
+    // O conteúdo será preenchido pela renderização dos produtos
+  }
+
+  function showError(message) {
+    const menu = document.getElementById('menu');
+    menu.innerHTML = `
+      <div class="col-span-full text-center py-12">
+        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+        <p class="text-red-500">${message}</p>
+        <button class="mt-4 bg-primary text-white px-4 py-2 rounded" onclick="location.reload()">
+          <i class="fas fa-redo mr-2"></i>Tentar novamente
         </button>
       </div>
     `;
-    cartSummary.classList.add('hidden');
-  } else {
-    cartItemsContainer.innerHTML = cart.map(item => {
-      const product = products.find(p => p.id === item.id) || {};
-      return createCartItem(product, item.quantity);
-    }).join('');
-    updateCartTotal();
-    cartSummary.classList.remove('hidden');
   }
 
-  updateCartCount();
-}
-
-function checkSchedule() {
-  const now = new Date();
-  const currentHour = now.getHours();
-
-  const menuSection = document.getElementById('menu');
-  const newProductsSection = document.getElementById('new-products');
-  const statusMessage = document.getElementById('schedule-status');
-
-  // Se não tem elemento para mostrar status, cria um
-  let messageDiv = statusMessage;
-  if (!messageDiv) {
-    messageDiv = document.createElement('div');
-    messageDiv.id = 'schedule-status';
-    messageDiv.className = 'text-center py-4 text-red-600 font-bold text-lg';
-    document.querySelector('main')?.insertBefore(messageDiv, document.querySelector('main').firstChild);
-  }
-
-  if (currentHour >= 18 && currentHour < 22) {
-    // Dentro do horário comercial
-    menuSection.style.display = 'grid';
-    newProductsSection.style.display = 'flex';
-    messageDiv.textContent = '';
-    document.querySelectorAll('.add-to-cart').forEach(btn => btn.disabled = false);
-  } else {
-    // Fora do horário
-    menuSection.style.display = 'none';
-    newProductsSection.style.display = 'none';
-    messageDiv.textContent = 'Estamos fechados no momento. Abriremos às 18:00.';
-    document.querySelectorAll('.add-to-cart').forEach(btn => btn.disabled = true);
-  }
-}
-
-// Cria item do carrinho
-function createCartItem(product, quantity) {
-  return `
-    <div class="cart-item border-b pb-4 mb-4" data-id="${product.id}">
-      <div class="flex items-start gap-3">
-        <img src="${product.image || ''}" alt="${product.name || ''}" class="w-16 h-16 object-cover rounded">
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <h3 class="font-bold">${product.name || 'Produto'}</h3>
-            <button class="remove-item text-red-500 hover:text-red-700">✕</button>
-          </div>
-          <div class="flex justify-between items-center mt-2">
-            <div class="flex items-center">
-              <button class="decrease-quantity bg-gray-200 hover:bg-gray-300 w-8 h-8 rounded-full flex items-center justify-center">−</button>
-              <span class="quantity mx-3 font-medium">${quantity}</span>
-              <button class="increase-quantity bg-gray-200 hover:bg-gray-300 w-8 h-8 rounded-full flex items-center justify-center">+</button>
-            </div>
-            <span class="item-total font-bold">R$ ${(product.price * quantity).toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// Controle do Carrinho
-function toggleCart() {
-  const cartSidebar = document.getElementById('cart-sidebar');
-  const cartOverlay = document.getElementById('cart-overlay');
-  if (!cartSidebar || !cartOverlay) return;
-
-  cartSidebar.classList.toggle('translate-x-full');
-  cartOverlay.classList.toggle('hidden');
-  document.body.style.overflow = cartSidebar.classList.contains('translate-x-full') ? 'auto' : 'hidden';
-
-  if (!cartSidebar.classList.contains('translate-x-full')) {
-    renderCart();
-  }
-}
-
-// Finalizar pedido
-function setupCheckout() {
-  const checkoutButton = document.getElementById('checkout-button');
-  if (!checkoutButton) return;
-
-  checkoutButton.addEventListener('click', function () {
-    const address = document.getElementById('delivery-address')?.value.trim();
-    if (!address) {
-      showAlert('Atenção', 'Por favor, insira seu endereço de entrega', 'warning');
-      return;
-    }
-
-    const phoneNumber = '559285130951'; // Substitua pelo número real
-    let message = `*Pedido via Ignite Cardápio Online*\n\n`;
-    message += `*Itens do pedido:*\n`;
-
-    cart.forEach(item => {
-      const product = products.find(p => p.id === item.id);
-      message += `➤ ${product?.name || 'Produto'} (${item.quantity}x) - R$ ${(product?.price * item.quantity).toFixed(2)}\n`;
+  function showToast(message) {
+    // Usar SweetAlert2 para toasts consistentes
+    Swal.fire({
+      toast: true,
+      position: 'bottom-end',
+      icon: 'success',
+      title: message,
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
     });
-
-    const total = cart.reduce((sum, item) => {
-      const product = products.find(p => p.id === item.id);
-      return sum + (product?.price * item.quantity || 0);
-    }, 0);
-
-    message += `\n*Total: R$ ${total.toFixed(2)}*\n`;
-    message += `*Endereço:* ${address}\n`;
-    message += `\nPor favor, confirme o pedido. Obrigado!`;
-
-    window.open(`https://wa.me/ ${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-
-    cart = [];
-    saveCart();
-    renderCart();
-    toggleCart();
-    showAlert('Sucesso!', 'Pedido enviado com sucesso', 'success');
-  });
-}
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
-  // Event delegation
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) {
-      const button = e.target.classList.contains('add-to-cart') ? e.target : e.target.closest('.add-to-cart');
-      addToCart(parseInt(button.dataset.id));
-    }
-
-    if (e.target.id === 'cart-button' || e.target.closest('#cart-button')) {
-      toggleCart();
-    }
-
-    if (e.target.id === 'close-cart' || e.target.id === 'continue-shopping' || e.target.id === 'cart-overlay') {
-      toggleCart();
-    }
-
-    const cartItem = e.target.closest('.cart-item');
-    if (cartItem) {
-      const productId = parseInt(cartItem.dataset.id);
-      if (e.target.classList.contains('remove-item') || e.target.closest('.remove-item')) {
-        removeFromCart(productId);
-      } else if (e.target.classList.contains('decrease-quantity') || e.target.closest('.decrease-quantity')) {
-        updateQuantity(productId, cart.find(i => i.id === productId)?.quantity - 1);
-      } else if (e.target.classList.contains('increase-quantity') || e.target.closest('.increase-quantity')) {
-        updateQuantity(productId, cart.find(i => i.id === productId)?.quantity + 1);
-      }
-    }
-  });
-
-  // Inicializa tudo
-  loadProducts();
-  setupCheckout();
-  renderCart();
- });
+  }

@@ -22,3 +22,101 @@ button, a {
 #cart-overlay {
   backdrop-filter: blur(2px);
 }
+
+/* Transições suaves para o slider */
+#stories-container {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Barra de progresso FIXA no topo */
+#stories-slider #progress-container {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Ocultar botões quando não há interação */
+#stories-slider:not(:hover) #prev-story,
+#stories-slider:not(:hover) #next-story,
+#stories-slider:not(:hover) #toggle-fullscreen {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#stories-slider:hover #prev-story,
+#stories-slider:hover #next-story, 
+#stories-slider:hover #toggle-fullscreen {
+  opacity: 1;
+}
+
+/* Melhorias para imagens em alta qualidade */
+#stories-slider img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Alturas responsivas para diferentes telas */
+@media (min-width: 1024px) {
+  #stories-slider {
+    max-height: 600px;
+  }
+}
+
+@media (min-width: 1280px) {
+  #stories-slider {
+    max-height: 700px;
+  }
+}
+
+/* Efeito de zoom sutil nas imagens */
+#stories-slider .hover\\:scale-105 {
+  transition: transform 7s ease-in-out;
+}
+
+#stories-slider .scale-100:hover {
+  transform: scale(1.05);
+}
+
+/* Botões maiores em telas grandes */
+@media (min-width: 768px) {
+  #prev-story, #next-story {
+    width: 50px;
+    height: 50px;
+  }
+  
+  #toggle-fullscreen {
+    padding: 12px;
+  }
+}
+
+/* Garantir que a barra de progresso fique sempre visível */
+#stories-slider .absolute.top-0 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+}
+
+/* Sombras e efeitos para melhor contraste */
+#stories-slider .drop-shadow {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+#stories-slider .drop-shadow-lg {
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+}
+
+/* Estilo para botão de adicionar ao carrinho no stories */
+.add-to-cart-story {
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.35);
+  backdrop-filter: blur(10px);
+}
+
+.add-to-cart-story:hover {
+  box-shadow: 0 12px 35px rgba(79, 70, 229, 0.5);
+  transform: translateY(-2px) scale(1.05);
+}
+}

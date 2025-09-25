@@ -83,6 +83,14 @@ async function loadProducts() {
     
     renderProducts();
     hideLoading();
+
+     // Inicializar Stories Slider após carregar produtos
+     setTimeout(() => {
+      if (typeof initStoriesSlider === 'function') {
+        initStoriesSlider();
+      }
+    }, 100);
+    
   } catch (error) {
     console.error('Erro ao carregar produtos:', error);
     hideLoading();
@@ -130,9 +138,15 @@ function getDisplayPrice(product) {
 }
 
 // Renderizar produtos na página
+// modifiquei a função renderProducts para:
 function renderProducts() {
   renderNewProducts();
   renderMenuProducts();
+  
+  // Inicializar/atualizar o Stories Slider
+  if (typeof refreshStoriesSlider === 'function') {
+    refreshStoriesSlider();
+  }
 }
 
 // Renderizar novos produtos (destaques)
@@ -310,7 +324,61 @@ function setupEventListeners() {
   
   // Finalizar pedido
   document.getElementById('checkout-button').addEventListener('click', checkout);
+ 
+  // Botões de navegação
+    document.getElementById('next-story').addEventListener('click', goToNextStory);
+    document.getElementById('prev-story').addEventListener('click', goToPrevStory);
   
+    // Tela cheia
+    document.getElementById('toggle-fullscreen').addEventListener('click', toggleFullscreen);
+  
+    // Navegação por teclado
+    document.addEventListener('keydown', function(e) {
+      if (!isFullscreen) return;
+      
+      if (e.key === 'ArrowRight') goToNextStory();
+      if (e.key === 'ArrowLeft') goToPrevStory();
+      if (e.key === 'Escape' && isFullscreen) toggleFullscreen();
+    });
+  
+    // Swipe para mobile
+    let touchStartX = 0;
+    const storiesContainer = document.getElementById('stories-container');
+  
+    storiesContainer.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      resetAutoplay();
+    });
+  
+    storiesContainer.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+  
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          goToNextStory();
+        } else {
+          goToPrevStory();
+        }
+      }
+    });
+  
+    // Clique nas laterais para navegar
+    storiesContainer.addEventListener('click', (e) => {
+      const featuredProducts = getFeaturedProducts();
+      if (featuredProducts.length <= 1) return;
+      
+      const rect = storiesContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const containerWidth = rect.width;
+  
+      if (clickX < containerWidth * 0.3) {
+        goToPrevStory();
+      } else if (clickX > containerWidth * 0.7) {
+        goToNextStory();
+      }
+    });
+ 
   // Adicionar produtos ao carrinho (delegation)
   document.addEventListener('click', function(e) {
     if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) {

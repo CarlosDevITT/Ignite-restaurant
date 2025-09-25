@@ -12,6 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ 
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
@@ -97,6 +98,7 @@
   <div id="schedule-status" class="container mx-auto px-4"></div>
 
   <main class="container mx-auto p-4">
+
     <!-- Seção Novos Produtos -->
     <section class="mb-8">
       <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
@@ -116,6 +118,54 @@
         <!-- Produtos serão carregados via JS -->
       </div>
     </section>
+
+    <!-- Seção Stories Ignite versão integrada -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+           <!-- Ícone do Instagram com gradiente oficial (rosa/roxo), tamanho médio e hover effect -->
+    <a href="https://www.instagram.com/" target="_blank" class="inline-flex items-center justify-center w-6 h-6 mr-2 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 rounded-full text-white shadow-md hover:shadow-lg transition-all duration-200" aria-label="Instagram">
+      <i class="fab fa-instagram text-xs"></i>
+    </a>  Stories Ignite 
+      </h2>
+
+      <!-- Container do Stories Slider -->
+      <div id="stories-slider" class="relative bg-white rounded-xl shadow-lg overflow-hidden">
+        
+        <!-- Barra de Progresso FIXA -->
+        <div class="absolute top-0 left-0 w-full z-30 p-2 bg-gradient-to-b from-black/30 to-transparent">
+          <div id="progress-container" class="flex space-x-1 max-w-4xl mx-auto">
+            <!-- As barras de progresso serão inseridas aqui via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Botões de Navegação -->
+        <button id="prev-story" class="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-50 transition-opacity">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="next-story" class="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-50 transition-opacity">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Área de Conteúdo -->
+        <div id="stories-container" class="flex transition-transform duration-300 ease-in-out">
+          <!-- Os "slides" dos produtos serão inseridos aqui via JavaScript -->
+        </div>
+
+        <!-- Indicador quando não há produtos -->
+        <div id="stories-empty" class="hidden flex items-center justify-center h-64 text-gray-500">
+          <div class="text-center">
+            <i class="fas fa-star text-4xl mb-2"></i>
+            <p>Nenhum produto em destaque no momento</p>
+          </div>
+        </div>
+
+        <!-- Botão para expandir/recolher tela cheia -->
+        <button id="toggle-fullscreen" class="absolute bottom-6 right-6 z-20 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-opacity">
+          <i class="fas fa-expand text-lg"></i>
+        </button>
+      </div>
+    </section>
+
   </main>
                                 
   <!-- Carrinho Sidebar -->
@@ -163,5 +213,7 @@
   <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
   <script src="js/script.js"></script>
+ <script src="js/core/product-loader.js"></script>
+
 </body>
 </html>

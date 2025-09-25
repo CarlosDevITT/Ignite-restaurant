@@ -329,56 +329,74 @@ function setupEventListeners() {
     document.getElementById('next-story').addEventListener('click', goToNextStory);
     document.getElementById('prev-story').addEventListener('click', goToPrevStory);
   
-    // Tela cheia
-    document.getElementById('toggle-fullscreen').addEventListener('click', toggleFullscreen);
-  
-    // Navegação por teclado
-    document.addEventListener('keydown', function(e) {
-      if (!isFullscreen) return;
-      
-      if (e.key === 'ArrowRight') goToNextStory();
-      if (e.key === 'ArrowLeft') goToPrevStory();
-      if (e.key === 'Escape' && isFullscreen) toggleFullscreen();
-    });
-  
-    // Swipe para mobile
-    let touchStartX = 0;
-    const storiesContainer = document.getElementById('stories-container');
-  
-    storiesContainer.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      resetAutoplay();
-    });
-  
-    storiesContainer.addEventListener('touchend', (e) => {
-      const touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
-  
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-          goToNextStory();
-        } else {
-          goToPrevStory();
-        }
-      }
-    });
-  
-    // Clique nas laterais para navegar
-    storiesContainer.addEventListener('click', (e) => {
-      const featuredProducts = getFeaturedProducts();
-      if (featuredProducts.length <= 1) return;
-      
-      const rect = storiesContainer.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const containerWidth = rect.width;
-  
-      if (clickX < containerWidth * 0.3) {
-        goToPrevStory();
-      } else if (clickX > containerWidth * 0.7) {
+    // 🔥 MELHORADO: Navegação por teclado e gestos
+  document.addEventListener('keydown', function(e) {
+    if (!isFullscreen) return;
+    
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      goToNextStory();
+    } else if (e.key === 'ArrowLeft') {
+      goToPrevStory();
+    } else if (e.key === 'Escape' || e.key === 'Backspace') {
+      toggleFullscreen();
+    }
+  });
+
+  // 🔥 MELHORADO: Swipe para mobile mais sensível
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const storiesContainer = document.getElementById('stories-container');
+  const SWIPE_THRESHOLD = 50; // Reduzido para melhor sensibilidade mobile
+
+  storiesContainer.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+    resetAutoplay();
+  });
+
+  storiesContainer.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    const diffX = touchStartX - touchEndX;
+    const diffY = touchStartY - touchEndY;
+
+    // 🔥 Ignorar se for scroll vertical (evitar conflito)
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+      if (diffX > 0) {
         goToNextStory();
+      } else {
+        goToPrevStory();
       }
-    });
- 
+    }
+  });
+
+  // 🔥 MELHORADO: Clique nas laterais para navegar (mais preciso no mobile)
+  storiesContainer.addEventListener('click', (e) => {
+    const featuredProducts = getFeaturedProducts();
+    if (featuredProducts.length <= 1) return;
+    
+    const rect = storiesContainer.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const containerWidth = rect.width;
+    const tapZone = window.innerWidth <= 768 ? 0.25 : 0.3; // 🔥 Zona maior no mobile
+
+    if (clickX < containerWidth * tapZone) {
+      goToPrevStory();
+    } else if (clickX > containerWidth * (1 - tapZone)) {
+      goToNextStory();
+    }
+  });
+
+  // 🔥 NOVO: Botão de fechar com tap outside (apenas no mobile/tela cheia)
+  document.addEventListener('click', (e) => {
+    if (isFullscreen && !e.target.closest('#stories-slider') && 
+        !e.target.closest('#mobile-instructions')) {
+      toggleFullscreen();
+    }
+  });
+
   // Adicionar produtos ao carrinho (delegation)
   document.addEventListener('click', function(e) {
     if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) {

@@ -191,27 +191,148 @@ function resetAutoplay() {
   startAutoplay();
 }
 
-
 function toggleFullscreen() {
   const slider = document.getElementById('stories-slider');
   const fullscreenBtn = document.getElementById('toggle-fullscreen');
+  const progressContainer = document.getElementById('progress-container');
+  const prevBtn = document.getElementById('prev-story');
+  const nextBtn = document.getElementById('next-story');
   
   if (!isFullscreen) {
-    // Entrar em tela cheia
-    slider.classList.add('fixed', 'inset-0', 'z-50', 'h-screen', 'w-screen');
+    // 🔥 ENTRAR em tela cheia - MELHORIAS MOBILE
+    slider.classList.add('fixed', 'inset-0', 'z-50', 'h-screen', 'w-screen', 'bg-black');
     slider.classList.remove('relative', 'rounded-xl', 'shadow-lg');
+    
+    // 🔥 Botão de tela cheia com feedback visual
     fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+    fullscreenBtn.classList.add('!bg-black', '!bg-opacity-70');
+    
+    // 🔥 Melhorar visibilidade dos controles no mobile
+    progressContainer.classList.add('px-4', 'pt-6'); // Mais espaço no topo
+    prevBtn.classList.add('!w-12', '!h-12', '!text-lg'); // Botões maiores no mobile
+    nextBtn.classList.add('!w-12', '!h-12', '!text-lg');
+    
+    // 🔥 Posicionar botão de fechar melhor no mobile
+    fullscreenBtn.classList.add('!bottom-8', '!right-6', '!p-4');
+    
+    // 🔥 Prevenir scroll e melhorar experiência touch
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    
+    // 🔥 Adicionar overlay de instruções para primeira vez (mobile)
+    if (window.innerWidth <= 768) {
+      showMobileInstructions();
+    }
+    
+    // 🔥 Atualizar layout para tela cheia
+    setTimeout(() => {
+      updateSliderPosition(getFeaturedProducts());
+    }, 100);
+    
   } else {
-    // Sair da tela cheia
-    slider.classList.remove('fixed', 'inset-0', 'z-50', 'h-screen', 'w-screen');
+    // 🔥 SAIR da tela cheia - RESTAURAR estado normal
+    slider.classList.remove('fixed', 'inset-0', 'z-50', 'h-screen', 'w-screen', 'bg-black');
     slider.classList.add('relative', 'rounded-xl', 'shadow-lg');
+    
     fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+    fullscreenBtn.classList.remove('!bg-black', '!bg-opacity-70', '!bottom-8', '!right-6', '!p-4');
+    
+    // 🔥 Restaurar controles ao tamanho normal
+    progressContainer.classList.remove('px-4', 'pt-6');
+    prevBtn.classList.remove('!w-12', '!h-12', '!text-lg');
+    nextBtn.classList.remove('!w-12', '!h-12', '!text-lg');
+    
+    // 🔥 Restaurar scroll
     document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
+    
+    // 🔥 Remover instruções mobile se existirem
+    hideMobileInstructions();
   }
   
   isFullscreen = !isFullscreen;
+  
+  // 🔥 Feedback de acessibilidade para leitores de tela
+  const statusMessage = isFullscreen ? 'Modo tela cheia ativado' : 'Modo tela cheia desativado';
+  announceToScreenReader(statusMessage);
 }
+
+// 🔥 NOVAS FUNÇÕES AUXILIARES para melhor UX mobile:
+
+function showMobileInstructions() {
+  // Verificar se já mostrou as instruções antes (usando sessionStorage)
+  const hasSeenInstructions = sessionStorage.getItem('hasSeenStoryInstructions');
+  
+  if (!hasSeenInstructions) {
+    // Criar overlay de instruções
+    const instructionsOverlay = document.createElement('div');
+    instructionsOverlay.id = 'mobile-instructions';
+    instructionsOverlay.className = 'fixed inset-0 z-60 bg-black bg-opacity-80 flex items-center justify-center p-4';
+    instructionsOverlay.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 max-w-sm text-center">
+        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-hand-pointer text-white text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-lg mb-2">Como navegar</h3>
+        <p class="text-gray-600 mb-4">
+          • Toque na <strong>esquerda</strong> para voltar<br>
+          • Toque na <strong>direita</strong> para avançar<br>
+          • Deslize para os lados<br>
+          • Toque no <strong>X</strong> para sair
+        </p>
+        <button onclick="hideMobileInstructions(true)" 
+                class="bg-primary text-white px-6 py-3 rounded-lg font-bold w-full">
+          Entendi!
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(instructionsOverlay);
+    
+    // Auto-remover após 5 segundos
+    setTimeout(() => {
+      if (document.getElementById('mobile-instructions')) {
+        hideMobileInstructions(true);
+      }
+    }, 5000);
+  }
+}
+
+function hideMobileInstructions(remember = false) {
+  const instructions = document.getElementById('mobile-instructions');
+  if (instructions) {
+    instructions.remove();
+  }
+  
+  if (remember) {
+    sessionStorage.setItem('hasSeenStoryInstructions', 'true');
+  }
+}
+
+function announceToScreenReader(message) {
+  // Criar elemento para leitores de tela
+  const announcer = document.getElementById('screen-reader-announcer') || 
+                   document.createElement('div');
+  
+  announcer.id = 'screen-reader-announcer';
+  announcer.setAttribute('aria-live', 'polite');
+  announcer.setAttribute('aria-atomic', 'true');
+  announcer.className = 'sr-only'; // Classe Tailwind para screen readers
+  
+  announcer.textContent = message;
+  
+  if (!document.getElementById('screen-reader-announcer')) {
+    document.body.appendChild(announcer);
+  }
+  
+  // Limpar após alguns segundos
+  setTimeout(() => {
+    announcer.textContent = '';
+  }, 3000);
+}
+
+// 🔥 ADICIONAR ao CSS (no <style> do index.html):
+
 
 // Reinicializar o slider quando os produtos forem atualizados
 window.refreshStoriesSlider = function() {

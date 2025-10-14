@@ -229,9 +229,20 @@
         <!--========== SCROLL REVEAL ==========-->
         <script src="https://unpkg.com/scrollreveal"></script>
 
+ <!--========== SPLASH SCREEN MODULE ==========-->
+    <script src="State/splash-module.js"></script>
+    <script>
+        // Inicializar splash screen apenas na abertura
+        new SplashScreen({
+            duration: 3000,
+            autoShow: true,
+            showOnce: true,
+            storageKey: 'igniteSplashShown'
+        });
+    </script>
+
         <!--========== MAIN JS ==========-->
         <script src="main.js"></script>
-        <script src="app.js"></script>
-        <script src="checkout.js"></script>
+               
     </body>
 </html>

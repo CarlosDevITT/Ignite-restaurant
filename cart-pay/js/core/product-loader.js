@@ -199,63 +199,57 @@ function toggleFullscreen() {
   const nextBtn = document.getElementById('next-story');
   
   if (!isFullscreen) {
-    // 🔥 ENTRAR em tela cheia - MELHORIAS MOBILE
-    slider.classList.add('fixed', 'inset-0', 'z-50', 'h-screen', 'w-screen', 'bg-black');
+    // 🔥 ENTRAR em tela cheia - CORREÇÃO
+    slider.style.cssText = 'position: fixed; top: 0; left: 0; z-index: 50; height: 100vh; width: 100vw; background: black;';
     slider.classList.remove('relative', 'rounded-xl', 'shadow-lg');
     
-    // 🔥 Botão de tela cheia com feedback visual
+    // 🔥 Botão de tela cheia - CORREÇÃO (sem !important)
     fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-    fullscreenBtn.classList.add('!bg-black', '!bg-opacity-70');
+    fullscreenBtn.style.cssText = 'background: rgba(0,0,0,0.7) !important; bottom: 2rem !important; right: 1.5rem !important; padding: 1rem !important;';
     
-    // 🔥 Melhorar visibilidade dos controles no mobile
-    progressContainer.classList.add('px-4', 'pt-6'); // Mais espaço no topo
-    prevBtn.classList.add('!w-12', '!h-12', '!text-lg'); // Botões maiores no mobile
-    nextBtn.classList.add('!w-12', '!h-12', '!text-lg');
+    // 🔥 Melhorar visibilidade dos controles
+    progressContainer.style.cssText = 'padding-left: 1rem; padding-right: 1rem; padding-top: 1.5rem;';
+    prevBtn.style.cssText = 'width: 3rem !important; height: 3rem !important; font-size: 1.125rem !important;';
+    nextBtn.style.cssText = 'width: 3rem !important; height: 3rem !important; font-size: 1.125rem !important;';
     
-    // 🔥 Posicionar botão de fechar melhor no mobile
-    fullscreenBtn.classList.add('!bottom-8', '!right-6', '!p-4');
-    
-    // 🔥 Prevenir scroll e melhorar experiência touch
+    // 🔥 Prevenir scroll
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
     
-    // 🔥 Adicionar overlay de instruções para primeira vez (mobile)
+    // 🔥 Adicionar overlay de instruções para mobile
     if (window.innerWidth <= 768) {
       showMobileInstructions();
     }
     
-    // 🔥 Atualizar layout para tela cheia
-    setTimeout(() => {
-      updateSliderPosition(getFeaturedProducts());
-    }, 100);
-    
   } else {
-    // 🔥 SAIR da tela cheia - RESTAURAR estado normal
-    slider.classList.remove('fixed', 'inset-0', 'z-50', 'h-screen', 'w-screen', 'bg-black');
+    // 🔥 SAIR da tela cheia - CORREÇÃO
+    slider.style.cssText = '';
     slider.classList.add('relative', 'rounded-xl', 'shadow-lg');
     
     fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-    fullscreenBtn.classList.remove('!bg-black', '!bg-opacity-70', '!bottom-8', '!right-6', '!p-4');
+    fullscreenBtn.style.cssText = '';
     
-    // 🔥 Restaurar controles ao tamanho normal
-    progressContainer.classList.remove('px-4', 'pt-6');
-    prevBtn.classList.remove('!w-12', '!h-12', '!text-lg');
-    nextBtn.classList.remove('!w-12', '!h-12', '!text-lg');
+    // 🔥 Restaurar controles
+    progressContainer.style.cssText = '';
+    prevBtn.style.cssText = '';
+    nextBtn.style.cssText = '';
     
     // 🔥 Restaurar scroll
     document.body.style.overflow = 'auto';
     document.documentElement.style.overflow = 'auto';
     
-    // 🔥 Remover instruções mobile se existirem
+    // 🔥 Remover instruções
     hideMobileInstructions();
   }
   
   isFullscreen = !isFullscreen;
   
-  // 🔥 Feedback de acessibilidade para leitores de tela
-  const statusMessage = isFullscreen ? 'Modo tela cheia ativado' : 'Modo tela cheia desativado';
-  announceToScreenReader(statusMessage);
+  // 🔥 Feedback visual suave
+  setTimeout(() => {
+    updateSliderPosition(getFeaturedProducts());
+  }, 50);
 }
+
 
 // 🔥 NOVAS FUNÇÕES AUXILIARES para melhor UX mobile:
 
@@ -331,7 +325,6 @@ function announceToScreenReader(message) {
   }, 3000);
 }
 
-// 🔥 ADICIONAR ao CSS (no <style> do index.html):
 
 
 // Reinicializar o slider quando os produtos forem atualizados

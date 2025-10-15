@@ -1,35 +1,179 @@
 // Configuração do Supabase
 const supabaseUrl = 'https://qgnqztsxfeugopuhyioq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnbnF6dHN4ZmV1Z29wdWh5aW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MTg4MjEsImV4cCI6MjA3MzA5NDgyMX0.mW88-7P_Af3WMVAUT7ha4Mf0nyKJoSiNjMfuXiCllIA';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabase = window.supabase?.createClient(supabaseUrl, supabaseKey);
 
-// Variáveis globais
+// ✅ CONSTANTES PARA CONFIGURAÇÃO
+const CONFIG = {
+  AUTO_UPDATE_INTERVAL: 30000,
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 2000,
+  CACHE_TTL: 5 * 60 * 1000,
+  DEBOUNCE_DELAY: 300,
+  SWIPE_THRESHOLD: 50,
+  BUSINESS_HOURS: { start: 9, end: 22 }
+};
+
+// ✅ VARIÁVEIS GLOBAIS
 let products = [];
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let lastUpdateTime = localStorage.getItem('lastUpdateTime') || 0;
+let cart = [];
+let lastUpdateTime = 0;
+let isLoading = false;
+let retryCount = 0;
+let updateInterval = null;
+let storiesSliderInstance = null;
 
-// Debug function
-function updateDebug(message) {
-  console.log(`[CARDÁPIO] ${new Date().toLocaleTimeString()}: ${message}`);
+// ✅ SINGLETON PARA EVENT HANDLERS
+let productClickHandler = null;
+let cartEventHandlers = [];
+
+// ✅ SISTEMA DE CACHE
+class CacheManager {
+  constructor() {
+    this.cache = new Map();
+  }
+
+  set(key, value, ttl = CONFIG.CACHE_TTL) {
+    const expiry = Date.now() + ttl;
+    this.cache.set(key, { value, expiry });
+  }
+
+  get(key) {
+    const item = this.cache.get(key);
+    if (!item) return null;
+    
+    if (Date.now() > item.expiry) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return item.value;
+  }
+
+  clear() {
+    this.cache.clear();
+  }
 }
 
-// Inicialização
+const cacheManager = new CacheManager();
+
+// ✅ SISTEMA DE LOGGING
+class Logger {
+  static log(level, message, data = null) {
+    const timestamp = new Date().toLocaleTimeString('pt-BR');
+    const logMessage = `[CARDÁPIO ${level}] ${timestamp}: ${message}`;
+    
+    console[level.toLowerCase()](logMessage, data || '');
+  }
+
+  static info(message, data = null) {
+    this.log('INFO', message, data);
+  }
+
+  static warn(message, data = null) {
+    this.log('WARN', message, data);
+  }
+
+  static error(message, data = null) {
+    this.log('ERROR', message, data);
+  }
+}
+
+// ✅ DEBOUNCE PARA OTIMIZAÇÃO
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// ✅ INICIALIZAÇÃO DA APLICAÇÃO
 document.addEventListener('DOMContentLoaded', async () => {
-  updateDebug('Iniciando cardápio...');
-  await loadProducts();
-  updateCartCount();
-  setupEventListeners();
-  checkBusinessHours();
-  
-  // Atualização automática a cada 30 segundos
-  setInterval(async () => {
-    await checkForUpdates();
-  }, 30000);
+  try {
+    await initializeApp();
+  } catch (error) {
+    Logger.error('Erro crítico na inicialização', error);
+    showError('Erro ao inicializar a aplicação. Recarregando...', () => {
+      setTimeout(() => window.location.reload(), 2000);
+    });
+  }
 });
 
-// Verificar atualizações
-async function checkForUpdates() {
+async function initializeApp() {
+  Logger.info('Iniciando aplicação...');
+  
+  if (!window.supabase) {
+    throw new Error('Supabase não encontrado');
+  }
+
+  loadFromStorage();
+  updateCartCount();
+  checkBusinessHours();
+  await loadProducts();
+  setupEventListeners();
+  startAutoUpdates();
+  
+  Logger.info('Aplicação inicializada com sucesso');
+}
+
+// ✅ CARREGAMENTO DO LOCALSTORAGE
+function loadFromStorage() {
   try {
+    const savedCart = localStorage.getItem('cart');
+    const savedUpdateTime = localStorage.getItem('lastUpdateTime');
+    
+    cart = savedCart ? JSON.parse(savedCart) : [];
+    lastUpdateTime = savedUpdateTime ? parseInt(savedUpdateTime) : 0;
+    
+    Logger.info(`Dados carregados: ${cart.length} itens no carrinho`);
+  } catch (error) {
+    Logger.warn('Erro ao carregar dados salvos', error);
+    cart = [];
+    lastUpdateTime = 0;
+    localStorage.removeItem('cart');
+    localStorage.removeItem('lastUpdateTime');
+  }
+}
+
+// ✅ SISTEMA DE RETRY AUTOMÁTICO
+async function withRetry(asyncFunction, maxRetries = CONFIG.MAX_RETRIES) {
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await asyncFunction();
+      if (attempt > 1) {
+        Logger.info(`Operação bem-sucedida na tentativa ${attempt}`);
+      }
+      return result;
+    } catch (error) {
+      lastError = error;
+      Logger.warn(`Tentativa ${attempt} falhou:`, error.message);
+      
+      if (attempt < maxRetries) {
+        const delay = CONFIG.RETRY_DELAY * attempt;
+        Logger.info(`Aguardando ${delay}ms antes da próxima tentativa...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+// ✅ VERIFICAÇÃO DE ATUALIZAÇÕES
+async function checkForUpdates() {
+  if (isLoading) return;
+  
+  try {
+    const cached = cacheManager.get('lastUpdateCheck');
+    if (cached && Date.now() - cached < 10000) return;
+
     const { data, error } = await supabase
       .from('products')
       .select('updated_at')
@@ -38,127 +182,190 @@ async function checkForUpdates() {
 
     if (error) throw error;
 
-    if (data && data.length > 0) {
-      const lastUpdate = new Date(data[0].updated_at).getTime();
-      const storedUpdate = parseInt(localStorage.getItem('lastUpdateTime') || '0');
+    cacheManager.set('lastUpdateCheck', Date.now());
 
-      if (lastUpdate > storedUpdate) {
-        updateDebug('Atualizações detectadas! Recarregando produtos...');
-        localStorage.setItem('lastUpdateTime', lastUpdate.toString());
-        await loadProducts();
+    if (data && data.length > 0) {
+      const serverUpdate = new Date(data[0].updated_at).getTime();
+      
+      if (serverUpdate > lastUpdateTime) {
+        Logger.info('Atualizações detectadas! Recarregando produtos...');
+        lastUpdateTime = serverUpdate;
+        localStorage.setItem('lastUpdateTime', serverUpdate.toString());
         
-        // Mostrar notificação de atualização
-        showToast('Cardápio atualizado!');
+        await loadProducts();
+        showToast('Cardápio atualizado!', 'info');
       }
     }
   } catch (error) {
-    updateDebug('Erro ao verificar atualizações: ' + error.message);
+    Logger.error('Erro ao verificar atualizações:', error);
   }
 }
 
-// Carregar produtos com estrutura completa
+// ✅ CARREGAMENTO DE PRODUTOS
 async function loadProducts() {
+  if (isLoading) {
+    Logger.info('Carregamento já em andamento, aguardando...');
+    return;
+  }
+  
+  isLoading = true;
+  showLoading();
+  
   try {
-    showLoading();
-    updateDebug('Carregando produtos...');
+    Logger.info('Iniciando carregamento de produtos...');
     
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('available', true)
-      .order('category')
-      .order('name');
+    const result = await withRetry(async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('available', true)
+        .order('category')
+        .order('name');
 
-    if (error) throw error;
+      if (error) throw error;
+      return data;
+    });
 
-    // Validar e normalizar dados
-    products = data.map(product => validateProduct(product));
-    updateDebug(`✅ ${products.length} produtos carregados e validados`);
+    const validatedProducts = result
+      .map(validateProduct)
+      .filter(product => product.id && product.name);
+
+    if (validatedProducts.length === 0) {
+      throw new Error('Nenhum produto válido encontrado');
+    }
+
+    products = validatedProducts;
+    Logger.info(`✅ ${products.length} produtos carregados com sucesso`);
     
-    // Salvar timestamp da última atualização
-    if (data.length > 0) {
-      const latestUpdate = Math.max(...data.map(p => new Date(p.updated_at || p.created_at).getTime()));
+    if (result.length > 0) {
+      const latestUpdate = Math.max(
+        ...result.map(p => new Date(p.updated_at || p.created_at).getTime())
+      );
+      lastUpdateTime = latestUpdate;
       localStorage.setItem('lastUpdateTime', latestUpdate.toString());
     }
     
     renderProducts();
-    hideLoading();
-
-     // Inicializar Stories Slider após carregar produtos
-     setTimeout(() => {
-      if (typeof initStoriesSlider === 'function') {
-        initStoriesSlider();
-      }
-    }, 100);
+    cacheManager.set('products', products, CONFIG.CACHE_TTL);
+    retryCount = 0;
     
   } catch (error) {
-    console.error('Erro ao carregar produtos:', error);
+    Logger.error('Erro no carregamento de produtos:', error);
+    retryCount++;
+    
+    if (retryCount < CONFIG.MAX_RETRIES) {
+      showError(`Erro ao carregar cardápio. Tentativa ${retryCount}/${CONFIG.MAX_RETRIES}...`);
+      setTimeout(() => loadProducts(), CONFIG.RETRY_DELAY);
+    } else {
+      showError('Não foi possível carregar o cardápio. Verifique sua conexão.', () => {
+        window.location.reload();
+      });
+    }
+  } finally {
+    isLoading = false;
     hideLoading();
-    showError('Não foi possível carregar o cardápio. Tente novamente mais tarde.');
   }
 }
 
-// Validar estrutura do produto
+// ✅ VALIDAÇÃO DE PRODUTOS
 function validateProduct(product) {
-  return {
-    id: product.id || generateTempId(),
-    name: product.name || 'Produto sem nome',
-    description: product.description || '',
-    category: product.category || 'outros',
-    price: Number(product.price) || 0,
-    image_url: product.image_url || null,
-    featured: Boolean(product.featured),
-    available: product.available !== false,
-    promo: Boolean(product.promo),
-    promo_price: product.promo_price ? Number(product.promo_price) : null,
-    promo_text: product.promo_text || '',
-    created_at: product.created_at || new Date().toISOString(),
-    updated_at: product.updated_at || new Date().toISOString()
-  };
-}
-
-// Gerar ID temporário para produtos sem ID
-function generateTempId() {
-  return 'temp_' + Math.random().toString(36).substr(2, 9);
-}
-
-// Função para obter preço de exibição
-function getDisplayPrice(product) {
-  if (product.promo && product.promo_price !== null && product.promo_price !== undefined) {
+  try {
     return {
-      final: product.promo_price,
-      original: product.price,
-      hasPromo: true
+      id: product.id || generateTempId(),
+      name: (product.name || '').trim() || 'Produto sem nome',
+      description: (product.description || '').trim(),
+      category: (product.category || 'outros').toLowerCase(),
+      price: Math.max(0, Number(product.price) || 0),
+      image_url: isValidUrl(product.image_url) ? product.image_url : null,
+      featured: Boolean(product.featured),
+      available: product.available !== false,
+      promo: Boolean(product.promo),
+      promo_price: product.promo_price ? Math.max(0, Number(product.promo_price)) : null,
+      promo_text: (product.promo_text || '').trim(),
+      created_at: product.created_at || new Date().toISOString(),
+      updated_at: product.updated_at || new Date().toISOString()
+    };
+  } catch (error) {
+    Logger.warn('Erro ao validar produto:', { product, error });
+    return null;
+  }
+}
+
+function isValidUrl(string) {
+  try {
+    if (!string) return false;
+    const url = new URL(string);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function generateTempId() {
+  return 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// ✅ SISTEMA DE PREÇOS
+function getDisplayPrice(product) {
+  try {
+    const basePrice = Number(product.price) || 0;
+    const promoPrice = Number(product.promo_price) || 0;
+    
+    if (product.promo && promoPrice > 0 && promoPrice < basePrice) {
+      return {
+        final: promoPrice,
+        original: basePrice,
+        hasPromo: true,
+        discount: Math.round(((basePrice - promoPrice) / basePrice) * 100)
+      };
+    }
+    
+    return {
+      final: basePrice,
+      hasPromo: false,
+      discount: 0
+    };
+  } catch (error) {
+    Logger.warn('Erro ao calcular preço:', { product, error });
+    return {
+      final: 0,
+      hasPromo: false,
+      discount: 0
     };
   }
-  return {
-    final: product.price,
-    hasPromo: false
-  };
 }
 
-// Renderizar produtos na página
-// modifiquei a função renderProducts para:
+// ✅ RENDERIZAÇÃO DE PRODUTOS
 function renderProducts() {
-  renderNewProducts();
-  renderMenuProducts();
-  
-  // Inicializar/atualizar o Stories Slider
-  if (typeof refreshStoriesSlider === 'function') {
-    refreshStoriesSlider();
+  try {
+    renderNewProducts();
+    renderMenuProducts();
+    
+    if (typeof initStoriesSlider === 'function') {
+      setTimeout(initStoriesSlider, 100);
+    }
+    
+    Logger.info('Produtos renderizados com sucesso');
+  } catch (error) {
+    Logger.error('Erro na renderização:', error);
+    showError('Erro ao exibir produtos');
   }
 }
 
-// Renderizar novos produtos (destaques)
+// ✅ PRODUTOS EM DESTAQUE
 function renderNewProducts() {
   const newProductsContainer = document.getElementById('new-products');
-  const featuredProducts = products.filter(product => product.featured && product.available);
+  if (!newProductsContainer) return;
+  
+  const featuredProducts = products.filter(product => 
+    product.featured && product.available && product.price > 0
+  );
   
   if (featuredProducts.length === 0) {
     newProductsContainer.innerHTML = `
-      <div class="min-w-[200px] bg-gray-100 rounded-lg p-4 text-center">
-        <i class="fas fa-star text-gray-400 text-2xl mb-2"></i>
-        <p class="text-gray-500">Nenhum produto em destaque no momento.</p>
+      <div class="min-w-[200px] bg-gray-50 rounded-lg p-6 text-center">
+        <i class="fas fa-star text-gray-300 text-3xl mb-3"></i>
+        <p class="text-gray-500 text-sm">Em breve produtos em destaque!</p>
       </div>
     `;
     return;
@@ -168,44 +375,53 @@ function renderNewProducts() {
     const priceInfo = getDisplayPrice(product);
     
     return `
-      <div class="min-w-[200px] bg-white rounded-lg shadow-md overflow-hidden produto-card">
-        <div class="w-full h-32 bg-gray-200 flex items-center justify-center relative">
-          ${product.image_url ? 
-            `<img src="${product.image_url}" alt="${product.name}" class="w-full h-32 object-cover" 
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
-            ''
-          }
-          <div class="w-full h-32 ${product.image_url ? 'hidden' : 'flex'} items-center justify-center bg-gray-100">
-            <i class="fas fa-utensils text-3xl text-gray-400"></i>
+      <div class="min-w-[200px] bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden produto-card">
+        <div class="relative">
+          <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+            ${product.image_url ? 
+              `<img src="${product.image_url}" 
+                   alt="${product.name}" 
+                   class="w-full h-32 object-cover"
+                   loading="lazy"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
+              ''
+            }
+            <div class="w-full h-32 ${product.image_url ? 'hidden' : 'flex'} items-center justify-center">
+              <i class="fas fa-utensils text-3xl text-gray-300"></i>
+            </div>
           </div>
+          
           ${product.promo ? `
-            <div class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-              <i class="fas fa-tag mr-1"></i>PROMO
+            <div class="absolute top-2 right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+              <i class="fas fa-fire mr-1"></i>-${priceInfo.discount}%
             </div>
           ` : ''}
         </div>
-        <div class="p-3">
-          <h3 class="font-bold text-gray-800 truncate">${product.name}</h3>
-          <p class="text-sm text-gray-600 mt-1 line-clamp-2 h-10">${product.description || 'Descrição não disponível'}</p>
-          <div class="flex justify-between items-center mt-2">
-            <div>
+        
+        <div class="p-4">
+          <h3 class="font-bold text-gray-800 truncate mb-1">${product.name}</h3>
+          <p class="text-sm text-gray-600 line-clamp-2 h-10 mb-3">${product.description || 'Delicioso produto especial'}</p>
+          
+          <div class="flex justify-between items-center">
+            <div class="flex flex-col">
               ${priceInfo.hasPromo ? `
-                <div class="flex items-center">
-                  <span class="font-bold text-red-600">R$ ${priceInfo.final.toFixed(2)}</span>
-                  <span class="text-xs text-gray-500 line-through ml-1">R$ ${priceInfo.original.toFixed(2)}</span>
-                </div>
+                <span class="font-bold text-lg text-red-600">R$ ${priceInfo.final.toFixed(2)}</span>
+                <span class="text-xs text-gray-500 line-through">R$ ${priceInfo.original.toFixed(2)}</span>
               ` : `
-                <span class="font-bold text-primary">R$ ${priceInfo.final.toFixed(2)}</span>
+                <span class="font-bold text-lg text-primary">R$ ${priceInfo.final.toFixed(2)}</span>
               `}
             </div>
-            <button class="add-to-cart bg-primary hover:bg-secondary text-white p-2 rounded-full w-8 h-8 flex items-center justify-center transition-colors" 
-                    data-id="${product.id}" title="Adicionar ao carrinho">
+            
+            <button class="add-to-cart bg-primary hover:bg-secondary text-white p-2 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg" 
+                    data-id="${product.id}" 
+                    title="Adicionar ao carrinho">
               <i class="fas fa-plus"></i>
             </button>
           </div>
+          
           ${product.promo_text ? `
-            <div class="mt-2 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
-              <p class="text-xs text-yellow-800">${product.promo_text}</p>
+            <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              <p class="text-xs text-amber-800 font-medium">${product.promo_text}</p>
             </div>
           ` : ''}
         </div>
@@ -214,70 +430,92 @@ function renderNewProducts() {
   }).join('');
 }
 
-// Renderizar produtos do menu
+// ✅ MENU PRINCIPAL
 function renderMenuProducts() {
   const menuContainer = document.getElementById('menu');
+  if (!menuContainer) return;
+  
   const categories = [...new Set(products.map(product => product.category))];
   
   if (products.length === 0) {
     menuContainer.innerHTML = `
-      <div class="col-span-full text-center py-12">
-        <i class="fas fa-utensils text-4xl text-gray-400 mb-4"></i>
-        <p class="text-gray-500">Nenhum produto disponível no momento.</p>
-        <button class="mt-4 bg-primary text-white px-4 py-2 rounded" onclick="location.reload()">
-          <i class="fas fa-redo mr-2"></i>Recarregar
-        </button>
+      <div class="col-span-full text-center py-16">
+        <div class="max-w-md mx-auto">
+          <i class="fas fa-utensils text-6xl text-gray-300 mb-6"></i>
+          <h3 class="text-xl font-bold text-gray-600 mb-4">Cardápio em preparação</h3>
+          <p class="text-gray-500 mb-6">Nossos produtos estão sendo carregados...</p>
+          <button class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition-colors" 
+                  onclick="location.reload()">
+            <i class="fas fa-redo mr-2"></i>Tentar novamente
+          </button>
+        </div>
       </div>
     `;
     return;
   }
   
+  const categoryNames = {
+    'entrada': '🍴 Entradas',
+    'principal': '🍽️ Pratos Principais', 
+    'bebida': '🥤 Bebidas',
+    'sobremesa': '🍰 Sobremesas',
+    'promocao': '🔥 Promoções',
+    'lanche': '🍔 Lanches',
+    'pizza': '🍕 Pizzas',
+    'outros': '📦 Outros'
+  };
+  
   menuContainer.innerHTML = categories.map(category => {
     const categoryProducts = products.filter(product => 
-      product.category === category && product.available
+      product.category === category && product.available && product.price > 0
     );
     
     if (categoryProducts.length === 0) return '';
     
-    const categoryNames = {
-      'entrada': '🍴 Entradas',
-      'principal': '🍽️ Pratos Principais',
-      'bebida': '🥤 Bebidas',
-      'sobremesa': '🍰 Sobremesas',
-      'promocao': '🔥 Promoções',
-      'outros': '📦 Outros'
-    };
-    
     return `
-      <div class="col-span-full mb-8">
-        <h3 class="text-lg font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4 flex items-center">
-          ${categoryNames[category] || category}
-        </h3>
+      <div class="col-span-full mb-10">
+        <div class="flex items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800 mr-4">
+            ${categoryNames[category] || category.charAt(0).toUpperCase() + category.slice(1)}
+          </h3>
+          <div class="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent"></div>
+          <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full ml-4">
+            ${categoryProducts.length} item${categoryProducts.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           ${categoryProducts.map(product => {
             const priceInfo = getDisplayPrice(product);
             
             return `
-              <div class="bg-white rounded-lg shadow-md overflow-hidden flex produto-card hover:shadow-lg transition-shadow">
-                <div class="w-24 h-24 bg-gray-200 flex items-center justify-center relative flex-shrink-0">
-                  ${product.image_url ? 
-                    `<img src="${product.image_url}" alt="${product.name}" class="w-24 h-24 object-cover"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
-                    ''
-                  }
-                  <div class="w-24 h-24 ${product.image_url ? 'hidden' : 'flex'} items-center justify-center bg-gray-100">
-                    <i class="fas fa-utensils text-2xl text-gray-400"></i>
+              <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex produto-card group">
+                <div class="relative">
+                  <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0">
+                    ${product.image_url ? 
+                      `<img src="${product.image_url}" 
+                           alt="${product.name}" 
+                           class="w-24 h-24 object-cover"
+                           loading="lazy"
+                           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
+                      ''
+                    }
+                    <div class="w-24 h-24 ${product.image_url ? 'hidden' : 'flex'} items-center justify-center">
+                      <i class="fas fa-utensils text-2xl text-gray-300"></i>
+                    </div>
                   </div>
+                  
                   ${product.promo ? `
-                    <div class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
-                      PROMO
+                    <div class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      -${priceInfo.discount}%
                     </div>
                   ` : ''}
                 </div>
-                <div class="p-3 flex-1 min-w-0">
-                  <div class="flex justify-between items-start mb-1">
-                    <h3 class="font-bold text-gray-800 truncate flex-1">${product.name}</h3>
-                    <div class="text-right ml-2">
+                
+                <div class="p-4 flex-1 min-w-0 flex flex-col">
+                  <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-bold text-gray-800 truncate flex-1 mr-2">${product.name}</h3>
+                    <div class="text-right">
                       ${priceInfo.hasPromo ? `
                         <div class="flex flex-col items-end">
                           <span class="font-bold text-red-600">R$ ${priceInfo.final.toFixed(2)}</span>
@@ -288,15 +526,18 @@ function renderMenuProducts() {
                       `}
                     </div>
                   </div>
-                  <p class="text-sm text-gray-600 mb-2">${product.description || ''}</p>
+                  
+                  <p class="text-sm text-gray-600 mb-3 flex-1">${product.description || ''}</p>
+                  
                   ${product.promo_text ? `
-                    <div class="mb-2 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
-                      <p class="text-xs text-yellow-800">${product.promo_text}</p>
+                    <div class="mb-3 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+                      <p class="text-xs text-amber-800">${product.promo_text}</p>
                     </div>
                   ` : ''}
-                  <button class="add-to-cart bg-primary hover:bg-secondary text-white px-3 py-1 rounded-md text-sm transition-colors w-full" 
+                  
+                  <button class="add-to-cart bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 w-full group-hover:shadow-md" 
                           data-id="${product.id}">
-                    <i class="fas fa-cart-plus mr-1"></i>Adicionar
+                    <i class="fas fa-cart-plus mr-2"></i>Adicionar
                   </button>
                 </div>
               </div>
@@ -308,146 +549,258 @@ function renderMenuProducts() {
   }).join('');
 }
 
-// Restante do código permanece igual para funções do carrinho...
-// [Manter todas as funções do carrinho existentes: addToCart, updateCart, etc.]
-
-// Configurar event listeners
+// ✅ SISTEMA DE EVENTOS CORRIGIDO (SEM DUPLICAÇÃO)
 function setupEventListeners() {
-  // Botão do carrinho
-  document.getElementById('cart-button').addEventListener('click', toggleCart);
+  // ✅ CONFIGURAR EVENT DELEGATION UMA ÚNICA VEZ
+  setupProductClickHandler();
   
-  // Fechar carrinho
-  document.getElementById('close-cart').addEventListener('click', toggleCart);
+  // ✅ EVENTOS DO CARRINHO
+  setupCartEventHandlers();
   
-  // Overlay do carrinho
-  document.getElementById('cart-overlay').addEventListener('click', toggleCart);
+  // ✅ OUTROS EVENTOS
+  setupAdditionalEventListeners();
   
-  // Finalizar pedido
-  document.getElementById('checkout-button').addEventListener('click', checkout);
- 
-  // Botões de navegação
-    document.getElementById('next-story').addEventListener('click', goToNextStory);
-    document.getElementById('prev-story').addEventListener('click', goToPrevStory);
+  Logger.info('Event listeners configurados com sucesso');
+}
+
+// ✅ SINGLETON PARA CLICKS EM PRODUTOS
+function setupProductClickHandler() {
+  // REMOVER HANDLER ANTERIOR SE EXISTIR
+  if (productClickHandler) {
+    document.removeEventListener('click', productClickHandler);
+  }
   
-    // 🔥 MELHORADO: Navegação por teclado e gestos
-  document.addEventListener('keydown', function(e) {
-    if (!isFullscreen) return;
+  // NOVO HANDLER COM DEBOUNCE INTEGRADO
+  productClickHandler = function(e) {
+    const target = e.target.closest('.add-to-cart');
+    if (!target) return;
     
-    if (e.key === 'ArrowRight' || e.key === ' ') {
-      goToNextStory();
-    } else if (e.key === 'ArrowLeft') {
-      goToPrevStory();
-    } else if (e.key === 'Escape' || e.key === 'Backspace') {
-      toggleFullscreen();
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    
+    // ✅ PREVENIR MÚLTIPLOS CLIQUES RÁPIDOS
+    if (target.hasAttribute('data-clicked')) {
+      Logger.warn('Clique rápido ignorado');
+      return;
+    }
+    
+    target.setAttribute('data-clicked', 'true');
+    
+    const productId = target.dataset.id;
+    if (productId) {
+      Logger.info(`Adicionando produto: ${productId}`);
+      addToCart(productId);
+    }
+    
+    // LIBERAR BOTÃO APÓS 500ms
+    setTimeout(() => {
+      target.removeAttribute('data-clicked');
+    }, 500);
+  };
+  
+  // REGISTRAR HANDLER UMA ÚNICA VEZ
+  document.addEventListener('click', productClickHandler);
+}
+
+// ✅ EVENTOS DO CARRINHO
+function setupCartEventHandlers() {
+  // LIMPAR HANDLERS ANTIGOS
+  cartEventHandlers.forEach(handler => {
+    if (handler.element && handler.event && handler.fn) {
+      handler.element.removeEventListener(handler.event, handler.fn);
     }
   });
+  cartEventHandlers = [];
+  
+  const elements = {
+    cartButton: document.getElementById('cart-button'),
+    closeCart: document.getElementById('close-cart'),
+    cartOverlay: document.getElementById('cart-overlay'),
+    checkoutButton: document.getElementById('checkout-button')
+  };
+  
+  // ADICIONAR NOVOS HANDLERS
+  if (elements.cartButton) {
+    const handler = () => toggleCart();
+    elements.cartButton.addEventListener('click', handler);
+    cartEventHandlers.push({ element: elements.cartButton, event: 'click', fn: handler });
+  }
+  
+  if (elements.closeCart) {
+    const handler = () => toggleCart();
+    elements.closeCart.addEventListener('click', handler);
+    cartEventHandlers.push({ element: elements.closeCart, event: 'click', fn: handler });
+  }
+  
+  if (elements.cartOverlay) {
+    const handler = (e) => {
+      if (e.target === elements.cartOverlay) toggleCart();
+    };
+    elements.cartOverlay.addEventListener('click', handler);
+    cartEventHandlers.push({ element: elements.cartOverlay, event: 'click', fn: handler });
+  }
+  
+  if (elements.checkoutButton) {
+    const handler = () => checkout();
+    elements.checkoutButton.addEventListener('click', handler);
+    cartEventHandlers.push({ element: elements.checkoutButton, event: 'click', fn: handler });
+  }
+}
 
-  // 🔥 MELHORADO: Swipe para mobile mais sensível
+// ✅ EVENTOS ADICIONAIS
+function setupAdditionalEventListeners() {
+  // NAVEGAÇÃO POR TECLADO
+  document.addEventListener('keydown', handleKeyboardNavigation);
+  
+  // EVENTOS TOUCH PARA MOBILE
+  setupTouchEvents();
+  
+  // REDIMENSIONAMENTO
+  window.addEventListener('resize', debounce(handleWindowResize, 250));
+  
+  // VISIBILIDADE DA PÁGINA
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+}
+
+function handleKeyboardNavigation(e) {
+  if (document.activeElement.tagName === 'INPUT') return;
+  
+  switch (e.key) {
+    case 'Escape':
+      if (!document.getElementById('cart-sidebar').classList.contains('translate-x-full')) {
+        toggleCart();
+      }
+      break;
+    case 'F5':
+      e.preventDefault();
+      window.forceRefresh();
+      break;
+  }
+}
+
+function setupTouchEvents() {
   let touchStartX = 0;
   let touchStartY = 0;
-  const storiesContainer = document.getElementById('stories-container');
-  const SWIPE_THRESHOLD = 50; // Reduzido para melhor sensibilidade mobile
-
-  storiesContainer.addEventListener('touchstart', (e) => {
+  
+  document.addEventListener('touchstart', (e) => {
     touchStartX = e.changedTouches[0].screenX;
     touchStartY = e.changedTouches[0].screenY;
-    resetAutoplay();
-  });
+  }, { passive: true });
 
-  storiesContainer.addEventListener('touchend', (e) => {
+  document.addEventListener('touchend', (e) => {
     const touchEndX = e.changedTouches[0].screenX;
     const touchEndY = e.changedTouches[0].screenY;
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
 
-    // 🔥 Ignorar se for scroll vertical (evitar conflito)
-    if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-    if (Math.abs(diffX) > SWIPE_THRESHOLD) {
-      if (diffX > 0) {
-        goToNextStory();
-      } else {
-        goToPrevStory();
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > CONFIG.SWIPE_THRESHOLD) {
+      const cartSidebar = document.getElementById('cart-sidebar');
+      if (cartSidebar && !cartSidebar.classList.contains('translate-x-full')) {
+        if (diffX < 0) {
+          toggleCart();
+        }
       }
     }
-  });
-
-  // 🔥 MELHORADO: Clique nas laterais para navegar (mais preciso no mobile)
-  storiesContainer.addEventListener('click', (e) => {
-    const featuredProducts = getFeaturedProducts();
-    if (featuredProducts.length <= 1) return;
-    
-    const rect = storiesContainer.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const containerWidth = rect.width;
-    const tapZone = window.innerWidth <= 768 ? 0.25 : 0.3; // 🔥 Zona maior no mobile
-
-    if (clickX < containerWidth * tapZone) {
-      goToPrevStory();
-    } else if (clickX > containerWidth * (1 - tapZone)) {
-      goToNextStory();
-    }
-  });
-
-  // 🔥 NOVO: Botão de fechar com tap outside (apenas no mobile/tela cheia)
-  document.addEventListener('click', (e) => {
-    if (isFullscreen && !e.target.closest('#stories-slider') && 
-        !e.target.closest('#mobile-instructions')) {
-      toggleFullscreen();
-    }
-  });
-
-  // Adicionar produtos ao carrinho (delegation)
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('add-to-cart') || e.target.closest('.add-to-cart')) {
-      const button = e.target.classList.contains('add-to-cart') ? e.target : e.target.closest('.add-to-cart');
-      const productId = button.dataset.id;
-      addToCart(productId);
-    }
-  });
+  }, { passive: true });
 }
 
-// Funções do carrinho (MANTER EXISTENTES)
-function addToCart(productId) {
-  const product = products.find(p => p.id == productId);
-  if (!product) {
-    updateDebug('Produto não encontrado: ' + productId);
-    return;
-  }
-  
-  const existingItem = cart.find(item => item.id == productId);
-  const priceToUse = product.promo && product.promo_price ? product.promo_price : product.price;
-  
-  if (existingItem) {
-    existingItem.quantity += 1;
+function handleWindowResize() {
+  Logger.info('Janela redimensionada');
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    stopAutoUpdates();
   } else {
-    cart.push({
-      id: product.id,
-      name: product.name,
-      price: priceToUse,
-      image: product.image_url,
-      quantity: 1,
-      is_promo: product.promo
-    });
+    startAutoUpdates();
+    checkForUpdates();
   }
+}
+
+// ✅ SISTEMA DE CARRINHO CORRIGIDO
+function addToCart(productId) {
+  console.log(`🛒 ADD_TO_CART chamado UMA VEZ para: ${productId} - ${Date.now()}`);
   
-  updateCart();
-  showToast(`${product.name} adicionado ao carrinho!`);
+  try {
+    const product = products.find(p => p.id == productId);
+    if (!product) {
+      Logger.warn('Produto não encontrado:', productId);
+      showToast('Produto não encontrado', 'error');
+      return;
+    }
+    
+    if (!product.available || product.price <= 0) {
+      showToast('Produto não disponível no momento', 'warning');
+      return;
+    }
+    
+    const existingItem = cart.find(item => item.id == productId);
+    const priceInfo = getDisplayPrice(product);
+    
+    if (existingItem) {
+      existingItem.quantity += 1;
+      Logger.info(`Quantidade aumentada: ${product.name} (${existingItem.quantity})`);
+    } else {
+      const newItem = {
+        id: product.id,
+        name: product.name,
+        price: priceInfo.final,
+        image: product.image_url,
+        quantity: 1,
+        is_promo: priceInfo.hasPromo,
+        original_price: priceInfo.hasPromo ? priceInfo.original : null
+      };
+      cart.push(newItem);
+      Logger.info(`Item adicionado: ${product.name}`);
+    }
+    
+    updateCart();
+    showToast(`${product.name} adicionado ao carrinho!`, 'success');
+    
+    // FEEDBACK VISUAL
+    const button = document.querySelector(`[data-id="${productId}"]`);
+    if (button) {
+      button.classList.add('animate-pulse');
+      setTimeout(() => button.classList.remove('animate-pulse'), 500);
+    }
+    
+  } catch (error) {
+    Logger.error('Erro ao adicionar produto:', error);
+    showToast('Erro ao adicionar produto', 'error');
+  }
 }
 
 function updateCart() {
-  localStorage.setItem('cart', JSON.stringify(cart));
-  updateCartCount();
-  renderCartItems();
+  try {
+    const cartData = JSON.stringify(cart.filter(item => 
+      item.id && item.name && item.price > 0 && item.quantity > 0
+    ));
+    localStorage.setItem('cart', cartData);
+    
+    updateCartCount();
+    renderCartItems();
+    
+    Logger.info(`Carrinho atualizado: ${cart.length} tipos de produtos`);
+  } catch (error) {
+    Logger.error('Erro ao atualizar carrinho:', error);
+  }
 }
 
 function updateCartCount() {
   const cartCount = document.getElementById('cart-count');
+  if (!cartCount) return;
+  
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+  const currentCount = parseInt(cartCount.textContent) || 0;
   
   if (totalItems > 0) {
     cartCount.textContent = totalItems;
     cartCount.classList.remove('hidden');
+    
+    if (totalItems !== currentCount) {
+      cartCount.classList.add('animate-bounce');
+      setTimeout(() => cartCount.classList.remove('animate-bounce'), 600);
+    }
   } else {
     cartCount.classList.add('hidden');
   }
@@ -457,13 +810,19 @@ function renderCartItems() {
   const cartItems = document.getElementById('cart-items');
   const cartTotal = document.getElementById('cart-total');
   
+  if (!cartItems || !cartTotal) return;
+  
   if (cart.length === 0) {
     cartItems.innerHTML = `
-      <div class="flex flex-col items-center justify-center h-full text-gray-500 py-12">
-        <i class="fas fa-shopping-cart text-4xl mb-4"></i>
-        <p>Seu carrinho está vazio</p>
-        <button class="mt-4 bg-primary text-white px-4 py-2 rounded" onclick="toggleCart()">
-          Ver cardápio
+      <div class="flex flex-col items-center justify-center h-full text-gray-500 py-16">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <i class="fas fa-shopping-cart text-2xl text-gray-400"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-600 mb-2">Carrinho vazio</h3>
+        <p class="text-sm text-gray-500 mb-6 text-center">Adicione produtos do nosso delicioso cardápio!</p>
+        <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition-colors" 
+                onclick="toggleCart()">
+          <i class="fas fa-utensils mr-2"></i>Ver Cardápio
         </button>
       </div>
     `;
@@ -472,203 +831,606 @@ function renderCartItems() {
   }
   
   cartItems.innerHTML = cart.map(item => `
-    <div class="flex items-center mb-4 pb-4 border-b">
-      <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+    <div class="flex items-center mb-4 pb-4 border-b border-gray-100 cart-item" data-id="${item.id}">
+      <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
         ${item.image ? 
-          `<img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">` : 
-          `<i class="fas fa-image text-gray-400"></i>`
+          `<img src="${item.image}" 
+               alt="${item.name}" 
+               class="w-16 h-16 object-cover rounded-lg"
+               loading="lazy"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
+          ''
         }
-      </div>
-      <div class="ml-4 flex-1 min-w-0">
-        <h3 class="font-bold truncate">${item.name}</h3>
-        <p class="text-primary font-bold">R$ ${item.price.toFixed(2)}</p>
-        ${item.is_promo ? '<span class="text-xs bg-red-100 text-red-600 px-1 rounded">PROMO</span>' : ''}
-        <div class="flex items-center mt-1">
-          <button class="decrease-quantity bg-gray-200 rounded-lg w-6 h-6 flex items-center justify-center" data-id="${item.id}">-</button>
-          <span class="mx-2 font-medium">${item.quantity}</span>
-          <button class="increase-quantity bg-gray-200 rounded-lg w-6 h-6 flex items-center justify-center" data-id="${item.id}">+</button>
+        <div class="w-16 h-16 ${item.image ? 'hidden' : 'flex'} items-center justify-center">
+          <i class="fas fa-utensils text-gray-400"></i>
         </div>
       </div>
-      <button class="remove-item text-red-500 ml-2 p-2" data-id="${item.id}" title="Remover">
+      
+      <div class="ml-4 flex-1 min-w-0">
+        <h3 class="font-bold text-gray-800 truncate">${item.name}</h3>
+        
+        <div class="flex items-center gap-2 mb-2">
+          <span class="font-bold text-primary">R$ ${item.price.toFixed(2)}</span>
+          ${item.is_promo ? `
+            <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">
+              <i class="fas fa-fire mr-1"></i>PROMO
+            </span>
+          ` : ''}
+        </div>
+        
+        ${item.is_promo && item.original_price ? `
+          <div class="text-xs text-gray-500">
+            Preço original: <span class="line-through">R$ ${item.original_price.toFixed(2)}</span>
+            <span class="text-green-600 font-medium ml-1">
+              (${Math.round(((item.original_price - item.price) / item.original_price) * 100)}% off)
+            </span>
+          </div>
+        ` : ''}
+        
+        <div class="flex items-center mt-2">
+          <button class="decrease-quantity bg-gray-200 hover:bg-gray-300 rounded-lg w-8 h-8 flex items-center justify-center transition-colors" 
+                  data-id="${item.id}" 
+                  title="Diminuir quantidade">
+            <i class="fas fa-minus text-xs"></i>
+          </button>
+          <span class="mx-3 font-bold text-lg min-w-[2rem] text-center">${item.quantity}</span>
+          <button class="increase-quantity bg-gray-200 hover:bg-gray-300 rounded-lg w-8 h-8 flex items-center justify-center transition-colors" 
+                  data-id="${item.id}" 
+                  title="Aumentar quantidade">
+            <i class="fas fa-plus text-xs"></i>
+          </button>
+        </div>
+        
+        <div class="text-sm text-gray-600 mt-1">
+          Subtotal: <span class="font-semibold">R$ ${(item.price * item.quantity).toFixed(2)}</span>
+        </div>
+      </div>
+      
+      <button class="remove-item text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg p-2 ml-2 transition-colors" 
+              data-id="${item.id}" 
+              title="Remover item">
         <i class="fas fa-trash"></i>
       </button>
     </div>
   `).join('');
   
-  // Calcular total
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const savings = cart.reduce((sum, item) => {
+    if (item.is_promo && item.original_price) {
+      return sum + ((item.original_price - item.price) * item.quantity);
+    }
+    return sum;
+  }, 0);
   
-  // Adicionar event listeners para os botões de quantidade
+  cartTotal.innerHTML = `
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span>Itens (${totalItems})</span>
+        <span>R$ ${subtotal.toFixed(2)}</span>
+      </div>
+      ${savings > 0 ? `
+        <div class="flex justify-between text-green-600">
+          <span><i class="fas fa-tags mr-1"></i>Você economiza</span>
+          <span>-R$ ${savings.toFixed(2)}</span>
+        </div>
+      ` : ''}
+      <hr class="border-gray-200">
+      <div class="flex justify-between text-lg font-bold text-gray-800">
+        <span>Total</span>
+        <span>R$ ${subtotal.toFixed(2)}</span>
+      </div>
+    </div>
+  `;
+  
+  setupCartItemEventListeners();
+}
+
+function setupCartItemEventListeners() {
+  // AUMENTAR QUANTIDADE
   document.querySelectorAll('.increase-quantity').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
       const itemId = button.dataset.id;
-      const item = cart.find(item => item.id == itemId);
-      if (item) {
-        item.quantity += 1;
-        updateCart();
-      }
+      changeQuantity(itemId, 1);
     });
   });
   
+  // DIMINUIR QUANTIDADE
   document.querySelectorAll('.decrease-quantity').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
       const itemId = button.dataset.id;
-      const item = cart.find(item => item.id == itemId);
-      if (item) {
-        item.quantity -= 1;
-        if (item.quantity <= 0) {
-          cart = cart.filter(i => i.id != itemId);
-        }
-        updateCart();
-      }
+      changeQuantity(itemId, -1);
     });
   });
   
+  // REMOVER ITEM
   document.querySelectorAll('.remove-item').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
       const itemId = button.dataset.id;
-      cart = cart.filter(item => item.id != itemId);
-      updateCart();
+      removeFromCart(itemId);
     });
   });
+}
+
+function changeQuantity(itemId, change) {
+  try {
+    const item = cart.find(item => item.id == itemId);
+    if (!item) return;
+    
+    const newQuantity = item.quantity + change;
+    
+    if (newQuantity <= 0) {
+      removeFromCart(itemId);
+      return;
+    }
+    
+    if (newQuantity > 99) {
+      showToast('Quantidade máxima atingida (99)', 'warning');
+      return;
+    }
+    
+    item.quantity = newQuantity;
+    updateCart();
+    
+    Logger.info(`Quantidade alterada: ${item.name} -> ${newQuantity}`);
+  } catch (error) {
+    Logger.error('Erro ao alterar quantidade:', error);
+  }
+}
+
+function removeFromCart(itemId) {
+  try {
+    const itemIndex = cart.findIndex(item => item.id == itemId);
+    if (itemIndex === -1) return;
+    
+    const itemName = cart[itemIndex].name;
+    cart.splice(itemIndex, 1);
+    
+    updateCart();
+    showToast(`${itemName} removido do carrinho`, 'info');
+    
+    Logger.info(`Item removido: ${itemName}`);
+  } catch (error) {
+    Logger.error('Erro ao remover item:', error);
+  }
 }
 
 function toggleCart() {
   const cartSidebar = document.getElementById('cart-sidebar');
   const cartOverlay = document.getElementById('cart-overlay');
+  const body = document.body;
   
-  if (cartSidebar.classList.contains('translate-x-full')) {
-    cartSidebar.classList.remove('translate-x-full');
-    cartOverlay.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    renderCartItems();
-  } else {
+  if (!cartSidebar || !cartOverlay) return;
+  
+  const isOpen = !cartSidebar.classList.contains('translate-x-full');
+  
+  if (isOpen) {
     cartSidebar.classList.add('translate-x-full');
-    cartOverlay.classList.add('hidden');
-    document.body.style.overflow = 'auto';
+    cartOverlay.classList.add('opacity-0');
+    setTimeout(() => {
+      cartOverlay.classList.add('hidden');
+      body.style.overflow = 'auto';
+    }, 300);
+  } else {
+    cartOverlay.classList.remove('hidden');
+    setTimeout(() => {
+      cartSidebar.classList.remove('translate-x-full');
+      cartOverlay.classList.remove('opacity-0');
+      body.style.overflow = 'hidden';
+    }, 10);
+    
+    renderCartItems();
+  }
+  
+  Logger.info(`Carrinho ${isOpen ? 'fechado' : 'aberto'}`);
+}
+
+// ✅ CHECKOUT E FUNÇÕES RESTANTES
+function checkout() {
+  try {
+    const addressInput = document.getElementById('delivery-address');
+    if (!addressInput) {
+      showError('Campo de endereço não encontrado');
+      return;
+    }
+    
+    const address = addressInput.value.trim();
+    
+    if (cart.length === 0) {
+      showToast('Seu carrinho está vazio!', 'warning');
+      return;
+    }
+    
+    if (!address) {
+      showToast('Por favor, informe o endereço de entrega.', 'warning');
+      addressInput.focus();
+      return;
+    }
+    
+    if (address.length < 10) {
+      showToast('Por favor, informe um endereço mais detalhado.', 'warning');
+      addressInput.focus();
+      return;
+    }
+    
+    if (!isBusinessOpen()) {
+      showToast('Estamos fechados no momento. Horário: 9h às 22h', 'warning');
+      return;
+    }
+    
+    const orderSummary = generateOrderSummary(address);
+    
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Confirmar Pedido',
+        html: orderSummary.preview,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Pedido',
+        cancelButtonText: 'Revisar',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          sendWhatsAppOrder(orderSummary.message);
+        }
+      });
+    } else {
+      if (confirm('Deseja enviar este pedido?')) {
+        sendWhatsAppOrder(orderSummary.message);
+      }
+    }
+    
+  } catch (error) {
+    Logger.error('Erro no checkout:', error);
+    showError('Erro ao processar pedido. Tente novamente.');
   }
 }
 
-function checkout() {
-  const address = document.getElementById('delivery-address').value.trim();
-  
-  if (cart.length === 0) {
-    showError('Seu carrinho está vazio!');
-    return;
-  }
-  
-  if (!address) {
-    showError('Por favor, informe o endereço de entrega.');
-    return;
-  }
-  
+function isBusinessOpen() {
+  const now = new Date();
+  const hour = now.getHours();
+  return hour >= CONFIG.BUSINESS_HOURS.start && hour < CONFIG.BUSINESS_HOURS.end;
+}
+
+function generateOrderSummary(address) {
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const savings = cart.reduce((sum, item) => {
+    if (item.is_promo && item.original_price) {
+      return sum + ((item.original_price - item.price) * item.quantity);
+    }
+    return sum;
+  }, 0);
   
-  // Criar mensagem para WhatsApp
-  let message = `*Pedido - Ignite Cardápio Online*%0A%0A`;
-  message += `*Endereço de entrega:*%0A${address}%0A%0A`;
-  message += `*Itens do pedido:*%0A`;
+  let message = `*🍽️ Pedido - Cardápio Online*%0A%0A`;
+  message += `📍 *Endereço de entrega:*%0A${encodeURIComponent(address)}%0A%0A`;
+  message += `🛒 *Itens do pedido:*%0A`;
   
-  cart.forEach(item => {
-    message += `➡️ ${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`;
-    if (item.is_promo) message += ` 🔥PROMO`;
+  cart.forEach((item, index) => {
+    message += `${index + 1}. ${item.quantity}x ${encodeURIComponent(item.name)}`;
+    message += ` - R$ ${(item.price * item.quantity).toFixed(2)}`;
+    if (item.is_promo) message += ` 🔥`;
     message += `%0A`;
   });
   
-  message += `%0A*Total: R$ ${total.toFixed(2)}*%0A%0A`;
-  message += `*Observações:* ...`;
+  message += `%0A💰 *Resumo:*%0A`;
+  message += `• Total de itens: ${totalItems}%0A`;
+  if (savings > 0) {
+    message += `• Economia: R$ ${savings.toFixed(2)}%0A`;
+  }
+  message += `• *Total: R$ ${total.toFixed(2)}*%0A%0A`;
+  message += `🕐 Pedido realizado em: ${new Date().toLocaleString('pt-BR')}%0A%0A`;
+  message += `💬 *Observações:* (adicione aqui)`;
   
-  // Abrir WhatsApp
-  window.open(`https://wa.me/+5592985130951?text=${message}`, '_blank');
+  const preview = `
+    <div class="text-left space-y-3">
+      <div><strong>📍 Endereço:</strong><br>${address}</div>
+      <div><strong>🛒 Itens (${totalItems}):</strong><br>
+        ${cart.map(item => `• ${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('<br>')}
+      </div>
+      <div><strong>💰 Total: R$ ${total.toFixed(2)}</strong></div>
+      ${savings > 0 ? `<div class="text-green-600">✨ Você economiza: R$ ${savings.toFixed(2)}</div>` : ''}
+    </div>
+  `;
+  
+  return { message, preview };
+}
+
+function sendWhatsAppOrder(message) {
+  try {
+    const phoneNumber = '5592985130951';
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    
+    window.open(whatsappUrl, '_blank');
+    
+    setTimeout(() => {
+      cart = [];
+      updateCart();
+      toggleCart();
+      showToast('Pedido enviado! Aguarde nosso contato.', 'success');
+    }, 1000);
+    
+    Logger.info('Pedido enviado via WhatsApp');
+    
+  } catch (error) {
+    Logger.error('Erro ao enviar pedido:', error);
+    showError('Erro ao abrir WhatsApp. Tente novamente.');
+  }
 }
 
 function checkBusinessHours() {
+  const statusElement = document.getElementById('schedule-status');
+  if (!statusElement) return;
+  
   const now = new Date();
   const hour = now.getHours();
-  const statusElement = document.getElementById('schedule-status');
+  const isOpen = hour >= CONFIG.BUSINESS_HOURS.start && hour < CONFIG.BUSINESS_HOURS.end;
   
-  if (hour >= 9 && hour < 22) {
+  if (isOpen) {
+    const closingTime = CONFIG.BUSINESS_HOURS.end;
+    const hoursLeft = closingTime - hour;
+    
     statusElement.innerHTML = `
-      <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-        <strong class="font-bold"><i class="fas fa-store mr-2"></i>Estamos abertos!</strong>
-        <span class="block sm:inline">Fazemos entregas até às 22:00.</span>
+      <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6" role="alert">
+        <div class="flex items-center">
+          <i class="fas fa-store text-green-600 mr-3"></i>
+          <div>
+            <strong class="font-bold">🟢 Estamos abertos!</strong>
+            <p class="text-sm mt-1">
+              Fazemos entregas até às ${closingTime}:00h 
+              ${hoursLeft <= 2 ? `(⏰ Fechamos em ${hoursLeft}h)` : ''}
+            </p>
+          </div>
+        </div>
       </div>
     `;
   } else {
+    const nextOpen = hour < CONFIG.BUSINESS_HOURS.start ? 
+      `hoje às ${CONFIG.BUSINESS_HOURS.start}:00h` : 
+      `amanhã às ${CONFIG.BUSINESS_HOURS.start}:00h`;
+    
     statusElement.innerHTML = `
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-        <strong class="font-bold"><i class="fas fa-store-slash mr-2"></i>Estamos fechados no momento.</strong>
-        <span class="block sm:inline">Nosso horário de funcionamento é de Seg à Dom - 09:00 às 22:00</span>
+      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6" role="alert">
+        <div class="flex items-center">
+          <i class="fas fa-store-slash text-red-600 mr-3"></i>
+          <div>
+            <strong class="font-bold">🔴 Estamos fechados</strong>
+            <p class="text-sm mt-1">
+              Horário: Segunda a Domingo - ${CONFIG.BUSINESS_HOURS.start}:00h às ${CONFIG.BUSINESS_HOURS.end}:00h<br>
+              Reabrimos ${nextOpen}
+            </p>
+          </div>
+        </div>
       </div>
     `;
   }
 }
 
-// Utilitários
+function startAutoUpdates() {
+  if (updateInterval) return;
+  
+  updateInterval = setInterval(async () => {
+    try {
+      await checkForUpdates();
+    } catch (error) {
+      Logger.error('Erro na atualização automática:', error);
+    }
+  }, CONFIG.AUTO_UPDATE_INTERVAL);
+  
+  Logger.info('Atualizações automáticas iniciadas');
+}
+
+function stopAutoUpdates() {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+    updateInterval = null;
+    Logger.info('Atualizações automáticas pausadas');
+  }
+}
+
 function showLoading() {
   const menu = document.getElementById('menu');
-  menu.innerHTML = `
-    <div class="col-span-full flex justify-center items-center py-12">
-      <div class="loading text-primary"></div>
-      <span class="ml-2 text-gray-600">Carregando cardápio...</span>
+  const newProducts = document.getElementById('new-products');
+  
+  const loadingHTML = `
+    <div class="flex justify-center items-center py-16">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p class="text-gray-600 animate-pulse">Carregando delícias...</p>
+      </div>
     </div>
   `;
+  
+  if (menu) {
+    menu.innerHTML = `<div class="col-span-full">${loadingHTML}</div>`;
+  }
+  
+  if (newProducts) {
+    newProducts.innerHTML = loadingHTML;
+  }
 }
 
 function hideLoading() {
-  // O conteúdo será preenchido pela renderização dos produtos
+  // Loading será substituído pelo conteúdo renderizado
 }
 
-function showError(message) {
-  const menu = document.getElementById('menu');
-  menu.innerHTML = `
-    <div class="col-span-full text-center py-12">
-      <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
-      <p class="text-red-500">${message}</p>
-      <button class="mt-4 bg-primary text-white px-4 py-2 rounded" onclick="location.reload()">
-        <i class="fas fa-redo mr-2"></i>Tentar novamente
-      </button>
-    </div>
-  `;
-}
-
-function showToast(message) {
+function showError(message, callback = null) {
   if (typeof Swal !== 'undefined') {
     Swal.fire({
-      toast: true,
-      position: 'bottom-end',
-      icon: 'success',
-      title: message,
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
+      icon: 'error',
+      title: 'Ops! Algo deu errado',
+      text: message,
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#ef4444'
+    }).then(() => {
+      if (callback) callback();
     });
   } else {
-    // Fallback simples
-    console.log('Toast:', message);
+    alert(message);
+    if (callback) callback();
+  }
+  
+  Logger.error('Erro mostrado ao usuário:', message);
+}
+
+function showToast(message, type = 'success') {
+  if (typeof Swal !== 'undefined') {
+    const icons = {
+      success: 'success',
+      error: 'error',
+      warning: 'warning',
+      info: 'info'
+    };
+    
+    const colors = {
+      success: '#10b981',
+      error: '#ef4444',
+      warning: '#f59e0b',
+      info: '#3b82f6'
+    };
+    
+    Swal.fire({
+      toast: true,
+      position: 'top-start',
+      icon: icons[type] || 'info',
+      title: message,
+      showConfirmButton: false,
+      timer: type === 'error' ? 5000 : 3000,
+      timerProgressBar: true,
+      background: '#ffffff',
+      color: '#374151',
+      iconColor: colors[type] || colors.info,
+      customClass: {
+        popup: 'swal-toast-custom'
+      }
+    });
+  } else {
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toast-container';
+      toastContainer.className = 'fixed bottom-4 right-4 z-50 space-y-2';
+      document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm transform transition-all duration-300 translate-x-full`;
+    toast.innerHTML = `
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <i class="fas fa-${type === 'success' ? 'check-circle text-green-500' : 
+                           type === 'error' ? 'exclamation-circle text-red-500' :
+                           type === 'warning' ? 'exclamation-triangle text-yellow-500' :
+                           'info-circle text-blue-500'} text-lg"></i>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-gray-900">${message}</p>
+        </div>
+      </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.classList.remove('translate-x-full');
+    }, 10);
+    
+    setTimeout(() => {
+      toast.classList.add('translate-x-full');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, type === 'error' ? 5000 : 3000);
   }
 }
 
-// Forçar atualização manual
 window.forceRefresh = async function() {
-  updateDebug('Atualização forçada solicitada');
-  localStorage.removeItem('lastUpdateTime');
-  await loadProducts();
-  showToast('Cardápio atualizado!');
+  if (isLoading) {
+    showToast('Carregamento já em andamento...', 'info');
+    return;
+  }
+  
+  try {
+    Logger.info('Atualização forçada solicitada pelo usuário');
+    localStorage.removeItem('lastUpdateTime');
+    cacheManager.clear();
+    
+    await loadProducts();
+    showToast('Cardápio atualizado com sucesso!', 'success');
+    
+  } catch (error) {
+    Logger.error('Erro na atualização forçada:', error);
+    showError('Erro ao atualizar cardápio');
+  }
 };
 
-// Adicionar botão de atualização manual no header (opcional)
 function addRefreshButton() {
+  if (document.getElementById('refresh-button')) return;
+  
   const header = document.querySelector('header .container');
-  if (header) {
-    const refreshBtn = document.createElement('button');
-    refreshBtn.innerHTML = '<i class="fas fa-sync-alt mr-1"></i>Atualizar';
-    refreshBtn.className = 'fixed bottom-4 left-4 sm:relative sm:bottom-auto sm:left-auto bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm';
-    refreshBtn.onclick = window.forceRefresh;
-    header.appendChild(refreshBtn);
+  if (!header) return;
+  
+  const refreshBtn = document.createElement('button');
+  refreshBtn.id = 'refresh-button';
+  refreshBtn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Atualizar';
+  refreshBtn.className = 'hidden sm:inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors duration-200 shadow-sm hover:shadow-md';
+  refreshBtn.onclick = window.forceRefresh;
+  refreshBtn.title = 'Atualizar cardápio (F5)';
+  
+  header.appendChild(refreshBtn);
+  
+  const mobileBtn = document.createElement('button');
+  mobileBtn.id = 'mobile-refresh-button';
+  mobileBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+  mobileBtn.className = 'fixed bottom-20 left-4 sm:hidden bg-blue-500 hover:bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-40 transition-all duration-200';
+  mobileBtn.onclick = window.forceRefresh;
+  mobileBtn.title = 'Atualizar cardápio';
+  
+  document.body.appendChild(mobileBtn);
+}
+
+function monitorConnectivity() {
+  window.addEventListener('online', () => {
+    Logger.info('Conexão restaurada');
+    showToast('Conexão restaurada!', 'success');
+    checkForUpdates();
+  });
+  
+  window.addEventListener('offline', () => {
+    Logger.warn('Conexão perdida');
+    showToast('Conexão perdida. Usando dados salvos.', 'warning');
+  });
+}
+
+function initPerformanceMonitoring() {
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const observer = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        Logger.info(`Performance [${entry.entryType}]:`, {
+          name: entry.name,
+          duration: entry.duration,
+          startTime: entry.startTime
+        });
+      });
+    });
+    
+    try {
+      observer.observe({ entryTypes: ['measure', 'navigation'] });
+    } catch (error) {
+      Logger.warn('Performance monitoring não suportado:', error);
+    }
   }
 }
 
-// Inicializar botão de atualização
-setTimeout(addRefreshButton, 1000);
+// ✅ INICIALIZAÇÃO FINAL
+setTimeout(() => {
+  addRefreshButton();
+  monitorConnectivity();
+  initPerformanceMonitoring();
+}, 2000);

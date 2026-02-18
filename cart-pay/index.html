@@ -3,106 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#069c54">
+  <meta name="description" content="Ignite - Cardápio Online com Delivery">
+  
+  <!-- Preconnect para otimização -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  
   <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
   <title>Ignite - Cardápio Online</title>
   <link rel="manifest" href="../manifest.json">
-  <!-- Tailwind CSS via CDN -->
+  
+  <!-- Fix de Erros - Load PRIMEIRO e SEM DEFER -->
+  <script src="js/fix-errors.js"></script>
+  
+  <!-- Tailwind CSS via CDN - SEM DEFER para aplicar estilos -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- CSS Melhorado -->
+  <link rel="stylesheet" href="styles-improved.css">
+  <!-- Header Styles -->
+  <link rel="stylesheet" href="css/header-styles.css">
+  <!-- Cart Improved Styles -->
+  <link rel="stylesheet" href="css/cart-improved.css">
+  <!-- Payment Styles -->
+  <link rel="stylesheet" href="css/payment-styles.css">
  
   <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   
-  <!-- Configuração do Tailwind -->
+  <!-- ========== SUPABASE CONFIG ========== -->
+  <script src="js/supabase-config.js" defer></script>
+  
+  <!-- Configuração do Tailwind - APÓS carregar -->
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#069c54',
-            secondary: '#048654',
+    // Aguardar tailwind carregar
+    if (typeof tailwind !== 'undefined') {
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#069C54',
+              'primary-alt': '#048654',
+              'title': '#393939',
+              'text': '#707070',
+              'text-light': '#A6A6A6',
+              'body': '#FBFEFD',
+              'container': '#FFFFFF',
+            },
+            spacing: {
+              'header-height': '3rem',
+            }
           }
         }
       }
     }
   </script>
-  
-  <style>
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .scrollbar-hide {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    
-    #cart-sidebar {
-      transition: transform 0.3s ease-in-out;
-    }
-    
-    .produto-card {
-      animation: fadeIn 0.5s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body class="font-sans bg-gray-100">
-  <!-- Header -->
-  <header class="bg-primary text-white p-4 shadow-md sticky top-0 z-10">
-    <div class="container mx-auto flex flex-col items-center text-center">
-      <img src="./assets/logo.png" alt="Ignite Logo" class="w-17 h-16 rounded-full mb-2 object-cover">
-      <h1 class="text-2xl font-bold">Ignite - Cardápio Online</h1>
-      <div class="flex flex-wrap justify-center gap-x-4 mt-1">
-        <p class="text-sm flex items-center">
-          <i class="fas fa-map-marker-alt mr-1"></i> Vieiralves, 04 - Manaus - AM
-        </p>
-        <p class="text-sm flex items-center">
-          <i class="fas fa-map-marker-alt mr-1"></i> R. Fridolim Herthal Júnior, 97 - Itajaí - SC
-        </p>
-      </div>
-      <p class="text-sm mt-1 flex items-center">
-        <i class="far fa-clock mr-1"></i> Seg á Dom - 09:00 às 22:00
-      </p>
 
-      <!-- Botão do carrinho responsivo -->
-      <button id="cart-button" class="fixed bottom-4 right-4 sm:relative sm:bottom-auto sm:right-auto flex items-center bg-primary hover:bg-secondary text-white px-4 py-3 rounded-full shadow-lg z-40 sm:rounded-lg transition-colors duration-200">
-        <i class="fas fa-shopping-cart"></i>
-        <span id="cart-count" class="ml-2 bg-white text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hidden">0</span>
-      </button>
+</head>
+<body class="font-sans" style="font-family: 'Poppins', sans-serif; background-color: var(--body-color);">
+  <!-- Header -->
+  <header class="sticky top-0 z-30 shadow-md">
+    <div class="container mx-auto">
+      <div class="header__logo-section">
+        <img src="./assets/logo.png" alt="Ignite Logo" class="header__logo">
+        <div class="header__title">
+          <h1>🔥 Ignite</h1>
+          <p>Cardápio Online</p>
+        </div>
+      </div>
+
+      <div class="header__info">
+        <div class="header__info-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Vieiralves, 04 - Manaus - AM</span>
+        </div>
+        <div class="header__info-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>R. Fridolim Herthal Júnior, 97 - Itajaí - SC</span>
+        </div>
+        <div class="header__info-item">
+          <i class="far fa-clock"></i>
+          <span>Seg á Dom - 09:00 às 22:00</span>
+        </div>
+      </div>
+
+      <div class="header__cart">
+        <button id="cart-button" class="flex items-center gap-2 bg-first-color hover:bg-first-color-alt text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105">
+          <i class="fas fa-shopping-cart text-lg"></i>
+          <span id="cart-count" class="bg-white text-primary rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Mensagem de status do horário -->
   <div id="schedule-status" class="container mx-auto px-4"></div>
 
-  <main class="container mx-auto p-4">
+  <main class="container mx-auto px-4 py-8">
 
     <!-- Seção Novos Produtos -->
-    <section class="mb-8">
-      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
-        <i class="fas fa-star mr-2 text-yellow-500"></i> Novidades
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i class="fas fa-star text-yellow-500"></i> 
+        <span style="color: var(--title-color);">Novidades</span>
       </h2>
       <div id="new-products" class="flex overflow-x-auto pb-4 gap-4 scrollbar-hide">
         <!-- Novos produtos serão carregados via JS -->
@@ -110,6 +119,16 @@
     </section>
     
     <!-- Menu Principal -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i class="fas fa-utensils" style="color: var(--first-color);"></i>
+        <span style="color: var(--title-color);">Menu Completo</span>
+      </h2>
+      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Produtos serão carregados aqui via JavaScript -->
+      </div>
+    </section>
+
     <section>
       <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
         <i class="fas fa-utensils mr-2 text-primary"></i> Cardápio
@@ -169,42 +188,66 @@
   </main>
                                 
   <!-- Carrinho Sidebar -->
-  <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full">
-    <div class="p-4 border-b sticky top-0 bg-white z-10">
+  <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full overflow-hidden">
+    <!-- Header -->
+    <div class="p-4 border-b sticky top-0 z-10" style="background: linear-gradient(135deg, var(--first-color) 0%, var(--first-color-alt) 100%); color: white;">
       <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold flex items-center">
-          <i class="fas fa-shopping-cart mr-2"></i> Seu Pedido
+        <h2 class="text-xl font-bold flex items-center gap-2">
+          <i class="fas fa-shopping-cart"></i> Seu Pedido
         </h2>
-        <button id="close-cart" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <button id="close-cart" class="text-white hover:opacity-80 text-2xl transition-opacity">&times;</button>
       </div>
     </div>
     
     <!-- Itens do carrinho -->
-    <div id="cart-items" class="flex-1 overflow-y-auto p-4">
+    <div id="cart-items" class="flex-1 overflow-y-auto p-4" style="background-color: var(--body-color);">
       <!-- Itens serão inseridos aqui pelo JavaScript -->
     </div>
     
     <!-- Resumo e checkout -->
-    <div id="cart-summary" class="border-t p-4 bg-white sticky bottom-0">
+    <div id="cart-summary" class="border-t p-4 sticky bottom-0" style="background: linear-gradient(135deg, var(--body-color) 0%, rgba(6, 156, 84, 0.05) 100%);">
+      <!-- Endereço -->
       <div class="mb-4">
-        <label for="delivery-address" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-          <i class="fas fa-map-marked-alt mr-2 text-primary"></i> Endereço de entrega:
+        <label for="delivery-address" class="block text-sm font-medium mb-1 flex items-center gap-2" style="color: var(--title-color);">
+          <i class="fas fa-map-marked-alt" style="color: var(--first-color);"></i>
+          <span>Endereço de entrega:</span>
         </label>
         <textarea 
           id="delivery-address" 
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" 
+          class="w-full px-4 py-2 border-2 border-opacity-20 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 resize-none" 
+          style="border-color: var(--first-color); focus: border-color: var(--first-color);"
           rows="3" 
           placeholder="Digite seu endereço completo (Rua, número, bairro, complemento)..."
         ></textarea>
       </div>
+
+    <!-- Telefone (adicionar antes do endereço ou depois) -->
+    <div class="mb-4">
+      <label for="delivery-phone" class="block text-sm font-medium mb-1 flex items-center gap-2" style="color: var(--title-color);">
+        <i class="fas fa-phone" style="color: var(--first-color);"></i>
+        <span>Telefone para contato:</span>
+      </label>
+      <input 
+        type="tel" 
+        id="delivery-phone" 
+        class="w-full px-4 py-2 border-2 border-opacity-20 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50" 
+        style="border-color: var(--first-color);"
+        placeholder="(99) 99999-9999"
+        maxlength="15"
+      >
+    </div>
+
       
-      <div class="flex justify-between items-center mb-4">
-        <span class="font-bold text-lg">Total:</span>
-        <span id="cart-total" class="font-bold text-xl">R$ 0,00</span>
+      <!-- Total -->
+      <div class="flex justify-between items-center mb-4 p-3 rounded-lg" style="background-color: rgba(6, 156, 84, 0.1);">
+        <span class="font-bold text-lg" style="color: var(--title-color);">Total:</span>
+        <span id="cart-total" class="font-bold text-2xl" style="color: var(--first-color);">R$ 0,00</span>
       </div>
       
-      <button id="checkout-button" class="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
-        <i class="fab fa-whatsapp mr-2 text-xl"></i> Finalizar pedido via WhatsApp
+      <!-- Botão WhatsApp -->
+      <button id="checkout-button" class="w-full text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--first-color) 0%, var(--first-color-alt) 100%);">
+        <i class="fab fa-whatsapp text-xl"></i>
+        <span>Finalizar via WhatsApp</span>
       </button>
     </div>
   </div>
@@ -212,8 +255,21 @@
   <!-- Overlay do carrinho -->
   <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-  <script src="js/script.js"></script>
- <script src="js/core/product-loader.js"></script>
+ 
+  <!-- ========== PERFORMANCE OPTIMIZER ========== -->
+  <script src="../State/performance-optimizer.js" defer></script>
+
+  <!-- ========== CART MANAGER ========== -->
+  <script src="js/cart-manager.js" defer></script>
+
+  <!-- ========== PAYMENT MANAGER ========== -->
+  <script src="js/payment-manager.js" defer></script>
+
+  <!-- ========== CONSOLE TESTER (Development) ========== -->
+  <script src="js/console-tester.js" defer></script>
+
+  <script src="js/script.js" defer></script>
+  <script src="js/core/product-loader.js" defer></script>
 
 </body>
 </html>

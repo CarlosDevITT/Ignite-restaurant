@@ -1,0 +1,383 @@
+/* ============================================
+   HEADER MELHORADO - IGNITE RESTAURANT
+   ============================================ */
+
+:root {
+  --first-color: #069C54;
+  --first-color-alt: #048654;
+  --title-color: #393939;
+  --text-color: #707070;
+  --text-light: #A6A6A6;
+  --body-color: #FBFEFD;
+  --container-color: #FFFFFF;
+  --shadow: 0 8px 24px rgba(6, 156, 84, 0.15);
+  --shadow-hover: 0 12px 32px rgba(6, 156, 84, 0.2);
+}
+
+/* ========== HEADER PRINCIPAL ========== */
+header {
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--first-color-alt) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: var(--shadow);
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+header .container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 1rem;
+}
+
+/* Logo e Título */
+.header__logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeInLeft 0.6s ease-out;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.header__logo {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.header__logo:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.header__title {
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+
+.header__title h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header__title p {
+  font-size: 0.875rem;
+  margin: 0;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+/* Informações do Restaurante */
+.header__info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  color: white;
+  font-size: 0.875rem;
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header__info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.header__info-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(5px);
+}
+
+.header__info-item i {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  min-width: 1rem;
+}
+
+.header__info-item span {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Cart Button */
+.header__cart {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  animation: fadeInRight 0.6s ease-out 0.2s both;
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+#cart-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  color: var(--first-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+}
+
+#cart-button:hover {
+  background: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+#cart-button:active {
+  transform: translateY(-1px);
+}
+
+#cart-button i {
+  font-size: 1.25rem;
+}
+
+#cart-count {
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--first-color-alt) 100%);
+  color: white;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  animation: bounceIn 0.5s ease;
+}
+
+@keyframes bounceIn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Status do Horário */
+#schedule-status {
+  display: flex;
+  justify-content: center;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+.schedule-badge {
+  background: rgba(6, 156, 84, 0.15);
+  border: 2px solid var(--first-color);
+  color: var(--first-color);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideInDown 0.4s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.schedule-badge.aberto {
+  background: rgba(6, 156, 84, 0.1);
+  border-color: var(--first-color);
+}
+
+.schedule-badge.aberto i {
+  color: var(--first-color);
+}
+
+.schedule-badge.fechado {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: #DC2626;
+  color: #DC2626;
+}
+
+.schedule-badge.fechado i {
+  color: #DC2626;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (min-width: 768px) {
+  header .container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 1.5rem 2rem;
+  }
+
+  .header__logo-section {
+    flex-shrink: 0;
+    animation: fadeInLeft 0.6s ease-out;
+  }
+
+  .header__info {
+    grid-template-columns: auto auto;
+    gap: 1.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header__info-item {
+    white-space: nowrap;
+  }
+
+  .header__cart {
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header__logo {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .header__title h1 {
+    font-size: 2rem;
+  }
+
+  .header__info {
+    grid-template-columns: 1fr 1fr auto;
+  }
+}
+
+/* ========== DARK MODE ========== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --body-color: #1a1a1a;
+    --container-color: #2d2d2d;
+    --title-color: #ffffff;
+    --text-color: #e0e0e0;
+  }
+
+  header {
+    background: linear-gradient(135deg, #048654 0%, #036b42 100%);
+    box-shadow: var(--shadow-hover);
+  }
+}
+
+/* ========== ANIMAÇÕES DE HOVER ========== */
+
+.header__logo-section:hover .header__logo {
+  box-shadow: 0 8px 24px rgba(6, 156, 84, 0.3);
+}
+
+/* ========== RESPONSIVO EXTRA PEQUENO ========== */
+
+@media (max-width: 480px) {
+  .header__title h1 {
+    font-size: 1.5rem;
+  }
+
+  .header__info-item {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .header__info-item i {
+    font-size: 0.9rem;
+  }
+
+  #cart-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  #cart-button i {
+    font-size: 1.1rem;
+  }
+}
+
+/* ========== LOADING STATE ========== */
+
+.header.loading {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ========== ACCESSIBILITY ========== */
+
+@media (prefers-reduced-motion: reduce) {
+  header,
+  .header__logo-section,
+  .header__info,
+  .header__cart,
+  .header__logo,
+  #cart-button,
+  #cart-count,
+  .schedule-badge {
+    animation: none;
+  }
+}

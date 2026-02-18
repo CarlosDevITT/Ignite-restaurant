@@ -1,7 +1,47 @@
-// Configuração do Supabase
-const supabaseUrl = 'https://qgnqztsxfeugopuhyioq.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnbnF6dHN4ZmV1Z29wdWh5aW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MTg4MjEsImV4cCI6MjA3MzA5NDgyMX0.mW88-7P_Af3WMVAUT7ha4Mf0nyKJoSiNjMfuXiCllIA';
-const supabase = window.supabase?.createClient(supabaseUrl, supabaseKey);
+// Configuração do Supabase - URL e chaves
+const SUPABASE_URL = 'https://qgnqztsxfeugopuhyioq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnbnF6dHN4ZmV1Z29wdWh5aW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MTg4MjEsImV4cCI6MjA3MzA5NDgyMX0.mW88-7P_Af3WMVAUT7ha4Mf0nyKJoSiNjMfuXiCllIA';
+const SUPABASE_PUBLISHABLE_KEY = 'QPY4rsWbKIlFHTxCeshY5w_xLrl2cwN'; // Chave pública
+
+// Inicializar Supabase com segurança
+let supabase = null;
+
+function initSupabase() {
+  if (!window.supabase?.createClient) {
+    console.error('❌ Supabase JS não carregado ainda');
+    return null;
+  }
+  
+  if (!supabase) {
+    try {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase conectado com sucesso');
+      return supabase;
+    } catch (error) {
+      console.error('❌ Erro ao conectar Supabase:', error);
+      return null;
+    }
+  }
+  
+  return supabase;
+}
+
+// Inicializar quando Supabase estiver disponível
+if (window.supabase?.createClient) {
+  supabase = initSupabase();
+} else {
+  // Aguardar Supabase carregar
+  let supabaseRetries = 0;
+  const checkSupabase = setInterval(() => {
+    if (window.supabase?.createClient && !supabase) {
+      supabase = initSupabase();
+      clearInterval(checkSupabase);
+    } else if (supabaseRetries++ > 100) {
+      clearInterval(checkSupabase);
+      console.warn('⚠️ Supabase não carregou após múltiplas tentativas');
+    }
+  }, 100);
+}
 
 // ✅ CONSTANTES PARA CONFIGURAÇÃO
 const CONFIG = {

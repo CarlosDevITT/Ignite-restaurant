@@ -3,10 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#059669">
+  <meta name="description" content="Ignite - Escolha entre comer no local ou delivery">
+  
+  <!-- Preconnect para otimização -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  
   <link rel="shortcut icon" href="../assets/ignite.jpg" type="image/x-icon">
   <link rel="manifest" href="../manifest.json">
 
-  <title>Ignite restaurante Pub</title>
+  <title>Ignite - Escolha seu pedido</title>
 
   <!--========== ICONS & FONTS ==========-->
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css" rel="stylesheet">
@@ -16,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!--========== SWEETALERT2 ==========-->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
   <style>
     :root {
@@ -258,8 +266,26 @@
     <p class="footer__copy">© Ignite Restaurant. Todos os direitos reservados.</p>
   </footer>
 
-  <!-- SCRIPT -->
+  <!-- ========== SPLASH SCREEN MODULE ========== -->
+  <script src="../State/splash-module.js"></script>
   <script>
+    // Inicializar splash screen
+    new SplashScreen({
+      duration: 2500,
+      autoShow: true,
+      showOnce: true,
+      storageKey: 'igniteRoutesSplashShown'
+    });
+  </script>
+
+  <!-- ========== SECTION LOADER MODULE ========== -->
+  <script src="../State/section-loader.js" defer></script>
+
+  <!-- ========== PERFORMANCE OPTIMIZER ========== -->
+  <script src="../State/performance-optimizer.js" defer></script>
+
+  <!-- MAIN SCRIPT -->
+  <script defer>
     function selecionar(opcao) {
       if (opcao === 'lanche') {
         Swal.fire({

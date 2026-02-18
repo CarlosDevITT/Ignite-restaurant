@@ -4,8 +4,18 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="theme-color" content="#069C54">
+        <meta name="description" content="Ignite - Restaurante pub com as melhores refeições da cidade">
+        
+        <!-- Preconnect para otimização -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://cdn.jsdelivr.net">
+        <link rel="dns-prefetch" href="https://cdn.botpress.cloud">
+        
+        <!-- Favicons -->
         <link rel="shortcut icon" href="assets/ignite.jpg" type="image/x-icon">
         <link rel="manifest" href="manifest.json">
+        
         <!--========== BOX ICONS ==========-->
         <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
@@ -13,7 +23,7 @@
         <!--========== CSS ==========-->
         <link rel="stylesheet" href="styles.css">  
        
-        <title> Ignite</title>
+        <title>Ignite - Restaurante Pub</title>
     </head>
     <body>
         <!--========== SCROLL TOP ==========-->
@@ -222,27 +232,33 @@
           <p class="footer__copy">&#169; All right reserved</p>
         </footer>
 
-        <!--=============== chatbot - gordon ===============-->
-        <script src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"></script>
-        <script src="https://files.bpcontent.cloud/2025/02/23/18/20250223182920-GIQ6RVVM.js"></script>
+        <!--========== SPLASH SCREEN MODULE ==========-->
+        <script src="State/splash-module.js"></script>
+        <script>
+            // Inicializar splash screen apenas na abertura
+            new SplashScreen({
+                duration: 3000,
+                autoShow: true,
+                showOnce: true,
+                storageKey: 'igniteSplashShown'
+            });
+        </script>
+
+        <!--========== SECTION LOADER MODULE ==========-->
+        <script src="State/section-loader.js" defer></script>
+
+        <!--========== PERFORMANCE OPTIMIZER ==========-->
+        <script src="State/performance-optimizer.js" defer></script>
 
         <!--========== SCROLL REVEAL ==========-->
-        <script src="https://unpkg.com/scrollreveal"></script>
-
- <!--========== SPLASH SCREEN MODULE ==========-->
-    <script src="State/splash-module.js"></script>
-    <script>
-        // Inicializar splash screen apenas na abertura
-        new SplashScreen({
-            duration: 3000,
-            autoShow: true,
-            showOnce: true,
-            storageKey: 'igniteSplashShown'
-        });
-    </script>
+        <script src="https://unpkg.com/scrollreveal" defer></script>
 
         <!--========== MAIN JS ==========-->
-        <script src="main.js"></script>
+        <script src="main.js" defer></script>
+
+        <!--=============== CHATBOT - GORDON (Carregamento Assíncrono) ===============-->
+        <script defer src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"></script>
+        <script defer src="https://files.bpcontent.cloud/2025/02/23/18/20250223182920-GIQ6RVVM.js"></script>
                
     </body>
 </html>

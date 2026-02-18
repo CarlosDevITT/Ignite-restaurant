@@ -1,6 +1,19 @@
-// Verifica se funções essenciais existem
-if (typeof addToCart === 'undefined') {
-  console.warn('Função addToCart não encontrada. O carrinho pode não funcionar corretamente.');
+// Verifica se funções essenciais existem e aguarda disponibilidade
+let maxRetries = 50;
+let retryCount = 0;
+
+function waitForAddToCart() {
+  if (typeof addToCart === 'function') {
+    console.log('✅ Função addToCart disponível');
+    initProductLoaders();
+  } else if (retryCount < maxRetries) {
+    retryCount++;
+    setTimeout(waitForAddToCart, 100);
+  } else {
+    console.error('❌ Função addToCart não encontrada após múltiplas tentativas');
+    // Usar cartManager como fallback
+    initProductLoaders();
+  }
 }
 
 // Estado do slider integrado com os produtos existentes
@@ -8,6 +21,19 @@ let currentStoryIndex = 0;
 let isFullscreen = false;
 let autoPlayInterval;
 const storyDuration = 5000; // 5 segundos por produto
+
+// Inicializar loaders quando CartManager estiver pronto
+function initProductLoaders() {
+  initStoriesSlider();
+  attachCartListeners();
+}
+
+// Aguardar que o CartManager esteja disponível
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', waitForAddToCart);
+} else {
+  waitForAddToCart();
+}
 
 // Inicializar o slider quando os produtos forem carregados
 function initStoriesSlider() {
@@ -311,6 +337,67 @@ function announceToScreenReader(message) {
   announcer.id = 'screen-reader-announcer';
   announcer.setAttribute('aria-live', 'polite');
   announcer.setAttribute('aria-atomic', 'true');
+  announcer.className = 'sr-only';
+  announcer.textContent = message;
+  
+  if (!document.getElementById('screen-reader-announcer')) {
+    document.body.appendChild(announcer);
+  }
+}
+
+// Adicionar listeners para botões de carrinho
+function attachCartListeners() {
+  // Stories
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.add-to-cart-story')) {
+      const btn = e.target.closest('.add-to-cart-story');
+      const productId = btn.getAttribute('data-id');
+      handleAddToCart(productId);
+    }
+  });
+
+  // Menu Principal
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.btn-add')) {
+      const btn = e.target.closest('.btn-add');
+      const productId = btn.getAttribute('data-id');
+      handleAddToCart(productId);
+    }
+  });
+}
+
+// Handler centralizado para adicionar ao carrinho
+function handleAddToCart(productId) {
+  // Tentar usar addToCart se disponível
+  if (typeof addToCart === 'function') {
+    addToCart(productId);
+  } else if (window.cartManager) {
+    // Fallback: usar cartManager
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      window.cartManager.addItem({
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price) || 0,
+        image: product.image_url
+      });
+      
+      // Feedback visual
+      const btn = document.querySelector(`[data-id="${productId}"]`);
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Adicionado!';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-cart-plus mr-2"></i>Adicionar';
+          btn.disabled = false;
+        }, 2000);
+      }
+    }
+  } else {
+    console.error('Nenhum gerenciador de carrinho disponível');
+    alert('Erro ao adicionar ao carrinho. Tente novamente.');
+  }
+}
   announcer.className = 'sr-only'; // Classe Tailwind para screen readers
   
   announcer.textContent = message;

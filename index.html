@@ -1,264 +1,376 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#069C54">
-        <meta name="description" content="Ignite - Restaurante pub com as melhores refeições da cidade">
-        
-        <!-- Preconnect para otimização -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://cdn.jsdelivr.net">
-        <link rel="dns-prefetch" href="https://cdn.botpress.cloud">
-        
-        <!-- Favicons -->
-        <link rel="shortcut icon" href="assets/ignite.jpg" type="image/x-icon">
-        <link rel="manifest" href="manifest.json">
-        
-        <!--========== BOX ICONS ==========-->
-        <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
 
-        <!--========== CSS ==========-->
-        <link rel="stylesheet" href="styles.css">  
-       
-        <title>Ignite - Restaurante Pub</title>
-    </head>
-    <body>
-        <!--========== SCROLL TOP ==========-->
-        <a href="#" class="scrolltop" id="scroll-top">
-            <i class='bx bx-chevron-up scrolltop__icon'></i>
-        </a>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#069C54">
+    <meta name="description" content="Ignite - Restaurante pub com as melhores refeições da cidade">
 
-        <!--========== HEADER ==========-->
-        <header class="l-header" id="header">
-            <nav class="nav bd-container">
-                <a href="#" class="nav__logo">Ignite</a>
+    <!-- Preconnect para otimização -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.botpress.cloud">
 
-                <div class="nav__menu" id="nav-menu">
-                    <ul class="nav__list">
-                        <li class="nav__item"><a href="#home" class="nav__link active-link">Home</a></li>
-                        <li class="nav__item"><a href="#about" class="nav__link">Sobre</a></li>
-                        <li class="nav__item"><a href="#services" class="nav__link">Services</a></li>
-                        <li class="nav__item"><a href="#menu" class="nav__link">Menu</a></li>
-                        <li class="nav__item"><a href="#contact" class="nav__link">Contato</a></li>
+    <!-- Favicons -->
+    <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
 
-                        <li><i class='bx bx-moon change-theme' id="theme-button"></i></li>
-                    </ul>
+    <!--========== BOX ICONS ==========-->
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+        integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
+        crossorigin="anonymous" />
+
+    <!--========== CSS ==========-->
+    <link rel="stylesheet" href="styles/base/main.css">
+
+    <!-- Tailwind CSS (Unificado com checkout) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#069C54',
+                        secondary: '#1a365d',
+                        accent: '#f7f9fc'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Cart Unified Styles -->
+    <link rel="stylesheet" href="styles/components/cart-unified.css">
+    <link rel="stylesheet" href="styles/components/payment-styles.css">
+
+
+    <title>Ignite - Restaurante Pub</title>
+</head>
+
+<body>
+    <!--========== SCROLL TOP ==========-->
+    <a href="#" class="scrolltop" id="scroll-top">
+        <i class='bx bx-chevron-up scrolltop__icon'></i>
+    </a>
+
+    <!--========== HEADER ==========-->
+    <header class="l-header" id="header">
+        <nav class="nav bd-container">
+            <a href="#" class="nav__logo">Ignite</a>
+
+            <div class="nav__menu" id="nav-menu">
+                <ul class="nav__list">
+                    <li class="nav__item"><a href="#home" class="nav__link active-link">Home</a></li>
+                    <li class="nav__item"><a href="#about" class="nav__link">Sobre</a></li>
+                    <li class="nav__item"><a href="#services" class="nav__link">Services</a></li>
+                    <li class="nav__item"><a href="#menu" class="nav__link">Menu</a></li>
+                    <li class="nav__item"><a href="#contact" class="nav__link">Contato</a></li>
+
+                    <li class="nav__item">
+                        <button id="cart-button-header" onclick="window.toggleCart()"
+                            class="nav__link bg-transparent border-none cursor-pointer relative">
+                            <i class='bx bx-shopping-bag text-xl'></i>
+                            <span id="cart-count"
+                                class="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                        </button>
+                    </li>
+
+                    <li><i class='bx bx-moon change-theme' id="theme-button"></i></li>
+
+                </ul>
+            </div>
+
+            <div class="nav__toggle" id="nav-toggle">
+                <i class='bx bx-menu'></i>
+            </div>
+
+
+
+        </nav>
+    </header>
+
+    <main class="l-main">
+        <!--========== HOME ==========-->
+        <section class="home" id="home">
+            <div class="home__container bd-container bd-grid">
+                <div class="home__data">
+                    <h1 class="home__title">Ignite lounge </h1>
+                    <h2 class="home__subtitle">Onde cada mordida <br> é uma delícia.</h2>
+                    <button onclick="window.toggleCart()" class="button border-none cursor-pointer">Peça agora</button>
+
                 </div>
 
-                <div class="nav__toggle" id="nav-toggle">
-                    <i class='bx bx-menu'></i>
+                <img src="assets/images/logos/ignite2.png" alt="" class="home__img">
+            </div>
+        </section>
+
+        <!--========== ABOUT ==========-->
+        <section class="about section bd-container" id="about">
+            <div class="about__container  bd-grid">
+                <div class="about__data">
+                    <span class="section-subtitle about__initial">Sobre nós</span>
+                    <h2 class="section-title about__initial">Aviso: nossa comida <br> é viciante</h2>
+                    <p class="about__description">Preparamos a melhor comida de toda a cidade, com excelente
+                        atendimento,
+                        as melhores refeições e ao melhor preço, visite-nos.</p>
+                    <button onclick="window.toggleCart()" class="button border-none cursor-pointer">Explore
+                        agora!</button>
+
                 </div>
 
-            
-                
-            </nav>
-        </header>
+                <img src="assets/l2.jpg" alt="" class="about__img">
+            </div>
+        </section>
 
-        <main class="l-main">
-            <!--========== HOME ==========-->
-            <section class="home" id="home">
-                <div class="home__container bd-container bd-grid">
-                    <div class="home__data">
-                        <h1 class="home__title">Ignite lounge </h1>
-                        <h2 class="home__subtitle">Onde cada mordida <br> é uma delícia.</h2>
-                        <a href="routes/index.html" class="button">Peça agora</a>
-                    </div>
-    
-                    <img src="assets/ignite2.png" alt="" class="home__img">
-                </div>
-            </section>
-            
-            <!--========== ABOUT ==========-->
-            <section class="about section bd-container" id="about">
-                <div class="about__container  bd-grid">
-                    <div class="about__data">
-                        <span class="section-subtitle about__initial">Sobre nós</span>
-                        <h2 class="section-title about__initial">Aviso: nossa comida  <br> é viciante</h2>
-                        <p class="about__description">Preparamos a melhor comida de toda a cidade, com excelente atendimento,
-                            as melhores refeições e ao melhor preço, visite-nos.</p>
-                        <a href="routes/index.html" class="button">Explore agora!</a>
-                    </div>
+        <!--========== SERVICES ==========-->
+        <section class="services section bd-container" id="services">
+            <span class="section-subtitle">Oferta</span>
+            <h2 class="section-title">Nossos serviços</h2>
 
-                    <img src="assets/l2.jpg" alt="" class="about__img">
-                </div>
-            </section>
-
-            <!--========== SERVICES ==========-->
-            <section class="services section bd-container" id="services">
-                <span class="section-subtitle">Oferta</span>
-                <h2 class="section-title">Nossos serviços</h2>
-
-                <div class="services__container  bd-grid">
-                    <div class="services__content">
-                        <img src="s1.png" alt="">
-                        <h3 class="services__title">Marmitex : Sabor na Sua Mesa!</h3>
-                        <p class="services__description">Cansado de refeições sem graça? Experimente nossos Marmitex Variados! Pratos deliciosos e frescos que vão transformar seu dia a dia. Venha saborear a melhor comida da cidade!</p>
-                    </div>
-
-                    <div class="services__content">
-                        <img src="s2.png" alt="">
-                        <h3 class="services__title">Fast Food: Sabor Rápido!</h3>
-                        <p class="services__description">Sem tempo, mas quer comer bem? Nossos Fast Foods são a solução! Delícias em minutos, perfeitas para a sua rotina agitada. Venha experimentar e satisfaça sua fome com sabor!</p>
-                    </div>
-
-                    <div class="services__content">
-                        <img src="s3.png" alt="">
-                        <h3 class="services__title">Marmitex Fit: Saúde e Sabor!</h3>
-                        <p class="services__description">Quer comer saudável sem perder o sabor? Nossos Marmitex Fit são a escolha certa! Pratos nutritivos e deliciosos que vão te ajudar a manter a forma. Experimente e sinta a diferença!</p>
-                    </div>
-                </div>
-            </section>
-
-            <!--========== MENU ==========-->
-            <section class="menu section bd-container" id="menu">
-                <span class="section-subtitle">Especial</span>
-                <h2 class="section-title">Menu Delicioso</h2>
-
-                <div class="menu__container bd-grid">
-                    <div class="menu__content">
-                        <img src="./assets/l2.jpg" alt="" class="menu__img">
-                        <h3 class="menu__name">Calabresa.</h3>
-                        <span class="menu__detail">Pratos Comerciais</span>
-                        <span class="menu__preci">R$42,00</span>
-                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                    </div>
-                
-                    <div class="menu__content">
-                        <img src="./assets/strogonoff-frango.jpg" alt="" class="menu__img">
-                        <h3 class="menu__name">Frango ao molho</h3>
-                        <span class="menu__detail">Prato delicioso</span>
-                        <span class="menu__preci">R$12,00</span>
-                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                    </div>
-                    
-                    <div class="menu__content">
-                        <img src="./assets/strogonoff-carne.jpg" alt="" class="menu__img">
-                        <h3 class="menu__name">Carne Biriyani</h3>
-                        <span class="menu__detail">Prato delicioso</span>
-                        <span class="menu__preci">R$39,50</span>
-                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                    </div>
-                
-                    <div class="menu__content">
-                        <img src="./assets/lasanha-bolonhesa.jpg" alt="" class="menu__img">
-                        <h3 class="menu__name">lasanha-bolonhesa</h3>
-                        <span class="menu__detail">Prato delicioso</span>
-                        <span class="menu__preci">R$59,50</span>
-                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                    </div>
-                
-                    <div class="menu__content">
-                        <img src="./assets/contra-file.jpg" alt="" class="menu__img">
-                        <h3 class="menu__name">contra file</h3>
-                        <span class="menu__detail">comercial</span>
-                        <span class="menu__preci">R$59,50</span>
-                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                    </div>
-                
-                    <div class="menu__content">
-                        <img src="./assets/bife-role.jpg" alt="" class="menu__img">
-                        <h3 class="menu__name">bife role</h3>
-                        <span class="menu__detail">Prato delicioso</span>
-                        <span class="menu__preci">R$39,50</span>
-                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                    </div>
-                </div>
-            </section>
-
-            
-        </main>
-<!--========== CONTACT US ==========-->
-        <section class="contact section bd-container" id="contact">
-            <div class="contact__container bd-grid">
-                <div class="contact__data">
-                    <span class="section-subtitle contact__initial">Vamos conversar </span>
-                    <h2 class="section-title contact__initial">Contate-nos</h2>
-                    <p class="contact__description">Se você deseja o delivery do nosso restaurante, entre em contato conosco e atenderemos você rapidamente, com nosso atendimento por chat 24 horas por dia, 7 dias por semana.</p>
+            <div class="services__container  bd-grid">
+                <div class="services__content">
+                    <img src="s1.png" alt="">
+                    <h3 class="services__title">Marmitex : Sabor na Sua Mesa!</h3>
+                    <p class="services__description">Cansado de refeições sem graça? Experimente nossos Marmitex
+                        Variados! Pratos deliciosos e frescos que vão transformar seu dia a dia. Venha saborear a melhor
+                        comida da cidade!</p>
                 </div>
 
-                <div class="contact__button">
-                    <a href="https://wa.me/p/9150303315061573/559285130951" class="button">Entre em contato agora!</a>
+                <div class="services__content">
+                    <img src="s2.png" alt="">
+                    <h3 class="services__title">Fast Food: Sabor Rápido!</h3>
+                    <p class="services__description">Sem tempo, mas quer comer bem? Nossos Fast Foods são a solução!
+                        Delícias em minutos, perfeitas para a sua rotina agitada. Venha experimentar e satisfaça sua
+                        fome com sabor!</p>
+                </div>
+
+                <div class="services__content">
+                    <img src="s3.png" alt="">
+                    <h3 class="services__title">Marmitex Fit: Saúde e Sabor!</h3>
+                    <p class="services__description">Quer comer saudável sem perder o sabor? Nossos Marmitex Fit são a
+                        escolha certa! Pratos nutritivos e deliciosos que vão te ajudar a manter a forma. Experimente e
+                        sinta a diferença!</p>
                 </div>
             </div>
         </section>
-        <!--========== FOOTER ==========-->
-        <footer class="footer section bd-container">
-            <div class="footer__container bd-grid">
-                <div class="footer__content">
-                    <a href="#" class="footer__logo">Ignite</a>
-                    <span class="footer__description">Restaurante</span>
-                    <div>
-                        <a href="https://www.instagram.com/ignite_restaurant"class="footer__social"><i class='bx bxl-facebook'></i></a>
-                        <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i class='bx bxl-instagram'></i></a>
-                        <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i class='bx bxl-twitter'></i></a>
-                    </div>
+
+        <!--========== MENU ==========-->
+        <section class="menu section bd-container" id="menu">
+            <span class="section-subtitle">Especial</span>
+            <h2 class="section-title">Menu Delicioso</h2>
+
+            <div class="menu__container bd-grid">
+                <div class="menu__content">
+                    <img src="./assets/l2.jpg" alt="" class="menu__img">
+                    <h3 class="menu__name">Calabresa.</h3>
+                    <span class="menu__detail">Pratos Comerciais</span>
+                    <span class="menu__preci">R$42,00</span>
+                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
                 </div>
 
-                <div class="footer__content">
-                    <h3 class="footer__title">Services</h3>
-                    <ul>
-                        <li><a href="cart-pay/index.html" class="footer__link">Delivery</a></li>
-                        <li><a href="cart-pay/index.html" class="footer__link">Pricing</a></li>
-                        <li><a href="cart-pay/index.html" class="footer__link">Fast food</a></li>
-                        <li><a href="routes/index.html" class="footer__link">Reserve</a></li>
-                    </ul>
+                <div class="menu__content">
+                    <img src="./assets/strogonoff-frango.jpg" alt="" class="menu__img">
+                    <h3 class="menu__name">Frango ao molho</h3>
+                    <span class="menu__detail">Prato delicioso</span>
+                    <span class="menu__preci">R$12,00</span>
+                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
                 </div>
 
-                <div class="footer__content">
-                    <h3 class="footer__title">Informação</h3>
-                    <ul>
-                        <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link">Eventos</a></li>
-                        <li><a href="https://wa.me/5592985130951" class="footer__link">Contato</a></li>
-                        <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit?usp=sharing" class="footer__link">Privacy policy</a></li>
-                        <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit?usp=sharing" class="footer__link">Terms of services</a></li>
-                    </ul>
+                <div class="menu__content">
+                    <img src="./assets/strogonoff-carne.jpg" alt="" class="menu__img">
+                    <h3 class="menu__name">Carne Biriyani</h3>
+                    <span class="menu__detail">Prato delicioso</span>
+                    <span class="menu__preci">R$39,50</span>
+                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
                 </div>
 
-                <div class="footer__content">
-                    <h3 class="footer__title">Endereço</h3>
-                    <ul>
-                        <li>Estamos com 2 Unidades </li>
-                        <li>Manaus - AM</li>
-                        <li>Itajaí - SC</li>
-                        <li>+55 92 98513-0951</li>
-                        <li>Ignite@Gmail.com</li>
-                    </ul>
+                <div class="menu__content">
+                    <img src="./assets/lasanha-bolonhesa.jpg" alt="" class="menu__img">
+                    <h3 class="menu__name">lasanha-bolonhesa</h3>
+                    <span class="menu__detail">Prato delicioso</span>
+                    <span class="menu__preci">R$59,50</span>
+                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
+                </div>
+
+                <div class="menu__content">
+                    <img src="./assets/contra-file.jpg" alt="" class="menu__img">
+                    <h3 class="menu__name">contra file</h3>
+                    <span class="menu__detail">comercial</span>
+                    <span class="menu__preci">R$59,50</span>
+                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
+                </div>
+
+                <div class="menu__content">
+                    <img src="./assets/bife-role.jpg" alt="" class="menu__img">
+                    <h3 class="menu__name">bife role</h3>
+                    <span class="menu__detail">Prato delicioso</span>
+                    <span class="menu__preci">R$39,50</span>
+                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+    <!--========== CONTACT US ==========-->
+    <section class="contact section bd-container" id="contact">
+        <div class="contact__container bd-grid">
+            <div class="contact__data">
+                <span class="section-subtitle contact__initial">Vamos conversar </span>
+                <h2 class="section-title contact__initial">Contate-nos</h2>
+                <p class="contact__description">Se você deseja o delivery do nosso restaurante, entre em contato conosco
+                    e atenderemos você rapidamente, com nosso atendimento por chat 24 horas por dia, 7 dias por semana.
+                </p>
+            </div>
+
+            <div class="contact__button">
+                <a href="https://wa.me/p/9150303315061573/559285130951" class="button">Entre em contato agora!</a>
+            </div>
+        </div>
+    </section>
+    <!--========== FOOTER ==========-->
+    <footer class="footer section bd-container">
+        <div class="footer__container bd-grid">
+            <div class="footer__content">
+                <a href="#" class="footer__logo">Ignite</a>
+                <span class="footer__description">Restaurante</span>
+                <div>
+                    <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i
+                            class='bx bxl-facebook'></i></a>
+                    <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i
+                            class='bx bxl-instagram'></i></a>
+                    <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i
+                            class='bx bxl-twitter'></i></a>
                 </div>
             </div>
 
-          <p class="footer__copy">&#169; All right reserved</p>
-        </footer>
+            <div class="footer__content">
+                <h3 class="footer__title">Services</h3>
+                <ul>
+                    <li><a href="cart-pay/index.html" class="footer__link">Delivery</a></li>
+                    <li><a href="cart-pay/index.html" class="footer__link">Pricing</a></li>
+                    <li><a href="cart-pay/index.html" class="footer__link">Fast food</a></li>
+                    <li><a href="cart-pay/index.html" class="footer__link">Reserve</a></li>
+                </ul>
+            </div>
 
-        <!--========== SPLASH SCREEN MODULE ==========-->
-        <script src="State/splash-module.js"></script>
-        <script>
-            // Inicializar splash screen apenas na abertura
-            new SplashScreen({
-                duration: 3000,
-                autoShow: true,
-                showOnce: true,
-                storageKey: 'igniteSplashShown'
-            });
-        </script>
+            <div class="footer__content">
+                <h3 class="footer__title">Informação</h3>
+                <ul>
+                    <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link">Eventos</a></li>
+                    <li><a href="https://wa.me/5592985130951" class="footer__link">Contato</a></li>
+                    <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit?usp=sharing"
+                            class="footer__link">Privacy policy</a></li>
+                    <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit?usp=sharing"
+                            class="footer__link">Terms of services</a></li>
+                </ul>
+            </div>
 
-        <!--========== SECTION LOADER MODULE ==========-->
-        <script src="State/section-loader.js" defer></script>
+            <div class="footer__content">
+                <h3 class="footer__title">Endereço</h3>
+                <ul>
+                    <li>Estamos com 2 Unidades </li>
+                    <li>Manaus - AM</li>
+                    <li>Itajaí - SC</li>
+                    <li>+55 92 98513-0951</li>
+                    <li>Ignite@Gmail.com</li>
+                </ul>
+            </div>
+        </div>
 
-        <!--========== PERFORMANCE OPTIMIZER ==========-->
-        <script src="State/performance-optimizer.js" defer></script>
+        <p class="footer__copy">&#169; All right reserved</p>
+    </footer>
 
-        <!--========== SCROLL REVEAL ==========-->
-        <script src="https://unpkg.com/scrollreveal" defer></script>
+    <!--========== UNIFIED CART SIDEBAR ==========-->
+    <div id="cart-sidebar"
+        class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col font-sans border-l border-gray-100"
+        style="background-color: #ffffff !important;">
+        <!-- Header -->
+        <div class="px-5 py-6 flex items-center justify-between bg-white border-b border-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-primary">
+                    <i class="fas fa-shopping-bag text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-800 m-0 tracking-tight">CARRINHO</h2>
+                    <p class="text-[11px] text-gray-400 font-bold uppercase tracking-widest m-0 mt-0.5">Ignite
+                        Restaurant</p>
+                </div>
+            </div>
+            <button id="close-cart"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all border-none cursor-pointer">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
 
-        <!--========== MAIN JS ==========-->
-        <script src="main.js" defer></script>
+        <!-- Scrollable Area -->
+        <div class="flex-1 overflow-y-auto bg-gray-50/30 scrollbar-hide py-2">
+            <!-- Itens do Carrinho -->
+            <div class="px-5 py-4 pb-2 flex items-center justify-between bg-white mt-1">
+                <h3 class="text-[17px] font-bold text-slate-800 m-0">Sua sacola</h3>
+                <button id="cart-clear-btn"
+                    class="text-[#1a365d] text-xs font-bold uppercase tracking-wider hover:text-blue-800 transition-colors bg-transparent border-none p-0 cursor-pointer">Limpar</button>
+            </div>
+            <div id="cart-items" class="px-5 py-2 flex flex-col gap-3 bg-white">
+                <!-- Itens injetados via JS -->
+            </div>
 
-        <!--=============== CHATBOT - GORDON (Carregamento Assíncrono) ===============-->
-        <script defer src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"></script>
-        <script defer src="https://files.bpcontent.cloud/2025/02/23/18/20250223182920-GIQ6RVVM.js"></script>
-               
-    </body>
+            <!-- Totals -->
+            <div class="px-5 py-4 bg-white border-b border-gray-100 mt-2 flex flex-col gap-2">
+                <div class="flex items-center justify-between text-[15px] text-gray-500">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal-val">R$ 0,00</span>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-lg font-bold text-slate-800">Total</span>
+                    <span id="cart-total-val" class="text-xl font-bold text-slate-800">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.05)] z-20">
+            <button id="checkout-button" type="button"
+                class="w-full bg-[#069C54] text-white font-bold text-[17px] py-[14px] rounded-lg hover:bg-[#048654] transition-colors border-none cursor-pointer flex items-center justify-center gap-2">
+                Continuar para Checkout
+            </button>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300">
+    </div>
+
+
+    <!--========== SPLASH SCREEN MODULE ==========-->
+    <script src="src/state/splash-module.js"></script>
+    <script>
+        // Inicializar splash screen apenas na abertura
+        new SplashScreen({
+            duration: 3000,
+            autoShow: true,
+            showOnce: true,
+            storageKey: 'igniteSplashShown'
+        });
+    </script>
+
+    <!--========== SECTION LOADER MODULE ==========-->
+    <script src="src/state/section-loader.js" defer></script>
+
+    <!--========== PERFORMANCE OPTIMIZER ==========-->
+    <script src="src/state/performance-optimizer.js" defer></script>
+
+    <!--========== SCROLL REVEAL ==========-->
+    <script src="https://unpkg.com/scrollreveal" defer></script>
+
+    <!--========== CART SCRIPTS ==========-->
+    <script src="src/modules/cart/cart-manager-unified.js" defer></script>
+    <script src="src/modules/products/script.js" defer></script>
+
+</body>
+
 </html>

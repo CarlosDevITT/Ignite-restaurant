@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#069c54">
+  <meta name="description" content="Ignite - Cardápio Online com Delivery">
+
+  <!-- Preconnect para otimização -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+  <link rel="shortcut icon" href="../assets/images/logos/logo.png" type="image/x-icon">
+  <title>Ignite - Cardápio Online</title>
+  <link rel="manifest" href="../manifest.json">
+
+  <!-- Fix de Erros removido - não necessário em produção -->
+
+  <!-- Tailwind CSS via CDN - SEM DEFER para aplicar estilos -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <!-- Font Awesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts - Inter e Poppins -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Header Mobile Styles -->
+  <link rel="stylesheet" href="../styles/components/header-mobile.css">
+  <!-- Header Styles (Desktop) -->
+  <link rel="stylesheet" href="../styles/components/header-styles.css" media="(min-width: 1024px)">
+  <!-- Cart Unified Styles -->
+  <link rel="stylesheet" href="../styles/components/cart-unified.css">
+  <!-- Payment Styles -->
+  <link rel="stylesheet" href="../styles/components/payment-styles.css">
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+  <!-- ========== SUPABASE CONFIG ========== -->
+  <script src="../config/supabase-config.js" defer></script>
+
+  <!-- Configuração do Tailwind - APÓS carregar -->
+  <script>
+    // Aguardar tailwind carregar
+    if (typeof tailwind !== 'undefined') {
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#069C54',
+              'primary-alt': '#048654',
+              'title': '#393939',
+              'text': '#707070',
+              'text-light': '#A6A6A6',
+              'body': '#FBFEFD',
+              'container': '#FFFFFF',
+            },
+            spacing: {
+              'header-height': '3rem',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+</head>
+
+<body class="font-sans" style="font-family: 'Poppins', sans-serif; background-color: var(--body-color);">
+  <!-- Header Mobile e Desktop -->
+  <header class="mobile-header">
+    <!-- Container Principal -->
+    <div class="header-container">
+      <!-- Logo Circular Centralizado -->
+      <div class="logo-wrapper">
+        <img src="../assets/images/logos/logo.png" alt="Ignite Logo" class="header-logo-circle">
+      </div>
+
+      <!-- Nome do Restaurante -->
+      <div class="restaurant-name">
+        <h1>IGNITE RESTAURANT</h1>
+      </div>
+
+      <!-- Informações de Localização -->
+      <div class="location-info">
+        <div class="location-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Vieiralves, 04 - Manaus - AM</span>
+          <span class="separator">•</span>
+          <span class="more-info">Mais informações</span>
+        </div>
+      </div>
+
+      <!-- Status do Restaurante -->
+      <div id="schedule-status" class="schedule-status"></div>
+
+      <!-- Botão Calcular Entrega -->
+      <button class="delivery-calc-btn" onclick="calculateDelivery()">
+        <i class="fas fa-question-circle"></i>
+        <span>Calcular taxa e tempo de entrega</span>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <!-- Menu Inferior Mobile -->
+      <div id="bottom-menu" class="header-bottom-menu">
+        <img src="../assets/images/logos/logo.png" id="mini-logo" class="mini-logo hidden" alt="Logo mini">
+
+        <div class="categories-dropdown" id="categories-dropdown" onclick="toggleCategoriesMenu()">
+          <i class="fas fa-bars"></i>
+          <span id="categories-text">Lista de categorias</span>
+          <i class="fas fa-chevron-down" id="categories-arrow"></i>
+        </div>
+        <!-- Dropdown de Categorias -->
+        <div id="categories-menu" class="categories-menu hidden">
+          <div class="categories-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Carregando categorias...</span>
+          </div>
+          <div id="categories-list" class="categories-list"></div>
+        </div>
+        <button id="cart-button" class="cart-btn-mobile">
+          <i class="fas fa-shopping-cart"></i>
+          <span id="cart-count" class="cart-count-badge">0</span>
+        </button>
+        <button class="search-btn-mobile" onclick="toggleSearch()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+
+      <!-- Barra de Busca Mobile -->
+      <div id="search-bar-mobile" class="search-bar-mobile hidden">
+        <input type="text" id="search-input" placeholder="Busque por um produto..." class="search-input">
+        <button onclick="performSearch()" class="search-submit-btn">
+          <i class="fas fa-search"></i>
+        </button>
+        <button onclick="toggleSearch()" class="search-close-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header Desktop -->
+    <div class="header-desktop">
+      <div class="header-desktop-container">
+        <div class="header-desktop-left">
+          <img src="../assets/images/logos/logo.png" alt="Ignite Logo" class="header-desktop-logo">
+          <div class="header-desktop-info">
+            <h1>IGNITE RESTAURANT</h1>
+            <div class="header-desktop-location">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Vieiralves, 04 - Manaus - AM</span>
+              <span class="separator">•</span>
+              <span>R. Fridolim Herthal Júnior, 97 - Itajaí - SC</span>
+            </div>
+            <div id="schedule-status-desktop" class="schedule-status-desktop"></div>
+          </div>
+        </div>
+
+        <div class="header-desktop-right">
+          <div class="header-desktop-search">
+            <input type="text" id="search-input-desktop" placeholder="Busque por um produto..."
+              class="search-input-desktop">
+            <button onclick="performSearch()" class="search-submit-btn-desktop">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+
+          <div class="header-desktop-categories">
+            <button class="categories-btn-desktop" id="categories-btn-desktop" onclick="toggleCategoriesMenuDesktop()">
+              <i class="fas fa-bars"></i>
+              <span>Categorias</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div id="categories-menu-desktop" class="categories-menu-desktop hidden">
+              <div class="categories-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Carregando categorias...</span>
+              </div>
+              <div id="categories-list-desktop" class="categories-list-desktop"></div>
+            </div>
+          </div>
+
+          <button id="cart-button-desktop" class="cart-btn-desktop">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count-desktop" class="cart-count-badge-desktop">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8 pb-24">
+
+    <!-- Seção Novos Produtos -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i class="fas fa-star text-yellow-500"></i>
+        <span style="color: var(--title-color);">Novidades</span>
+      </h2>
+      <div id="new-products" class="flex overflow-x-auto pb-4 gap-4 scrollbar-hide">
+        <!-- Novos produtos serão carregados via JS -->
+      </div>
+    </section>
+
+    <!-- Menu Principal -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i class="fas fa-utensils" style="color: var(--first-color);"></i>
+        <span style="color: var(--title-color);">Menu Completo</span>
+      </h2>
+      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Produtos serão carregados aqui via JavaScript -->
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+        <i class="fas fa-utensils mr-2 text-primary"></i> Cardápio
+      </h2>
+      <div id="menu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Produtos serão carregados via JS -->
+      </div>
+    </section>
+
+    <!-- Seção Stories Ignite versão integrada -->
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+        <!-- Ícone do Instagram com gradiente oficial (rosa/roxo), tamanho médio e hover effect -->
+        <a href="https://www.instagram.com/" target="_blank"
+          class="inline-flex items-center justify-center w-6 h-6 mr-2 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 rounded-full text-white shadow-md hover:shadow-lg transition-all duration-200"
+          aria-label="Instagram">
+          <i class="fab fa-instagram text-xs"></i>
+        </a> Stories Ignite
+      </h2>
+
+      <!-- Container do Stories Slider -->
+      <div id="stories-slider" class="relative bg-white rounded-xl shadow-lg overflow-hidden">
+
+        <!-- Barra de Progresso FIXA -->
+        <div class="absolute top-0 left-0 w-full z-30 p-2 bg-gradient-to-b from-black/30 to-transparent">
+          <div id="progress-container" class="flex space-x-1 max-w-4xl mx-auto">
+            <!-- As barras de progresso serão inseridas aqui via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Botões de Navegação -->
+        <button id="prev-story"
+          class="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-50 transition-opacity">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="next-story"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-50 transition-opacity">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Área de Conteúdo -->
+        <div id="stories-container" class="flex transition-transform duration-300 ease-in-out">
+          <!-- Os "slides" dos produtos serão inseridos aqui via JavaScript -->
+        </div>
+
+        <!-- Indicador quando não há produtos -->
+        <div id="stories-empty" class="hidden flex items-center justify-center h-64 text-gray-500">
+          <div class="text-center">
+            <i class="fas fa-star text-4xl mb-2"></i>
+            <p>Nenhum produto em destaque no momento</p>
+          </div>
+        </div>
+
+        <!-- Botão para expandir/recolher tela cheia -->
+        <button id="toggle-fullscreen"
+          class="absolute bottom-6 right-6 z-20 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-opacity">
+          <i class="fas fa-expand text-lg"></i>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Carrinho Sidebar Unificado (Redesign) -->
+  <div id="cart-sidebar"
+    class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full overflow-hidden font-sans pb-16 lg:pb-0">
+
+    <!-- Store Header -->
+    <div class="px-5 py-4 flex items-center justify-between border-b border-gray-100 bg-white sticky top-0 z-20">
+      <h2 class="text-base font-bold text-slate-800 uppercase tracking-wide m-0">
+        IGNITE RESTAURANT
+      </h2>
+      <button id="close-cart" type="button"
+        class="text-gray-400 hover:text-gray-600 transition-colors bg-transparent border-none text-2xl leading-none">&times;</button>
+    </div>
+
+    <!-- Scrollable Content Area -->
+    <div class="flex-1 overflow-y-auto bg-gray-50/50">
+
+      <!-- Delivery Calculator Button -->
+      <div class="px-5 py-4 border-b border-gray-100 bg-white">
+        <button
+          class="w-full flex items-center justify-between bg-white text-slate-700 hover:bg-gray-50 p-0 border-none group transition-colors">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-map-marker-alt text-gray-400"></i>
+            <span class="font-medium text-[15px]">Calcular taxa e tempo de entrega</span>
+          </div>
+          <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-600"></i>
+        </button>
+      </div>
+
+      <!-- Sua Sacola Header -->
+      <div class="px-5 py-4 pb-2 flex items-center justify-between bg-white mt-1">
+        <h3 class="text-[17px] font-bold text-slate-800 m-0">Sua sacola</h3>
+        <button id="cart-clear-btn"
+          class="text-[#1a365d] text-xs font-bold uppercase tracking-wider hover:text-blue-800 transition-colors bg-transparent border-none p-0 cursor-pointer">Limpar</button>
+      </div>
+
+      <!-- Itens do Carrinho -->
+      <div id="cart-items" class="px-5 py-2 flex flex-col gap-3 bg-white">
+        <!-- Itens injetados via JS -->
+      </div>
+
+      <!-- Adicionar Mais Itens Button -->
+      <div class="px-5 py-4 bg-white border-b border-gray-100 border-dashed text-center">
+        <button onclick="document.getElementById('close-cart').click()"
+          class="text-black text-sm font-bold uppercase tracking-wider hover:text-gray-600 transition-colors bg-transparent border-none p-0 cursor-pointer">
+          ADICIONAR MAIS ITENS
+        </button>
+      </div>
+
+      <!-- Cross-Selling: Peça Também -->
+      <div class="py-5 bg-white border-b border-gray-100 mt-2">
+        <h3 class="text-[17px] font-bold text-slate-800 m-0 px-5 mb-4">Peça também</h3>
+        <div id="cross-selling-container" class="flex overflow-x-auto gap-4 px-5 pb-4 scrollbar-hide snap-x">
+          <!-- Cross-selling items injetados via JS -->
+        </div>
+      </div>
+
+      <!-- Totals Block -->
+      <div class="px-5 py-4 bg-white border-b border-gray-100 mt-2 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-[15px] text-gray-500">
+          <span>Subtotal</span>
+          <span id="cart-subtotal-val">R$ 0,00</span>
+        </div>
+        <div class="flex items-center justify-between text-[15px] text-gray-500">
+          <span>Taxa de entrega</span>
+          <span>A definir</span>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <span class="text-lg font-bold text-slate-800">Total</span>
+          <span id="cart-total-val" class="text-xl font-bold text-slate-800">R$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Cupom -->
+      <div class="bg-green-50/50 px-5 py-2 border-b border-green-100 text-center text-sm">
+        <span class="text-green-600 font-bold">Cupom disponível</span>, veja as regras de aplicação
+      </div>
+      <div
+        class="px-5 py-4 bg-white border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-4 group">
+        <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="flex-1">
+          <p class="text-[15px] font-bold text-slate-800 m-0 group-hover:text-blue-700 transition-colors">Que tal usar
+            um cupom?</p>
+          <p class="text-sm text-gray-500 m-0">1 disponível</p>
+        </div>
+        <i class="fas fa-chevron-right text-gray-400"></i>
+      </div>
+
+      <!-- Address and Phone Hidden Form (kept for JS logic compatibility) -->
+      <div class="hidden">
+        <textarea id="delivery-address"></textarea>
+        <input type="tel" id="delivery-phone">
+      </div>
+
+    </div> <!-- End Scrollable Area -->
+
+    <!-- Checkout Footer -->
+    <div class="p-4 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.05)] z-20">
+      <button id="checkout-button" type="button"
+        class="w-full bg-gray-500 text-white font-bold text-[17px] py-[14px] rounded-lg transition-colors hover:bg-gray-600 flex items-center justify-center gap-2 border-none cursor-not-allowed">
+        Estabelecimento fechado
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Overlay do carrinho -->
+  <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
+
+
+  <!-- ========== BOTTOM NAVIGATION MOBILE ========== -->
+  <nav
+    class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-40 lg:hidden flex justify-around items-center h-16 safe-area-pb">
+    <button onclick="navOpenHome()"
+      class="flex flex-col items-center justify-center w-full h-full text-primary transition-colors">
+      <i class="fas fa-home text-xl mb-1"></i>
+      <span class="text-[0.65rem] font-bold">Início</span>
+    </button>
+    <button onclick="navOpenPedidos()"
+      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors relative">
+      <i class="fas fa-shopping-bag text-xl mb-1"></i>
+      <span class="text-[0.65rem] font-medium">Pedidos</span>
+      <!-- Opcional: mini badge aqui se quiser, mas o carrinho superior já tem -->
+    </button>
+    <button onclick="navOpenChat()"
+      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors">
+      <i class="fas fa-comments text-xl mb-1"></i>
+      <span class="text-[0.65rem] font-medium">Chat</span>
+    </button>
+    <button onclick="navOpenProfile()"
+      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors">
+      <i class="far fa-user text-xl mb-1"></i>
+      <span class="text-[0.65rem] font-medium">Perfil</span>
+    </button>
+  </nav>
+
+  <!-- ========== SEÇÃO/MODAL: CHAT ========== -->
+  <div id="chat-modal" class="fixed inset-0 z-[60] bg-white hidden flex-col">
+    <div class="bg-primary text-white p-4 flex items-center justify-between shadow-md">
+      <div class="flex items-center gap-3">
+        <button onclick="document.getElementById('chat-modal').classList.add('hidden')" class="text-white">
+          <i class="fas fa-arrow-left text-xl"></i>
+        </button>
+        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+          <img src="../assets/images/logos/logo.png" class="w-8 h-8 object-contain">
+        </div>
+        <div>
+          <h3 class="font-bold text-lg leading-tight">Suporte Ignite</h3>
+          <p class="text-xs text-green-200"><i class="fas fa-circle text-[8px] mr-1"></i>Online</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-20">
+      <!-- Mensagens Iniciais Injetadas via JS (chat-bot.js) -->
+    </div>
+
+    <div
+      class="absolute bottom-0 left-0 w-full p-3 bg-white border-t border-gray-200 flex items-center gap-2 mb-16 lg:mb-0">
+      <input type="text" id="chat-input" placeholder="Digite sua mensagem..."
+        class="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-0 focus:outline-none placeholder-gray-400">
+      <button id="chat-send-btn"
+        class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-green-700 transition">
+        <i class="fas fa-paper-plane ml-[-2px]"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== SEÇÃO/MODAL: PERFIL ========== -->
+  <div id="profile-modal" class="fixed inset-0 z-[60] bg-gray-50/95 backdrop-blur-sm hidden overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center p-4 sm:p-6 mb-16 lg:mb-0">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+        <button onclick="document.getElementById('profile-modal').classList.add('hidden')"
+          class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <!-- VIEW 1: Cadastrar (Faltam Informações) -->
+        <div id="profile-view-register" class="hidden">
+          <div class="text-center mb-6 mt-4">
+            <h2 class="text-xl font-bold text-title mb-2">Faltam algumas informações</h2>
+            <p class="text-sm text-text">Você só precisa preencher estes dados uma vez</p>
+          </div>
+
+          <form id="profile-form-register" class="flex flex-col gap-4" onsubmit="saveProfileRegister(event)">
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text border-transparent">Telefone
+                *</label>
+              <input type="tel" id="prof-reg-phone" placeholder="(92) 99999-9999" required
+                class="w-full border border-gray-300 rounded-lg p-3 pt-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title">
+            </div>
+
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text">Seu nome *</label>
+              <input type="text" id="prof-reg-name" placeholder="CARLOS" required
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title"
+                style="text-transform: uppercase;">
+            </div>
+
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text border-transparent">Endereço p/
+                Entrega *</label>
+              <textarea id="prof-reg-address" placeholder="Rua, Número, Bairro, Complemento..." required rows="2"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title resize-none"></textarea>
+            </div>
+
+            <p class="text-xs text-center text-text my-2 leading-relaxed px-4">Escolha uma senha. Ela será usada para
+              garantir que só você terá acesso a suas informações e benefícios</p>
+
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text hidden">Senha *</label>
+              <input type="password" id="prof-reg-pass" placeholder="Senha *" required
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+            </div>
+
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text hidden">Confirmar Senha *</label>
+              <input type="password" id="prof-reg-pass-confirm" placeholder="Confirmar Senha *" required
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+            </div>
+
+            <button type="submit"
+              class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">CONFIRMAR</button>
+          </form>
+        </div>
+
+        <!-- VIEW 2: Editar (Logado) -->
+        <div id="profile-view-edit" class="hidden">
+          <div class="text-center mb-6 mt-4">
+            <h2 class="text-xl font-bold text-title mb-2">Editar informações</h2>
+          </div>
+
+          <form id="profile-form-edit" class="flex flex-col gap-4" onsubmit="saveProfileEdit(event)">
+            <div
+              class="relative flex items-center border border-gray-300 rounded-lg focus-within:border-primary focus-within:ring-1 focus-within:ring-primary bg-white">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text z-10">Telefone</label>
+              <div class="flex items-center px-3 border-r border-gray-200">
+                <img src="https://flagcdn.com/w20/br.png" alt="BR" class="w-5 h-auto mr-1">
+                <span class="text-sm font-medium text-gray-700">+55</span>
+                <i class="fas fa-caret-down text-gray-400 ml-1 text-xs"></i>
+              </div>
+              <input type="tel" id="prof-edit-phone" placeholder="(92) 99999-9999" required
+                class="w-full p-3 text-sm border-none bg-transparent outline-none text-title">
+            </div>
+
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text">Seu nome *</label>
+              <input type="text" id="prof-edit-name" placeholder="CARLOS" required
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title font-medium"
+                style="text-transform: uppercase;">
+            </div>
+
+            <div class="relative">
+              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text border-transparent">Endereço p/
+                Entrega *</label>
+              <textarea id="prof-edit-address" placeholder="Rua, Número, Bairro, Complemento..." required rows="2"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title resize-none"></textarea>
+            </div>
+
+            <div class="relative">
+              <input type="email" id="prof-edit-email" placeholder="E-mail"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title">
+            </div>
+
+            <div class="relative">
+              <input type="text" id="prof-edit-birth" placeholder="Data de nascimento"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title"
+                onfocus="(this.type='date')" onblur="(this.type='text')">
+            </div>
+
+            <div class="relative">
+              <select id="prof-edit-gender"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-gray-500 bg-white appearance-none">
+                <option value="" disabled selected>Gênero</option>
+                <option value="M">Masculino</option>
+                <option value="F">Feminino</option>
+                <option value="Outro">Outro</option>
+              </select>
+              <i
+                class="fas fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+            </div>
+
+            <button type="submit"
+              class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors uppercase">Atualizar
+              Cadastro</button>
+          </form>
+
+          <!-- Botão Sair para fins de teste/reset -->
+          <button onclick="logoutProfile()"
+            class="mt-4 w-full bg-red-50 text-red-600 font-bold py-2 rounded-lg hover:bg-red-100 transition-colors text-sm">Sair
+            da Conta</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PERFORMANCE OPTIMIZER ========== -->
+  <script src="../src/state/performance-optimizer.js" defer></script>
+
+  <!-- ========== APP NAVIGATION (Bottom Nav & Modals) ========== -->
+  <script src="../src/modules/app/navigation.js" defer></script>
+
+  <!-- ========== CHAT BOT GEMINI ========== -->
+  <script src="../src/modules/chat/chat-bot.js" defer></script>
+
+  <!-- ========== CART MANAGER UNIFIED ========== -->
+  <script src="../src/modules/cart/cart-manager-unified.js" defer></script>
+
+  <!-- ========== PAYMENT MANAGER ========== -->
+  <script src="../src/modules/payment/payment-manager.js" defer></script>
+
+  <!-- ========== PRODUCTS MODULE ========== -->
+  <!-- IMPORTANTE: script.js deve carregar ANTES de product-loader.js -->
+  <script src="../src/modules/products/script.js" defer></script>
+  <script src="../src/modules/products/product-loader.js" defer></script>
+
+  <!-- ========== HEADER FUNCTIONS ========== -->
+  <script src="../src/modules/header/header-functions.js" defer></script>
+
+  <!-- ========== ATUALIZAR STATUS DESKTOP ========== -->
+  <script>
+    // Atualizar status do restaurante no desktop também
+    function updateScheduleStatusDesktop() {
+      const statusElement = document.getElementById('schedule-status-desktop');
+      if (!statusElement) return;
+
+      const now = new Date();
+      const hour = now.getHours();
+      const isOpen = hour >= 9 && hour < 22;
+
+      if (isOpen) {
+        statusElement.innerHTML = `
+          <div class="status-text aberto">
+            <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+            <span>Aberto • Fechamos às 22:00h</span>
+          </div>
+        `;
+      } else {
+        statusElement.innerHTML = `
+          <div class="status-text fechado">
+            <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+            <span>Fechado • Abrimos às 09:00h</span>
+          </div>
+        `;
+      }
+    }
+
+    // Sincronizar contador do carrinho
+    function syncCartCount() {
+      const mobileCount = document.getElementById('cart-count');
+      const desktopCount = document.getElementById('cart-count-desktop');
+      const count = parseInt(mobileCount?.textContent || '0');
+
+      if (desktopCount) {
+        desktopCount.textContent = count;
+        desktopCount.style.display = count > 0 ? 'flex' : 'none';
+      }
+    }
+
+    // Observar mudanças no carrinho
+    const cartObserver = new MutationObserver(syncCartCount);
+    const cartCountElement = document.getElementById('cart-count');
+    if (cartCountElement) {
+      cartObserver.observe(cartCountElement, { childList: true, characterData: true });
+    }
+
+    // Atualizar status quando carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      updateScheduleStatusDesktop();
+      syncCartCount();
+      setInterval(updateScheduleStatusDesktop, 60000); // Atualizar a cada minuto
+
+      // Controlar sticky menu
+      const bottomMenu = document.getElementById('bottom-menu');
+      const miniLogo = document.getElementById('mini-logo');
+      const headerMobile = document.querySelector('.mobile-header');
+      const searchBarMobile = document.getElementById('search-bar-mobile');
+
+      if (bottomMenu && headerMobile) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 150) {
+            bottomMenu.classList.add('is-sticky');
+            miniLogo.classList.remove('hidden');
+            // Anexar search bar logo abaixo
+            if (searchBarMobile && !searchBarMobile.classList.contains('hidden')) {
+              searchBarMobile.classList.add('is-sticky-search');
+            }
+          } else {
+            bottomMenu.classList.remove('is-sticky');
+            miniLogo.classList.add('hidden');
+            if (searchBarMobile) {
+              searchBarMobile.classList.remove('is-sticky-search');
+            }
+          }
+        });
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -4,12 +4,12 @@
     "description": "Ignite - Restaurante pub, em que posso te ajudar?",
     "icons": [
       {
-        "src": "assets/ignite.jpg",
+        "src": "assets/images/logos/ignite.jpg",
         "sizes": "192x192",
         "type": "image/jpg"
       },
       {
-        "src": "assets/ignite.jpg",
+        "src": "assets/images/logos/ignite.jpg",
         "sizes": "512x512",
         "type": "image/jpg"
       }

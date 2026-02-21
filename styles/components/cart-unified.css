@@ -1,0 +1,301 @@
+/* ============================================
+   CARRINHO UNIFICADO - MOBILE E DESKTOP
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --cart-primary: #069C54;
+  --cart-primary-alt: #048654;
+  --cart-success: #22C55E;
+  --cart-error: #EF4444;
+  --cart-warning: #F59E0B;
+  --cart-bg: #FFFFFF;
+  --cart-text: #1a1a1a;
+  --cart-text-light: #666;
+  --cart-border: #e8e8e8;
+  --cart-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== CART SIDEBAR ========== */
+#cart-sidebar {
+  background: var(--cart-bg);
+  /* Ensure solid background */
+  background-color: #ffffff !important;
+  /* Force solid white to fix mobile transparency */
+  font-family: 'Inter', 'Poppins', sans-serif;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+}
+
+#cart-sidebar.cart-open {
+  transform: translateX(0) !important;
+}
+
+/* Header do Carrinho */
+#cart-sidebar>div:first-child {
+  background: linear-gradient(135deg, var(--cart-primary) 0%, var(--cart-primary-alt) 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(6, 156, 84, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#cart-sidebar h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
+
+#cart-sidebar h2 i {
+  font-size: 1.25rem;
+}
+
+#close-cart {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 300;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+#close-cart:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* ========== CART ITEMS ========== */
+#cart-items {
+  background: transparent;
+  overflow-y: visible;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+/* Novo Item do Carrinho Redesign */
+.cart-item-redesign {
+  transition: all 0.2s ease;
+  animation: slideInCart 0.3s ease-out;
+}
+
+@keyframes slideInCart {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Classes antigas removidas, mantendo apenas .cart-empty caso chamado sem querer */
+
+/* Empty State */
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.cart-empty__icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(6, 156, 84, 0.1) 0%, rgba(6, 156, 84, 0.05) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-empty__icon i {
+  font-size: 3rem;
+  color: var(--cart-primary);
+  opacity: 0.6;
+}
+
+.cart-empty__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cart-text);
+  margin: 0;
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
+
+.cart-empty__text {
+  font-size: 1rem;
+  color: var(--cart-text-light);
+  margin: 0;
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
+
+.cart-empty__button {
+  background: linear-gradient(135deg, var(--cart-primary) 0%, var(--cart-primary-alt) 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(6, 156, 84, 0.2);
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
+
+.cart-empty__button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(6, 156, 84, 0.3);
+}
+
+/* Ocultado paineis antigos que não são mais usados no HTML novo, mas mantidos para fallbacks */
+#cart-summary {
+  display: none !important;
+}
+
+/* Checkout Button */
+#checkout-button {
+  background: linear-gradient(135deg, var(--cart-primary) 0%, var(--cart-primary-alt) 100%);
+  color: white;
+  border: none;
+  padding: 1.125rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(6, 156, 84, 0.3);
+  font-family: 'Inter', 'Poppins', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#checkout-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(6, 156, 84, 0.4);
+}
+
+#checkout-button:active {
+  transform: translateY(-1px);
+}
+
+#checkout-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+#checkout-button i {
+  font-size: 1.3rem;
+}
+
+/* ========== CART OVERLAY ========== */
+#cart-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+#cart-overlay.visible {
+  display: block !important;
+  opacity: 1;
+}
+
+#cart-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+}
+
+/* ========== RESPONSIVO ========== */
+@media (max-width: 640px) {
+  #cart-sidebar {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .cart-item {
+    grid-template-columns: 60px 1fr auto;
+    gap: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .cart-item__image-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+
+  .cart-item__name {
+    font-size: 0.9rem;
+  }
+
+  .cart-item__price {
+    font-size: 1rem;
+  }
+
+  #cart-summary {
+    padding: 1.25rem;
+  }
+
+  .cart-total__amount {
+    font-size: 1.5rem;
+  }
+
+  #checkout-button {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  #cart-sidebar {
+    width: 420px !important;
+    max-width: 420px;
+  }
+}
+
+/* ========== ANIMAÇÕES ========== */
+@media (prefers-reduced-motion: reduce) {
+
+  .cart-item,
+  .cart-item:hover,
+  #checkout-button,
+  #checkout-button:hover,
+  .quantity-btn,
+  .cart-item__delete {
+    animation: none;
+    transition: none;
+  }
+}

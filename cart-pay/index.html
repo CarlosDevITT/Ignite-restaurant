@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#069c54">
-  <meta name="description" content="Ignite - Cardápio Online com Delivery">
+  <meta name="description" content="Ignite - Cardápio Online com Delivery. MELHOPUB092">
+  <meta name="keywords" content="MELHOPUB092, restaurante, pub, delivery, cardápio, ignite">
 
   <!-- Preconnect para otimização -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,8 +14,19 @@
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
   <link rel="shortcut icon" href="../assets/images/logos/logo.png" type="image/x-icon">
+  <link rel="apple-touch-icon" href="../assets/images/logos/ignite.jpg">
   <title>Ignite - Cardápio Online</title>
+
+  <!--========== SEO & SOCIAL SHARING ==========-->
+  <meta property="og:title" content="Ignite - Cardápio Online">
+  <meta property="og:description" content="Confira nossas ofertas e peça agora pelo delivery!">
+  <meta property="og:image" content="https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg">
+  <meta property="og:url" content="https://ignite-restaurant.vercel.app/cart-pay/index.html">
+  <meta property="og:type" content="website">
   <link rel="manifest" href="../manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ignite">
 
   <!-- Fix de Erros removido - não necessário em produção -->
 
@@ -41,6 +53,9 @@
 
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+  <!-- ========== CORE UTILS & PROTECTION ========== -->
+  <script src="../src/modules/utils/storage-helper.js"></script>
 
   <!-- ========== SUPABASE CONFIG ========== -->
   <script src="../config/supabase-config.js" defer></script>
@@ -92,6 +107,7 @@
         <div class="location-item">
           <i class="fas fa-map-marker-alt"></i>
           <span>Vieiralves, 04 - Manaus - AM</span>
+          <span>Rua fridolin Erthal Júnior, 97 - Itajaí - SC</span>
           <span class="separator">•</span>
           <span class="more-info">Mais informações</span>
         </div>
@@ -185,6 +201,14 @@
               <div id="categories-list-desktop" class="categories-list-desktop"></div>
             </div>
           </div>
+
+          <button onclick="navOpenProfile()" class="profile-btn-desktop" title="Meu Perfil">
+            <i class="fas fa-user"></i>
+          </button>
+
+          <button onclick="navOpenChat()" class="chat-btn-desktop" title="Conversar com Atendente">
+            <i class="fas fa-comments"></i>
+          </button>
 
           <button id="cart-button-desktop" class="cart-btn-desktop">
             <i class="fas fa-shopping-cart"></i>
@@ -346,7 +370,11 @@
         </div>
         <div class="flex items-center justify-between text-[15px] text-gray-500">
           <span>Taxa de entrega</span>
-          <span>A definir</span>
+          <span id="delivery-fee-val">A definir</span>
+        </div>
+        <div class="flex items-center justify-between text-[13px] text-green-600 font-medium" id="delivery-time-row">
+          <span>Tempo estimado</span>
+          <span id="delivery-time-val">-</span>
         </div>
         <div class="flex items-center justify-between mt-2">
           <span class="text-lg font-bold text-slate-800">Total</span>
@@ -420,34 +448,38 @@
   </nav>
 
   <!-- ========== SEÇÃO/MODAL: CHAT ========== -->
-  <div id="chat-modal" class="fixed inset-0 z-[60] bg-white hidden flex-col">
-    <div class="bg-primary text-white p-4 flex items-center justify-between shadow-md">
-      <div class="flex items-center gap-3">
-        <button onclick="document.getElementById('chat-modal').classList.add('hidden')" class="text-white">
-          <i class="fas fa-arrow-left text-xl"></i>
-        </button>
-        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-          <img src="../assets/images/logos/logo.png" class="w-8 h-8 object-contain">
-        </div>
-        <div>
-          <h3 class="font-bold text-lg leading-tight">Suporte Ignite</h3>
-          <p class="text-xs text-green-200"><i class="fas fa-circle text-[8px] mr-1"></i>Online</p>
+  <div id="chat-modal"
+    class="fixed inset-0 z-[60] bg-gray-50/95 hidden flex-col items-center justify-center backdrop-blur-sm">
+    <div
+      class="bg-white w-full h-full lg:max-w-md lg:max-h-[80vh] lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
+      <div class="bg-primary text-white p-4 flex items-center justify-between shadow-md">
+        <div class="flex items-center gap-3">
+          <button onclick="closeAllModals()" class="text-white hover:opacity-80 transition-opacity">
+            <i class="fas fa-arrow-left text-xl lg:hidden"></i>
+            <i class="fas fa-times text-xl hidden lg:block"></i>
+          </button>
+          <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-inner">
+            <img src="../assets/images/logos/logo.png" class="w-8 h-8 object-contain">
+          </div>
+          <div>
+            <h3 class="font-bold text-lg leading-tight">Atendimento Ignite</h3>
+            <p class="text-xs text-green-200"><i class="fas fa-circle text-[8px] mr-1 animate-pulse"></i>Online</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-20">
-      <!-- Mensagens Iniciais Injetadas via JS (chat-bot.js) -->
-    </div>
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-4">
+        <!-- Mensagens via JS -->
+      </div>
 
-    <div
-      class="absolute bottom-0 left-0 w-full p-3 bg-white border-t border-gray-200 flex items-center gap-2 mb-16 lg:mb-0">
-      <input type="text" id="chat-input" placeholder="Digite sua mensagem..."
-        class="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-0 focus:outline-none placeholder-gray-400">
-      <button id="chat-send-btn"
-        class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:bg-green-700 transition">
-        <i class="fas fa-paper-plane ml-[-2px]"></i>
-      </button>
+      <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2 mb-16 lg:mb-0">
+        <input type="text" id="chat-input" placeholder="Digite sua mensagem..."
+          class="flex-1 bg-gray-100 border-none rounded-full px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-400">
+        <button id="chat-send-btn"
+          class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:rotate-12 transition-transform active:scale-90">
+          <i class="fas fa-paper-plane ml-[-2px]"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -455,7 +487,7 @@
   <div id="profile-modal" class="fixed inset-0 z-[60] bg-gray-50/95 backdrop-blur-sm hidden overflow-y-auto">
     <div class="min-h-full flex items-center justify-center p-4 sm:p-6 mb-16 lg:mb-0">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
-        <button onclick="document.getElementById('profile-modal').classList.add('hidden')"
+        <button onclick="closeAllModals()"
           class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
           <i class="fas fa-times"></i>
         </button>
@@ -590,14 +622,14 @@
   <script src="../src/modules/chat/chat-bot.js" defer></script>
 
   <!-- ========== CART MANAGER UNIFIED ========== -->
-  <script src="../src/modules/cart/cart-manager-unified.js" defer></script>
+  <script src="../src/modules/cart/cart-manager-unified.js?v=1.1" defer></script>
 
   <!-- ========== PAYMENT MANAGER ========== -->
   <script src="../src/modules/payment/payment-manager.js" defer></script>
 
   <!-- ========== PRODUCTS MODULE ========== -->
   <!-- IMPORTANTE: script.js deve carregar ANTES de product-loader.js -->
-  <script src="../src/modules/products/script.js" defer></script>
+  <script src="../src/modules/products/script.js?v=1.1" defer></script>
   <script src="../src/modules/products/product-loader.js" defer></script>
 
   <!-- ========== HEADER FUNCTIONS ========== -->
@@ -683,6 +715,38 @@
     });
   </script>
 
+
+  <!--========== SERVICE WORKER REGISTRATION ==========-->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('SW registrado com sucesso:', registration.scope);
+          })
+          .catch(error => {
+            console.log('Falha ao registrar o SW:', error);
+          });
+      });
+    }
+
+    // Função global para compartilhar pratos específicos
+    window.shareProduct = async function (name, desc, id) {
+      const text = `Olha esse ${name} do Ignite! 😋\n\nConfere aqui:`;
+      const url = `${window.location.origin}/cart-pay/index.html?item=${id}`;
+      if (navigator.share) {
+        try { await navigator.share({ title: name, text: text, url: url }); }
+        catch (err) { if (err.name !== 'AbortError') console.error(err); }
+      } else {
+        navigator.clipboard.writeText(`${text} ${url}`);
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Copiado!', showConfirmButton: false, timer: 2000 });
+        }
+      }
+    };
+  </script>
+  <!--========== CHAT BOT MODULE ==========-->
+  <script src="../src/modules/chat/chat-bot.js" defer></script>
 </body>
 
 </html>

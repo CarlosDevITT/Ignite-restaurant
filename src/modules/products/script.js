@@ -32,7 +32,19 @@ const CONFIG = {
   CACHE_TTL: 5 * 60 * 1000,
   DEBOUNCE_DELAY: 300,
   SWIPE_THRESHOLD: 50,
-  BUSINESS_HOURS: { start: 9, end: 22 }
+  BUSINESS_HOURS: { start: 9, end: 22 },
+  BRANCHES: [
+    { name: 'Manaus (Vieiralves)', lat: -3.1022, lng: -60.0217 },
+    { name: 'Itajaí (Centro)', lat: -26.9078, lng: -48.6619 }
+  ],
+  DELIVERY_RULES: {
+    base_fee: 5.00,
+    per_km_fee: 1.50,
+    min_fee: 5.00,
+    max_fee: 25.00,
+    estimated_time_base: 30, // minutos
+    estimated_time_per_km: 3 // minutos por KM
+  }
 };
 
 // ✅ VARIÁVEIS GLOBAIS (tornar acessível globalmente)
@@ -129,8 +141,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initializeApp() {
   Logger.info('Iniciando aplicação...');
 
-  if (!window.supabase) {
-    throw new Error('Supabase não encontrado');
+  // Aguardar até 3s pelo Supabase SDK ou SupabaseManager ficarem disponíveis
+  const supabaseReady = await new Promise((resolve) => {
+    if (window.supabase?.createClient || window.supabaseManager) {
+      resolve(true);
+      return;
+    }
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.supabase?.createClient || window.supabaseManager) {
+        clearInterval(interval);
+        resolve(true);
+      } else if (attempts >= 30) { // 30 × 100ms = 3s
+        clearInterval(interval);
+        resolve(false);
+      }
+    }, 100);
+  });
+
+  if (!supabaseReady) {
+    Logger.warn('Supabase não encontrado após aguardar. Continuando sem conexão...');
   }
 
   loadFromStorage();
@@ -146,19 +177,22 @@ async function initializeApp() {
 // ✅ CARREGAMENTO DO LOCALSTORAGE
 function loadFromStorage() {
   try {
-    const savedCart = localStorage.getItem('cart');
-    const savedUpdateTime = localStorage.getItem('lastUpdateTime');
+    const savedCart = safeStorage.getItem('cart');
+    const savedUpdateTime = safeStorage.getItem('lastUpdateTime');
 
     cart = savedCart ? JSON.parse(savedCart) : [];
     lastUpdateTime = savedUpdateTime ? parseInt(savedUpdateTime) : 0;
 
+    // Se o UnifiedCartManager já tem dados mais recentes, usar os dele
+    if (window.unifiedCartManager && window.unifiedCartManager.cart.length > cart.length) {
+      cart = window.unifiedCartManager.cart;
+    }
+
     Logger.info(`Dados carregados: ${cart.length} itens no carrinho`);
   } catch (error) {
-    Logger.warn('Erro ao carregar dados salvos', error);
+    Logger.warn('Erro ao carregar dados do storage (usando fallback em memória)');
     cart = [];
     lastUpdateTime = 0;
-    localStorage.removeItem('cart');
-    localStorage.removeItem('lastUpdateTime');
   }
 }
 
@@ -227,7 +261,7 @@ async function checkForUpdates() {
       if (serverUpdate > lastUpdateTime) {
         Logger.info('Atualizações detectadas! Recarregando produtos...');
         lastUpdateTime = serverUpdate;
-        localStorage.setItem('lastUpdateTime', serverUpdate.toString());
+        safeStorage.setItem('lastUpdateTime', serverUpdate.toString());
 
         await loadProducts();
         showToast('Cardápio atualizado!', 'info');
@@ -301,7 +335,7 @@ async function loadProducts() {
         ...result.map(p => new Date(p.updated_at || p.created_at).getTime())
       );
       lastUpdateTime = latestUpdate;
-      localStorage.setItem('lastUpdateTime', latestUpdate.toString());
+      safeStorage.setItem('lastUpdateTime', latestUpdate.toString());
     }
 
     renderProducts();
@@ -485,11 +519,19 @@ function renderNewProducts() {
               `}
             </div>
             
-            <button class="add-to-cart bg-primary hover:bg-secondary text-white p-2 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg" 
-                    data-id="${product.id}" 
-                    title="Adicionar ao carrinho">
-              <i class="fas fa-plus"></i>
-            </button>
+            <div class="flex gap-2">
+              <button class="share-product bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 hover:scale-105" 
+                      onclick="window.shareProduct('${product.name}', '${product.description}', '${product.id}')"
+                      title="Compartilhar">
+                <i class="fas fa-share-alt"></i>
+              </button>
+              
+              <button class="add-to-cart bg-primary hover:bg-secondary text-white p-2 rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-lg" 
+                      data-id="${product.id}" 
+                      title="Adicionar ao carrinho">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
           </div>
           
           ${product.promo_text ? `
@@ -608,10 +650,17 @@ function renderMenuProducts() {
                     </div>
                   ` : ''}
                   
-                  <button class="add-to-cart bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 w-full group-hover:shadow-md" 
-                          data-id="${product.id}">
-                    <i class="fas fa-cart-plus mr-2"></i>Adicionar
-                  </button>
+                  <div class="flex gap-2">
+                    <button class="share-product flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-center" 
+                            onclick="window.shareProduct('${product.name}', '${product.description}', '${product.id}')">
+                      <i class="fas fa-share-alt mr-2"></i>Share
+                    </button>
+                    
+                    <button class="add-to-cart flex-[2] bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg text-sm transition-all duration-200 w-full group-hover:shadow-md" 
+                            data-id="${product.id}">
+                      <i class="fas fa-cart-plus mr-2"></i>Adicionar
+                    </button>
+                  </div>
                 </div>
               </div>
             `;
@@ -624,14 +673,22 @@ function renderMenuProducts() {
 
 // ✅ SISTEMA DE EVENTOS CORRIGIDO (SEM DUPLICAÇÃO)
 function setupEventListeners() {
-  // ✅ CONFIGURAR EVENT DELEGATION UMA ÚNICA VEZ
+  // ✅ CONFIGURAR EVENT DELEGATION UMA ÚNICA VEZ (apenas cliques em produtos)
   setupProductClickHandler();
 
-  // ✅ EVENTOS DO CARRINHO
-  setupCartEventHandlers();
+  // ✅ NOTA: setupCartEventHandlers() foi REMOVIDO daqui para evitar conflito
+  // com o UnifiedCartManager (cart-manager-unified.js) que já gerencia:
+  // cart-button, close-cart, cart-overlay e checkout-button.
 
-  // ✅ OUTROS EVENTOS
+  // ✅ OUTROS EVENTOS (teclado, touch, resize, visibilidade)
   setupAdditionalEventListeners();
+
+  // ✅ Registrar checkout no botão SOMENTE se UnifiedCartManager não estiver presente
+  // (garante que não haja listener duplo no checkout-button)
+  const checkoutBtn = document.getElementById('checkout-button');
+  if (checkoutBtn && !window.unifiedCartManager) {
+    checkoutBtn.addEventListener('click', () => checkout());
+  }
 
   Logger.info('Event listeners configurados com sucesso');
 }
@@ -675,49 +732,14 @@ function setupProductClickHandler() {
   document.addEventListener('click', productClickHandler);
 }
 
-// ✅ EVENTOS DO CARRINHO
+// ✅ EVENTOS DO CARRINHO (DESATIVADO - gerenciado pelo UnifiedCartManager)
+// Esta função foi desativada para evitar conflito de listeners duplicados.
+// O cart-manager-unified.js já gerencia: cart-button, close-cart,
+// cart-overlay e checkout-button com stopImmediatePropagation correto.
 function setupCartEventHandlers() {
-  // LIMPAR HANDLERS ANTIGOS
-  cartEventHandlers.forEach(handler => {
-    if (handler.element && handler.event && handler.fn) {
-      handler.element.removeEventListener(handler.event, handler.fn);
-    }
-  });
+  // Função mantida por compatibilidade, mas não faz mais nada.
+  // Todos os eventos do carrinho são gerenciados pelo UnifiedCartManager.
   cartEventHandlers = [];
-
-  const elements = {
-    cartButton: document.getElementById('cart-button'),
-    closeCart: document.getElementById('close-cart'),
-    cartOverlay: document.getElementById('cart-overlay'),
-    checkoutButton: document.getElementById('checkout-button')
-  };
-
-  // ADICIONAR NOVOS HANDLERS
-  if (elements.cartButton) {
-    const handler = () => toggleCart();
-    elements.cartButton.addEventListener('click', handler);
-    cartEventHandlers.push({ element: elements.cartButton, event: 'click', fn: handler });
-  }
-
-  if (elements.closeCart) {
-    const handler = () => toggleCart();
-    elements.closeCart.addEventListener('click', handler);
-    cartEventHandlers.push({ element: elements.closeCart, event: 'click', fn: handler });
-  }
-
-  if (elements.cartOverlay) {
-    const handler = (e) => {
-      if (e.target === elements.cartOverlay) toggleCart();
-    };
-    elements.cartOverlay.addEventListener('click', handler);
-    cartEventHandlers.push({ element: elements.cartOverlay, event: 'click', fn: handler });
-  }
-
-  if (elements.checkoutButton) {
-    const handler = () => checkout();
-    elements.checkoutButton.addEventListener('click', handler);
-    cartEventHandlers.push({ element: elements.checkoutButton, event: 'click', fn: handler });
-  }
 }
 
 // ✅ EVENTOS ADICIONAIS
@@ -778,7 +800,10 @@ function setupTouchEvents() {
 }
 
 function handleWindowResize() {
-  Logger.info('Janela redimensionada');
+  // Sincronizar estado do carrinho no resize se necessário
+  if (window.unifiedCartManager) {
+    window.unifiedCartManager.updateCartUI();
+  }
 }
 
 function handleVisibilityChange() {
@@ -1342,21 +1367,25 @@ function showLoading() {
   const menu = document.getElementById('menu');
   const newProducts = document.getElementById('new-products');
 
-  const loadingHTML = `
-    <div class="flex justify-center items-center py-16">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-        <p class="text-gray-600 animate-pulse">Carregando delícias...</p>
-      </div>
+  const skeletonHTML = `
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text" style="width: 50%"></div>
+      <div class="skeleton skeleton-button mt-4"></div>
     </div>
   `;
 
+  const manySkeletons = Array(4).fill(skeletonHTML).join('');
+  const menuSkeletons = Array(6).fill(skeletonHTML).join('');
+
   if (menu) {
-    menu.innerHTML = `<div class="col-span-full">${loadingHTML}</div>`;
+    menu.innerHTML = menuSkeletons;
   }
 
   if (newProducts) {
-    newProducts.innerHTML = loadingHTML;
+    newProducts.innerHTML = manySkeletons;
   }
 }
 

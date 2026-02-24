@@ -1,9 +1,15 @@
 // cart-manager-unified.js - Gerenciador Unificado do Carrinho (Mobile e Desktop)
 
+// ✅ NOTA: safeStorage agora é provido globalmente pelo storage-helper.js
+
+
+
 class UnifiedCartManager {
   constructor() {
     this.cart = [];
     this.isOpen = false;
+    this.deliveryFee = 0;
+    this.deliveryTime = null;
     this.init();
   }
 
@@ -18,6 +24,21 @@ class UnifiedCartManager {
     }, 100);
   }
 
+  // Método auxiliar para feedback háptico (vibração)
+  vibrate(type = 'soft') {
+    if (!navigator.vibrate) return;
+
+    if (type === 'soft') {
+      navigator.vibrate(20);
+    } else if (type === 'medium') {
+      navigator.vibrate([30, 10, 30]);
+    } else if (type === 'success') {
+      navigator.vibrate([10, 50, 20]);
+    } else if (type === 'error') {
+      navigator.vibrate([100, 50, 100]);
+    }
+  }
+
   setupElements() {
     // Elementos do carrinho
     this.cartSidebar = document.getElementById('cart-sidebar');
@@ -29,13 +50,15 @@ class UnifiedCartManager {
     this.checkoutButton = document.getElementById('checkout-button');
     this.closeCartBtn = document.getElementById('close-cart');
 
-    // Botões do carrinho (mobile e desktop)
+    // Botões do carrinho (mobile, desktop e header)
     this.cartButtonMobile = document.getElementById('cart-button');
     this.cartButtonDesktop = document.getElementById('cart-button-desktop');
+    this.cartButtonHeader = document.getElementById('cart-button-header');
 
     // Contadores
     this.cartCountMobile = document.getElementById('cart-count');
     this.cartCountDesktop = document.getElementById('cart-count-desktop');
+    this.cartCountHeader = document.getElementById('cart-count-header');
   }
 
   attachEventListeners() {
@@ -49,6 +72,15 @@ class UnifiedCartManager {
 
     if (this.cartButtonDesktop) {
       this.cartButtonDesktop.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        this.toggleCart();
+      });
+    }
+
+    if (this.cartButtonHeader) {
+      this.cartButtonHeader.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopImmediatePropagation();
         this.toggleCart();
       });
@@ -76,8 +108,8 @@ class UnifiedCartManager {
   syncWithGlobalCart() {
     // Sincronizar com carrinho global do script.js se existir
     try {
-      const globalCart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const igniteCart = JSON.parse(localStorage.getItem('igniteCart') || '[]');
+      const globalCart = JSON.parse(safeStorage.getItem('cart') || '[]');
+      const igniteCart = JSON.parse(safeStorage.getItem('igniteCart') || '[]');
 
       // Usar o carrinho mais atualizado
       const sourceCart = globalCart.length > igniteCart.length ? globalCart : igniteCart;
@@ -175,12 +207,14 @@ class UnifiedCartManager {
 
     this.saveCartToStorage();
     this.updateCartUI();
+    this.vibrate('soft');
   }
 
   removeItem(productId) {
     this.cart = this.cart.filter(item => item.id != productId);
     this.saveCartToStorage();
     this.updateCartUI();
+    this.vibrate('medium');
   }
 
   updateQuantity(productId, change) {
@@ -201,6 +235,13 @@ class UnifiedCartManager {
 
     item.quantity = newQuantity;
     this.saveCartToStorage();
+    this.updateCartUI();
+    this.vibrate('soft');
+  }
+
+  setDeliveryExtra(fee, time) {
+    this.deliveryFee = fee;
+    this.deliveryTime = time;
     this.updateCartUI();
   }
 
@@ -243,16 +284,25 @@ class UnifiedCartManager {
     }
 
     // 2. Atualizar Totais
-    const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const finalTotal = subtotal + this.deliveryFee;
+
     const subtotalEl = document.getElementById('cart-subtotal-val');
     const totalEl = document.getElementById('cart-total-val');
+    const deliveryFeeEl = document.getElementById('delivery-fee-val');
+    const deliveryTimeEl = document.getElementById('delivery-time-val');
 
-    if (subtotalEl) subtotalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    if (totalEl) totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    if (subtotalEl) subtotalEl.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+    if (totalEl) totalEl.textContent = `R$ ${finalTotal.toFixed(2).replace('.', ',')}`;
+
+    if (this.deliveryFee > 0) {
+      if (deliveryFeeEl) deliveryFeeEl.textContent = `R$ ${this.deliveryFee.toFixed(2).replace('.', ',')}`;
+      if (deliveryTimeEl) deliveryTimeEl.textContent = `${this.deliveryTime}-${this.deliveryTime + 15} min`;
+    }
 
     // Atualizar "Seu Pedido" fallback antigo se existir
     if (this.cartTotal && this.cartTotal.id !== 'cart-total-val') {
-      this.cartTotal.innerHTML = this.getTotalHTML(total);
+      this.cartTotal.innerHTML = this.getTotalHTML(finalTotal);
     }
 
     // 3. Atualizar Contadores Header
@@ -419,15 +469,14 @@ class UnifiedCartManager {
   }
 
   updateCartCount(count) {
-    if (this.cartCountMobile) {
-      this.cartCountMobile.textContent = count;
-      this.cartCountMobile.style.display = count > 0 ? 'flex' : 'none';
-    }
+    const counts = [this.cartCountMobile, this.cartCountDesktop, this.cartCountHeader];
 
-    if (this.cartCountDesktop) {
-      this.cartCountDesktop.textContent = count;
-      this.cartCountDesktop.style.display = count > 0 ? 'flex' : 'none';
-    }
+    counts.forEach(el => {
+      if (el) {
+        el.textContent = count;
+        el.style.display = count > 0 ? 'flex' : 'none';
+      }
+    });
   }
 
   async checkout() {
@@ -531,9 +580,9 @@ class UnifiedCartManager {
     // Limpar carrinho após envio
     setTimeout(() => {
       this.cart = [];
-      this.saveCartToStorage();
       this.updateCartUI();
       this.closeCart();
+      this.vibrate('success');
       this.showMessage('Pedido enviado com sucesso! Acompanhe pelo WhatsApp.', 'success');
     }, 1000);
   }
@@ -586,17 +635,17 @@ class UnifiedCartManager {
 
   saveCartToStorage() {
     try {
-      localStorage.setItem('igniteCart', JSON.stringify(this.cart));
-      localStorage.setItem('cart', JSON.stringify(this.cart));
+      safeStorage.setItem('igniteCart', JSON.stringify(this.cart));
+      safeStorage.setItem('cart', JSON.stringify(this.cart));
     } catch (e) {
-      console.warn('⚠️ localStorage bloqueado ou cheio. O carrinho funcionará apenas nesta sessão.', e);
+      // Silenciado - safeStorage já trata internamente
     }
   }
 
   loadCartFromStorage() {
     try {
-      const igniteCart = localStorage.getItem('igniteCart');
-      const cartStorage = localStorage.getItem('cart');
+      const igniteCart = safeStorage.getItem('igniteCart');
+      const cartStorage = safeStorage.getItem('cart');
 
       let saved = igniteCart || cartStorage;
 
@@ -608,7 +657,7 @@ class UnifiedCartManager {
         }
       }
     } catch (error) {
-      console.warn('⚠️ Erro ao acessar localStorage:', error);
+      // Silenciado - safeStorage já trata internamente
     }
 
     // Fallback ou se estiver vazio

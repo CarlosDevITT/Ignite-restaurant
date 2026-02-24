@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Você está offline - Ignite Restaurante</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --first-color: #069C54;
+            --title-color: #393939;
+            --text-color: #707070;
+            --body-color: #FBFEFD;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--body-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .offline-container {
+            max-width: 400px;
+        }
+
+        .icon-wrapper {
+            font-size: 5rem;
+            color: var(--first-color);
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            color: var(--title-color);
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background-color: var(--first-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(6, 156, 84, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(6, 156, 84, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-container">
+        <div class="icon-wrapper">
+            <i class="fas fa-wifi-slash"></i>
+        </div>
+        <h1>Ops! Sem conexão.</h1>
+        <p>Parece que você está offline. Verifique sua conexão com a internet para saborear o nosso cardápio.</p>
+        <button onclick="window.location.reload()" class="btn">Tentar Novamente</button>
+    </div>
+</body>
+
+</html>

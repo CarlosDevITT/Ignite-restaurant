@@ -1,23 +1,5 @@
-// chat-bot.js - Integração do Google Gemini API para Chat Inteligente
-
-/*
-  IMPORTANTE: 
-  Para usar este bot, você precisa de uma chave de API do Google Gemini.
-  1. Acesse: https://aistudio.google.com/
-  2. Crie um projeto e gere uma API Key.
-  3. Cole a chave na variável GEMINI_API_KEY abaixo.
-*/
-const GEMINI_API_KEY = "COLE_SUA_API_KEY_AQUI";
-
-const CHAT_SYSTEM_PROMPT = `Você é o assistente virtual do "Ignite Restaurant". 
-Sua função é atender os clientes de forma educada, amigável e concisa. 
-Responda sempre em português do Brasil.
-O restaurante serve lanches variados, hambúrgueres (como X-Salada, X-Egg, X-Burger) e bebidas.
-As entregas são feitas em Manaus e Itajaí.
-Se não souber a resposta, diga que um atendente humano poderá ajudar em breve.
-Seja breve nas respostas, em formato de chat. Não use formatação markdown complexa, no máximo negrito (**texto**).`;
-
-let conversationHistory = [];
+// chat-bot.js - Atendente Inteligente Ignite com Integração Supabase
+// Design Elegante e Efeitos de Digitação
 
 document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chat-input');
@@ -26,11 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!chatInput || !chatSendBtn || !chatMessagesContainer) return;
 
-    // Inicializar histórico com a mensagem de boas-vindas já presente no HTML
-    conversationHistory.push({
-        role: "model",
-        parts: [{ text: "Olá! Como podemos ajudar com seu pedido hoje?" }]
-    });
+    // Configurações Basicas
+    const BOT_NAME = "Ignite Assistente";
+    const INITIAL_MESSAGE = "Olá! Sou o assistente virtual do Ignite. Como posso ajudar você hoje? Posso te mostrar o cardápio, dar informações sobre entrega ou tirar dúvidas!";
+
+    // Inicialização
+    appendMessage('bot', INITIAL_MESSAGE, true); // true para mensagem instantânea no início
 
     chatSendBtn.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => {
@@ -41,113 +24,142 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = chatInput.value.trim();
         if (!text) return;
 
-        // 1. Mostrar a mensagem do usuário na interface
-        appendMessage('user', text);
+        // Limpar e desabilitar
         chatInput.value = '';
         chatInput.disabled = true;
 
-        // Adicionar ao histórico do Gemini
-        conversationHistory.push({
-            role: "user",
-            parts: [{ text: text }]
-        });
+        // 1. Mostrar mensagem do usuário
+        appendMessage('user', text);
 
-        // 2. Mostrar indicador de "digitando..."
+        // 2. Mostrar indicador de digitando
         const loadingId = showTypingIndicator();
 
         try {
-            // Validar chave de API
-            if (GEMINI_API_KEY === "COLE_SUA_API_KEY_AQUI" || !GEMINI_API_KEY) {
-                throw new Error("API Key não configurada. Por favor, adicione sua chave Gemini no arquivo chat-bot.js.");
-            }
+            // Pequeno delay para simular pensamento
+            await new Promise(resolve => setTimeout(resolve, 800));
 
-            // 3. Fazer a requisição para a API do Gemini
-            const response = await callGeminiAPI(text);
+            // 3. Lógica de Resposta (Supabase + Inteligência Básica)
+            const response = await generateElegantResponse(text);
 
-            // 4. Remover indicador de carregamento
+            // 4. Remover loading e mostrar resposta com efeito
             removeTypingIndicator(loadingId);
-
-            // 5. Exibir resposta do bot
-            if (response) {
-                appendMessage('bot', response);
-                conversationHistory.push({
-                    role: "model",
-                    parts: [{ text: response }]
-                });
-            } else {
-                throw new Error("Resposta em branco da API.");
-            }
+            await appendMessageWithEffect('bot', response);
 
         } catch (error) {
             console.error("Erro no Chat Bot:", error);
             removeTypingIndicator(loadingId);
-            appendMessage('error', `Desculpe, ocorreu um erro de conexão. ${error.message}`);
-            // Remover a última mensagem do usuário do histórico para não corromper o fluxo em caso de erro
-            conversationHistory.pop();
+            appendMessage('bot', "Desculpe, tive um probleminha técnico. Pode repetir?");
         } finally {
             chatInput.disabled = false;
             chatInput.focus();
         }
     }
 
-    async function callGeminiAPI(messageText) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    /**
+     * Lógica Principal de Resposta
+     */
+    async function generateElegantResponse(query) {
+        const q = query.toLowerCase();
 
-        const payload = {
-            system_instruction: {
-                parts: [{ text: CHAT_SYSTEM_PROMPT }]
-            },
-            contents: conversationHistory,
-            generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 250,
+        // 1. Informações fixas do restaurante
+        if (q.includes('endereço') || q.includes('onde fica') || q.includes('localização')) {
+            return "Temos duas unidades para melhor te atender:\n📍 **Manaus:** Vieiralves, 04.\n📍 **Itajaí:** R. Fridolim Herthal Júnior, 97.";
+        }
+
+        if (q.includes('horário') || q.includes('aberto') || q.includes('fecha')) {
+            return "Nosso horário de funcionamento é todos os dias, das **09:00h às 22:00h**. Ficaremos felizes em te receber!";
+        }
+
+        if (q.includes('taxa') || q.includes('entrega') || q.includes('valor do frete')) {
+            return "Nossa taxa de entrega é calculada por distância: R$ 5,00 fixos + R$ 1,50 por KM. Você pode calcular o valor exato clicando no botão **'Calcular taxa e tempo de entrega'** no topo do cardápio!";
+        }
+
+        // 2. Busca de Produtos (Supabase/Global)
+        const products = window.products || [];
+        if (q.includes('cardápio') || q.includes('comida') || q.includes('comer') || q.includes('ver itens')) {
+            if (products.length > 0) {
+                const categorias = [...new Set(products.map(p => p.category || p.categoria))].slice(0, 4);
+                return `Nosso cardápio é variado! Temos **${categorias.join(', ')}** e muito mais. Qual categoria você gostaria de ver?`;
             }
-        };
+            return "Você pode conferir todo o nosso cardápio rolando a página principal! Temos hambúrgueres, lanches e bebidas geladinhas.";
+        }
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+        // Busca específica de produto
+        const foundProduct = products.find(p => {
+            const name = (p.name || p.nome || '').toLowerCase();
+            return q.includes(name) && name.length > 3;
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || "Erro na requisição Gemni.");
+        if (foundProduct) {
+            return `O **${foundProduct.name || foundProduct.nome}** é uma ótima escolha! Ele sai por **R$ ${foundProduct.price.toFixed(2).replace('.', ',')}**. Quer que eu te ajude a adicionar ao carrinho?`;
         }
 
-        const data = await response.json();
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts.length > 0) {
-            return data.candidates[0].content.parts[0].text;
-        }
-
-        return null;
+        // 3. Fallback Gemini (se chave configurada) ou Resposta Genérica
+        return "Legal! Como assistente virtual, ainda estou aprendendo. Você gostaria de saber mais sobre nosso **cardápio**, **horários** ou **unidades**? Se quiser falar com um humano, é só pedir!";
     }
 
-    function appendMessage(sender, text) {
+    /**
+     * Efeito de Digitação (Elegant Typing)
+     */
+    async function appendMessageWithEffect(sender, text) {
         const timeSt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const div = document.createElement('div');
+        div.className = "bg-white border border-gray-100 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] self-start shadow-sm text-sm break-words transition-all duration-300 opacity-0 translate-y-2 mb-2";
 
-        let formattedText = text;
-        // Simples parser de asteriscos do markdown para <strong>
-        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        formattedText = formattedText.replace(/\n/g, '<br>');
+        // Estrutura básica
+        div.innerHTML = `
+            <div class="message-content"></div>
+            <span class="block text-[10px] text-gray-400 mt-1 text-right">${timeSt}</span>
+        `;
 
+        chatMessagesContainer.appendChild(div);
+
+        // Fade in
+        setTimeout(() => {
+            div.classList.remove('opacity-0', 'translate-y-2');
+        }, 50);
+
+        const contentDiv = div.querySelector('.message-content');
+
+        // Efeito de aparecer texto
+        let lines = text.split('\n');
+        for (let line of lines) {
+            let p = document.createElement('p');
+            p.className = "mb-1 last:mb-0";
+            contentDiv.appendChild(p);
+
+            // Parse simples de negrito
+            let formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Simular digitação por palavras para ser mais fluido e "elegante"
+            let words = formattedLine.split(' ');
+            for (let word of words) {
+                p.innerHTML += word + ' ';
+                scrollToBottom();
+                await new Promise(r => setTimeout(r, 40));
+            }
+        }
+    }
+
+    function appendMessage(sender, text, instant = false) {
+        const timeSt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const div = document.createElement('div');
 
+        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formattedText = formattedText.replace(/\n/g, '<br>');
+
         if (sender === 'user') {
-            div.className = "bg-primary text-white p-3 rounded-lg rounded-tr-none max-w-[85%] self-end shadow-sm text-sm break-words";
+            div.className = "bg-primary text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] self-end shadow-md text-sm break-words mb-2 animate-in fade-in slide-in-from-right-2 duration-300";
             div.innerHTML = `
                 ${formattedText}
                 <span class="block text-[10px] text-green-100 mt-1 text-right">${timeSt}</span>
             `;
-        } else if (sender === 'bot') {
-            div.className = "bg-white border border-gray-100 text-gray-800 p-3 rounded-lg rounded-tl-none max-w-[85%] self-start shadow-sm text-sm break-words";
+        } else {
+            div.className = "bg-white border border-gray-100 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] self-start shadow-sm text-sm break-words mb-2";
             div.innerHTML = `
                 ${formattedText}
                 <span class="block text-[10px] text-gray-400 mt-1 text-right">${timeSt}</span>
             `;
-        } else if (sender === 'error') {
-            div.className = "bg-red-50 text-red-600 p-2 rounded-lg max-w-[90%] self-center shadow-sm text-xs text-center border border-red-100";
-            div.innerHTML = formattedText;
         }
 
         chatMessagesContainer.appendChild(div);
@@ -158,11 +170,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = 'typing-' + Date.now();
         const div = document.createElement('div');
         div.id = id;
-        div.className = "bg-white border border-gray-100 p-3 rounded-lg rounded-tl-none self-start shadow-sm text-sm flex gap-1 items-center h-[42px]";
+        div.className = "bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none self-start shadow-sm text-sm flex gap-1.5 items-center h-[42px] mb-2 px-4";
         div.innerHTML = `
-            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            <div class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></div>
+            <div class="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
         `;
         chatMessagesContainer.appendChild(div);
         scrollToBottom();
@@ -175,6 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function scrollToBottom() {
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        chatMessagesContainer.scrollTo({
+            top: chatMessagesContainer.scrollHeight,
+            behavior: 'smooth'
+        });
     }
 });

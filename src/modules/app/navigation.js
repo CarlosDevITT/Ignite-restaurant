@@ -68,6 +68,7 @@ function closeAllModals() {
     }
     if (profile) {
         profile.classList.add('hidden');
+        profile.classList.remove('flex');
     }
 }
 

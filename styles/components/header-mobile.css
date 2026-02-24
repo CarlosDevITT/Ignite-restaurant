@@ -85,12 +85,18 @@
   text-decoration: underline;
 }
 
-/* Status do Restaurante */
+/* Status do Restaurante - Efeito Vidro Premium */
 .schedule-status {
-  background: #000;
-  
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
   text-align: center;
-  margin-bottom: 0.75rem;
+  margin: 0 auto 1.25rem auto;
+  padding: 0.4rem;
+  max-width: fit-content;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
 }
 
 .schedule-status .status-text {
@@ -103,15 +109,15 @@
 }
 
 .schedule-status .status-text.fechado {
-  background: rgba(255, 255, 255, 0.95);
-  color: #DC2626;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.2);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .schedule-status .status-text.aberto {
-  background: rgba(255, 255, 255, 0.95);
-  color: #069C54;
-  box-shadow: 0 2px 8px rgb(0, 0, 0);
+  background: rgba(34, 197, 94, 0.2);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Botão Calcular Entrega */
@@ -584,6 +590,8 @@
     padding: 0.5rem 0;
   }
 
+  .profile-btn-desktop,
+  .chat-btn-desktop,
   .cart-btn-desktop {
     position: relative;
     width: 50px;
@@ -601,6 +609,8 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
+  .profile-btn-desktop:hover,
+  .chat-btn-desktop:hover,
   .cart-btn-desktop:hover {
     background: white;
     transform: translateY(-2px);
@@ -648,13 +658,14 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.mobile-header > * {
+.mobile-header>* {
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -675,9 +686,12 @@
 }
 
 @keyframes pulseHighlight {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 4px 16px rgba(255, 215, 0, 0.4);
   }
+
   50% {
     box-shadow: 0 6px 24px rgba(255, 215, 0, 0.6);
   }
@@ -685,7 +699,8 @@
 
 /* Acessibilidade */
 @media (prefers-reduced-motion: reduce) {
-  .mobile-header > *,
+
+  .mobile-header>*,
   .delivery-calc-btn,
   .cart-btn-mobile,
   .search-btn-mobile,
@@ -695,3 +710,43 @@
   }
 }
 
+/* Modais Desktop */
+@media (min-width: 1024px) {
+
+  #chat-modal,
+  #profile-modal {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(12px);
+    z-index: 100 !important;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #chat-modal.flex,
+  #profile-modal:not(.hidden) {
+    display: flex !important;
+  }
+
+  /* Container Interno do Chat Desktop */
+  #chat-modal>div:first-child,
+  #profile-modal>div:first-child {
+    width: 100%;
+    height: 100%;
+    max-width: 450px;
+    max-height: 80vh;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  #chat-modal {
+    padding: 2rem;
+  }
+
+  #chat-modal .absolute.bottom-0 {
+    position: relative;
+    margin-top: auto;
+  }
+}

@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#069C54">
-    <meta name="description" content="Ignite - Restaurante pub com as melhores refeições da cidade">
+    <meta name="description" content="Ignite - Restaurante pub com as melhores refeições da cidade. MELHOPUB092">
+    <meta name="keywords" content="MELHOPUB092, restaurante, pub, delivery, manaus, ignite">
 
     <!-- Preconnect para otimização -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +16,11 @@
 
     <!-- Favicons -->
     <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/x-icon">
+    <link rel="apple-touch-icon" href="assets/images/logos/ignite.jpg">
     <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ignite">
 
     <!--========== BOX ICONS ==========-->
     <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
@@ -24,10 +29,11 @@
         crossorigin="anonymous" />
 
     <!--========== CSS ==========-->
-    <link rel="stylesheet" href="styles/base/main.css">
+    <link rel="stylesheet" href="styles.css">
 
     <!-- Tailwind CSS (Unificado com checkout) -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -45,10 +51,71 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Cart Unified Styles -->
-    <link rel="stylesheet" href="styles/components/cart-unified.css">
-    <link rel="stylesheet" href="styles/components/payment-styles.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
+    <!--========== SEO & SOCIAL SHARING ==========-->
+    <meta property="og:title" content="Ignite - Restaurante Pub">
+    <meta property="og:description"
+        content="As melhores refeições e delivery da cidade. Confira nosso cardápio online!">
+    <meta property="og:image" content="https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg">
+    <meta property="og:url" content="https://ignite-restaurant.vercel.app">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "Ignite - Restaurante Pub - MELHOPUB092",
+      "image": "https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg",
+      "@id": "https://ignite-restaurant.vercel.app",
+      "url": "https://ignite-restaurant.vercel.app",
+      "telephone": "+5592985130951",
+      "priceRange": "$$",
+      "menu": "https://ignite-restaurant.vercel.app/cart-pay/index.html",
+      "servesCuisine": "Brasileira, Pub",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Av. Principal, 123",
+        "addressLocality": "Manaus",
+        "addressRegion": "AM",
+        "postalCode": "69000-000",
+        "addressCountry": "BR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -3.119027,
+        "longitude": -60.021731
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "09:00",
+          "closes": "22:00"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "128"
+      },
+      "sameAs": [
+        "https://www.instagram.com/ignite_restaurante",
+        "https://wa.me/5592985130951"
+      ]
+    }
+    </script>
 
     <title>Ignite - Restaurante Pub</title>
 </head>
@@ -69,15 +136,33 @@
                     <li class="nav__item"><a href="#home" class="nav__link active-link">Home</a></li>
                     <li class="nav__item"><a href="#about" class="nav__link">Sobre</a></li>
                     <li class="nav__item"><a href="#services" class="nav__link">Services</a></li>
-                    <li class="nav__item"><a href="#menu" class="nav__link">Menu</a></li>
+                    <li class="nav__item"><a href="cart-pay/index.html" class="nav__link">Cardápio</a></li>
                     <li class="nav__item"><a href="#contact" class="nav__link">Contato</a></li>
 
                     <li class="nav__item">
-                        <button id="cart-button-header" onclick="window.toggleCart()"
+                        <button id="cart-button-header"
                             class="nav__link bg-transparent border-none cursor-pointer relative">
                             <i class='bx bx-shopping-bag text-xl'></i>
-                            <span id="cart-count"
+                            <span id="cart-count-header"
                                 class="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                        </button>
+                    </li>
+
+                    <li class="nav__item">
+                        <button id="share-button" class="nav__link bg-transparent border-none cursor-pointer">
+                            <i class='bx bx-share-alt text-xl'></i>
+                        </button>
+                    </li>
+
+                    <li class="nav__item">
+                        <button onclick="navOpenProfile()" class="nav__link bg-transparent border-none cursor-pointer">
+                            <i class='bx bx-user text-xl'></i>
+                        </button>
+                    </li>
+
+                    <li class="nav__item">
+                        <button onclick="navOpenChat()" class="nav__link bg-transparent border-none cursor-pointer">
+                            <i class='bx bx-message-rounded-dots text-xl'></i>
                         </button>
                     </li>
 
@@ -102,8 +187,8 @@
                 <div class="home__data">
                     <h1 class="home__title">Ignite lounge </h1>
                     <h2 class="home__subtitle">Onde cada mordida <br> é uma delícia.</h2>
-                    <button onclick="window.toggleCart()" class="button border-none cursor-pointer">Peça agora</button>
-
+                    <a href="cart-pay/index.html"><button class="button border-none cursor-pointer">Peça
+                            agora</button></a>
                 </div>
 
                 <img src="assets/images/logos/ignite2.png" alt="" class="home__img">
@@ -156,62 +241,6 @@
                     <p class="services__description">Quer comer saudável sem perder o sabor? Nossos Marmitex Fit são a
                         escolha certa! Pratos nutritivos e deliciosos que vão te ajudar a manter a forma. Experimente e
                         sinta a diferença!</p>
-                </div>
-            </div>
-        </section>
-
-        <!--========== MENU ==========-->
-        <section class="menu section bd-container" id="menu">
-            <span class="section-subtitle">Especial</span>
-            <h2 class="section-title">Menu Delicioso</h2>
-
-            <div class="menu__container bd-grid">
-                <div class="menu__content">
-                    <img src="./assets/l2.jpg" alt="" class="menu__img">
-                    <h3 class="menu__name">Calabresa.</h3>
-                    <span class="menu__detail">Pratos Comerciais</span>
-                    <span class="menu__preci">R$42,00</span>
-                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                </div>
-
-                <div class="menu__content">
-                    <img src="./assets/strogonoff-frango.jpg" alt="" class="menu__img">
-                    <h3 class="menu__name">Frango ao molho</h3>
-                    <span class="menu__detail">Prato delicioso</span>
-                    <span class="menu__preci">R$12,00</span>
-                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                </div>
-
-                <div class="menu__content">
-                    <img src="./assets/strogonoff-carne.jpg" alt="" class="menu__img">
-                    <h3 class="menu__name">Carne Biriyani</h3>
-                    <span class="menu__detail">Prato delicioso</span>
-                    <span class="menu__preci">R$39,50</span>
-                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                </div>
-
-                <div class="menu__content">
-                    <img src="./assets/lasanha-bolonhesa.jpg" alt="" class="menu__img">
-                    <h3 class="menu__name">lasanha-bolonhesa</h3>
-                    <span class="menu__detail">Prato delicioso</span>
-                    <span class="menu__preci">R$59,50</span>
-                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                </div>
-
-                <div class="menu__content">
-                    <img src="./assets/contra-file.jpg" alt="" class="menu__img">
-                    <h3 class="menu__name">contra file</h3>
-                    <span class="menu__detail">comercial</span>
-                    <span class="menu__preci">R$59,50</span>
-                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
-                </div>
-
-                <div class="menu__content">
-                    <img src="./assets/bife-role.jpg" alt="" class="menu__img">
-                    <h3 class="menu__name">bife role</h3>
-                    <span class="menu__detail">Prato delicioso</span>
-                    <span class="menu__preci">R$39,50</span>
-                    <a href="#" class="button menu__button"><i class='bx bx-cart-alt'></i></a>
                 </div>
             </div>
         </section>
@@ -287,69 +316,14 @@
         <p class="footer__copy">&#169; All right reserved</p>
     </footer>
 
-    <!--========== UNIFIED CART SIDEBAR ==========-->
-    <div id="cart-sidebar"
-        class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col font-sans border-l border-gray-100"
-        style="background-color: #ffffff !important;">
-        <!-- Header -->
-        <div class="px-5 py-6 flex items-center justify-between bg-white border-b border-gray-50">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-primary">
-                    <i class="fas fa-shopping-bag text-xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-black text-slate-800 m-0 tracking-tight">CARRINHO</h2>
-                    <p class="text-[11px] text-gray-400 font-bold uppercase tracking-widest m-0 mt-0.5">Ignite
-                        Restaurant</p>
-                </div>
-            </div>
-            <button id="close-cart"
-                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all border-none cursor-pointer">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-        </div>
 
-        <!-- Scrollable Area -->
-        <div class="flex-1 overflow-y-auto bg-gray-50/30 scrollbar-hide py-2">
-            <!-- Itens do Carrinho -->
-            <div class="px-5 py-4 pb-2 flex items-center justify-between bg-white mt-1">
-                <h3 class="text-[17px] font-bold text-slate-800 m-0">Sua sacola</h3>
-                <button id="cart-clear-btn"
-                    class="text-[#1a365d] text-xs font-bold uppercase tracking-wider hover:text-blue-800 transition-colors bg-transparent border-none p-0 cursor-pointer">Limpar</button>
-            </div>
-            <div id="cart-items" class="px-5 py-2 flex flex-col gap-3 bg-white">
-                <!-- Itens injetados via JS -->
-            </div>
-
-            <!-- Totals -->
-            <div class="px-5 py-4 bg-white border-b border-gray-100 mt-2 flex flex-col gap-2">
-                <div class="flex items-center justify-between text-[15px] text-gray-500">
-                    <span>Subtotal</span>
-                    <span id="cart-subtotal-val">R$ 0,00</span>
-                </div>
-                <div class="flex items-center justify-between mt-2">
-                    <span class="text-lg font-bold text-slate-800">Total</span>
-                    <span id="cart-total-val" class="text-xl font-bold text-slate-800">R$ 0,00</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="p-4 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.05)] z-20">
-            <button id="checkout-button" type="button"
-                class="w-full bg-[#069C54] text-white font-bold text-[17px] py-[14px] rounded-lg hover:bg-[#048654] transition-colors border-none cursor-pointer flex items-center justify-center gap-2">
-                Continuar para Checkout
-            </button>
-        </div>
-    </div>
-    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300">
-    </div>
-
+    <!--========== CORE UTILS & PROTECTION ==========-->
+    <script src="src/modules/utils/storage-helper.js"></script>
 
     <!--========== SPLASH SCREEN MODULE ==========-->
     <script src="src/state/splash-module.js"></script>
     <script>
-        // Inicializar splash screen apenas na abertura
+        // Inicializar splash screen com proteção de storage
         new SplashScreen({
             duration: 3000,
             autoShow: true,
@@ -361,20 +335,210 @@
     <!--========== SECTION LOADER MODULE ==========-->
     <script src="src/state/section-loader.js" defer></script>
 
-    <!--========== PERFORMANCE OPTIMIZER ==========-->
-    <script src="src/state/performance-optimizer.js" defer></script>
+    <!--========== APP NAVIGATION (Bottom Nav & Modals) ==========-->
+    <script src="src/modules/app/navigation.js" defer></script>
 
     <!--========== SCROLL REVEAL ==========-->
     <script src="https://unpkg.com/scrollreveal" defer></script>
 
-    <!--========== SUPABASE ==========-->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config/supabase-config.js"></script>
+    <!--========== PWA INSTALL BANNER ==========-->
+    <div id="install-banner" class="install-banner">
+        <div class="install-banner__header">
+            <img src="assets/images/logos/ignite.jpg" alt="Ignite Icon" class="install-banner__icon">
+            <div class="install-banner__content">
+                <h3 class="install-banner__title">Instalar Ignite App</h3>
+                <p class="install-banner__text">Acesse nosso cardápio mais rápido e peça com um toque direto da sua tela
+                    inicial.</p>
+            </div>
+        </div>
+        <div class="install-banner__buttons">
+            <button id="btn-install" class="install-banner__btn install-banner__btn--install">Instalar Agora</button>
+            <button id="btn-close-banner" class="install-banner__btn install-banner__btn--close">Depois</button>
+        </div>
+    </div>
 
-    <!--========== CART SCRIPTS ==========-->
-    <script src="src/modules/cart/cart-manager-unified.js" defer></script>
-    <script src="src/modules/products/script.js" defer></script>
+    <!--========== SERVICE WORKER & INSTALL LOGIC ==========-->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registrado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Falha ao registrar o SW:', error);
+                    });
+            });
+        }
 
+        // Lógica do Banner de Instalação Customizado
+        let deferredPrompt;
+        const installBanner = document.getElementById('install-banner');
+        const btnInstall = document.getElementById('btn-install');
+        const btnClose = document.getElementById('btn-close-banner');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne o mini-infobar padrão do navegador
+            e.preventDefault();
+            // Guarda o evento para ser disparado depois
+            deferredPrompt = e;
+
+            // Verifica se o usuário já fechou o banner nesta sessão
+            if (!sessionStorage.getItem('installBannerClosed')) {
+                // Mostra o banner customizado com um pequeno delay para não ser intrusivo
+                setTimeout(() => {
+                    installBanner.classList.add('show');
+                }, 4000);
+            }
+        });
+
+        btnInstall.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Mostra o prompt de instalação
+                deferredPrompt.prompt();
+                // Aguarda a escolha do usuário
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Usuário escolheu: ${outcome}`);
+                // Limpa o prompt
+                deferredPrompt = null;
+                // Esconde o banner
+                installBanner.classList.remove('show');
+            }
+        });
+
+        btnClose.addEventListener('click', () => {
+            installBanner.classList.remove('show');
+            // Marca que o usuário fechou o banner nesta sessão
+            sessionStorage.setItem('installBannerClosed', 'true');
+        });
+
+        // Esconde o banner se o app for instalado com sucesso
+        window.addEventListener('appinstalled', (event) => {
+            console.log('App instalado com sucesso!');
+            installBanner.classList.remove('show');
+            deferredPrompt = null;
+        });
+
+        // Web Share Global
+        document.getElementById('share-button')?.addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Ignite - Restaurante Pub',
+                        text: 'Confira os melhores pratos da cidade no Ignite! 🔥',
+                        url: window.location.href,
+                    });
+                } catch (err) { if (err.name !== 'AbortError') console.error(err); }
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link copiado!', showConfirmButton: false, timer: 2000 });
+            }
+        });
+
+        window.shareProduct = async function (name, desc, id) {
+            const text = `Olha esse ${name} do Ignite! 😋\n\nConfere aqui:`;
+            const url = `${window.location.origin}/cart-pay/index.html?item=${id}`;
+            if (navigator.share) {
+                try { await navigator.share({ title: name, text: text, url: url }); }
+                catch (err) { if (err.name !== 'AbortError') console.error(err); }
+            } else {
+                navigator.clipboard.writeText(`${text} ${url}`);
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Copiado!', showConfirmButton: false, timer: 2000 });
+            }
+        };
+    </script>
+
+    <!-- ========== PERFIL MODAL ========== -->
+    <div id="profile-modal" class="fixed inset-0 z-[60] bg-gray-50/95 backdrop-blur-sm hidden overflow-y-auto">
+        <div class="min-h-full flex items-center justify-center p-4 sm:p-6 mb-16 lg:mb-0">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+                <button onclick="closeAllModals()"
+                    class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <!-- VIEW 1: Cadastrar -->
+                <div id="profile-view-register" class="hidden">
+                    <div class="text-center mb-6 mt-4">
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Faltam algumas informações</h2>
+                        <p class="text-sm text-gray-500">Você só precisa preencher estes dados uma vez</p>
+                    </div>
+                    <form id="profile-form-register" class="flex flex-col gap-4" onsubmit="saveProfileRegister(event)">
+                        <input type="tel" id="prof-reg-phone" placeholder="Telefone *" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                        <input type="text" id="prof-reg-name" placeholder="Seu nome *" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none uppercase">
+                        <textarea id="prof-reg-address" placeholder="Endereço p/ Entrega *" required rows="2"
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"></textarea>
+                        <input type="password" id="prof-reg-pass" placeholder="Senha *" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                        <input type="password" id="prof-reg-pass-confirm" placeholder="Confirmar Senha *" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                        <button type="submit"
+                            class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">CONFIRMAR</button>
+                    </form>
+                </div>
+
+                <!-- VIEW 2: Editar -->
+                <div id="profile-view-edit" class="hidden">
+                    <div class="text-center mb-6 mt-4">
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Meu Perfil</h2>
+                    </div>
+                    <form id="profile-form-edit" class="flex flex-col gap-4" onsubmit="saveProfileEdit(event)">
+                        <input type="tel" id="prof-edit-phone" placeholder="Telefone" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                        <input type="text" id="prof-edit-name" placeholder="Nome" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none uppercase">
+                        <textarea id="prof-edit-address" placeholder="Endereço" required rows="2"
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"></textarea>
+                        <input type="email" id="prof-edit-email" placeholder="E-mail"
+                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                        <button type="submit"
+                            class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">SALVAR
+                            ALTERAÇÕES</button>
+                    </form>
+                    <button onclick="logoutProfile()"
+                        class="mt-4 w-full bg-red-50 text-red-600 font-bold py-2 rounded-lg hover:bg-red-100 transition-colors text-sm">Sair
+                        da Conta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ========== CHAT MODAL ========== -->
+    <div id="chat-modal"
+        class="fixed inset-0 z-[60] bg-gray-50/95 hidden flex-col items-center justify-center backdrop-blur-sm">
+        <div
+            class="bg-white w-full h-full lg:max-w-md lg:max-h-[80vh] lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
+            <div class="bg-primary text-white p-4 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeAllModals()" class="text-white hover:opacity-80 transition-opacity">
+                        <i class="fas fa-arrow-left text-xl lg:hidden"></i>
+                        <i class="fas fa-times text-xl hidden lg:block"></i>
+                    </button>
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-inner">
+                        <img src="assets/images/logos/logo.png" class="w-8 h-8 object-contain">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg leading-tight">Atendimento Ignite</h3>
+                        <p class="text-xs text-green-200"><i
+                                class="fas fa-circle text-[8px] mr-1 animate-pulse"></i>Online</p>
+                    </div>
+                </div>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-4"></div>
+            <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2 mb-16 lg:mb-0">
+                <input type="text" id="chat-input" placeholder="Digite sua mensagem..."
+                    class="flex-1 bg-gray-100 border-none rounded-full px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-400">
+                <button id="chat-send-btn"
+                    class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:rotate-12 transition-transform active:scale-90">
+                    <i class="fas fa-paper-plane ml-[-2px]"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!--========== CHAT BOT MODULE ==========-->
+    <script src="src/modules/chat/chat-bot.js" defer></script>
 </body>
 
 </html>

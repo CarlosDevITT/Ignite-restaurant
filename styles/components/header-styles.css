@@ -29,6 +29,7 @@ header {
     transform: translateY(-100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -55,6 +56,7 @@ header .container {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -111,6 +113,7 @@ header .container {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -158,6 +161,7 @@ header .container {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -209,23 +213,36 @@ header .container {
 }
 
 @keyframes bounceIn {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
 }
 
-/* Status do Horário */
+/* Status do Horário - Glassmorphism */
 #schedule-status {
   display: flex;
   justify-content: center;
-  margin-top: -0.5rem;
-  margin-bottom: 1rem;
+  margin: -1rem auto 1.5rem auto;
+  max-width: fit-content;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
 }
 
 .schedule-badge {
-  background: rgba(6, 156, 84, 0.15);
-  border: 2px solid var(--first-color);
-  color: var(--first-color);
-  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.5rem 1.25rem;
   border-radius: 2rem;
   font-size: 0.875rem;
   font-weight: 600;
@@ -240,6 +257,7 @@ header .container {
     transform: translateY(-10px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -370,6 +388,7 @@ header .container {
 /* ========== ACCESSIBILITY ========== */
 
 @media (prefers-reduced-motion: reduce) {
+
   header,
   .header__logo-section,
   .header__info,

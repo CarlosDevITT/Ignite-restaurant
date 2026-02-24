@@ -182,7 +182,7 @@ class PerformanceOptimizer {
 
         // Dark theme preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark && !localStorage.getItem('selected-theme')) {
+        if (prefersDark && !safeStorage.getItem('selected-theme')) {
             document.body.classList.add('dark-theme');
         }
     }

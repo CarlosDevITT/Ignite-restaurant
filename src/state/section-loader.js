@@ -39,7 +39,7 @@ class SectionLoader {
 
     loadSection(section) {
         const sectionId = section.id;
-        
+
         // Mostrar loader
         this.showSectionLoader(section);
 
@@ -59,7 +59,7 @@ class SectionLoader {
                 // Lazy loading nativo
                 img.loading = 'lazy';
                 img.decoding = 'async';
-                
+
                 // Listener para quando imagem carregar
                 img.addEventListener('load', () => {
                     imagesLoaded++;
@@ -96,7 +96,7 @@ class SectionLoader {
                 <span class="loader-text">Carregando...</span>
             </div>
         `;
-        
+
         // Adicionar loader ao topo da seção
         section.insertAdjacentElement('afterbegin', loader);
         this.currentLoader = loader;
@@ -140,19 +140,23 @@ class SectionLoader {
     setupLocalStorage() {
         // Armazenar seções carregadas
         window.addEventListener('beforeunload', () => {
-            const loadedArray = Array.from(this.loadedSections);
-            localStorage.setItem('igniteSectionsLoaded', JSON.stringify(loadedArray));
+            try {
+                const loadedArray = Array.from(this.loadedSections);
+                safeStorage.setItem('igniteSectionsLoaded', JSON.stringify(loadedArray));
+            } catch (e) {
+                // Storage bloqueado - ignorar
+            }
         });
 
         // Recuperar seções carregadas
         try {
-            const stored = localStorage.getItem('igniteSectionsLoaded');
+            const stored = safeStorage.getItem('igniteSectionsLoaded');
             if (stored) {
                 const arr = JSON.parse(stored);
                 arr.forEach(id => this.loadedSections.add(id));
             }
         } catch (e) {
-            console.log('Cache de seções não disponível');
+            // Ignorar erro
         }
     }
 

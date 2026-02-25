@@ -24,6 +24,7 @@
   <meta property="og:url" content="https://ignite-restaurant.vercel.app/cart-pay/index.html">
   <meta property="og:type" content="website">
   <link rel="manifest" href="../manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ignite">
@@ -48,6 +49,8 @@
   <link rel="stylesheet" href="../styles/components/header-styles.css" media="(min-width: 1024px)">
   <!-- Cart Unified Styles -->
   <link rel="stylesheet" href="../styles/components/cart-unified.css">
+  <link rel="stylesheet" href="../styles/components/chatbot.css">
+  <link rel="stylesheet" href="../src/modules/chat/chat-bot.css">
   <!-- Payment Styles -->
   <link rel="stylesheet" href="../styles/components/payment-styles.css">
 
@@ -472,11 +475,15 @@
         <!-- Mensagens via JS -->
       </div>
 
-      <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2 mb-16 lg:mb-0">
-        <input type="text" id="chat-input" placeholder="Digite sua mensagem..."
-          class="flex-1 bg-gray-100 border-none rounded-full px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-400">
+      <!-- Chips de sugestão rápida — ocultados automaticamente após primeira interação -->
+      <div id="chat-chips" aria-label="Sugestões rápidas"></div>
+
+      <div class="p-3 bg-white border-t border-gray-100 flex items-end gap-2 mb-16 lg:mb-0">
+        <textarea id="chat-input" placeholder="Digite sua mensagem..."
+          class="flex-1 bg-gray-100 border-none rounded-2xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-400 resize-none max-h-[120px] leading-relaxed"
+          rows="1"></textarea>
         <button id="chat-send-btn"
-          class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:rotate-12 transition-transform active:scale-90">
+          class="bg-primary text-white w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center shadow-lg hover:rotate-12 transition-transform active:scale-90 mb-1">
           <i class="fas fa-paper-plane ml-[-2px]"></i>
         </button>
       </div>
@@ -618,9 +625,6 @@
   <!-- ========== APP NAVIGATION (Bottom Nav & Modals) ========== -->
   <script src="../src/modules/app/navigation.js" defer></script>
 
-  <!-- ========== CHAT BOT GEMINI ========== -->
-  <script src="../src/modules/chat/chat-bot.js" defer></script>
-
   <!-- ========== CART MANAGER UNIFIED ========== -->
   <script src="../src/modules/cart/cart-manager-unified.js?v=1.1" defer></script>
 
@@ -634,6 +638,9 @@
 
   <!-- ========== HEADER FUNCTIONS ========== -->
   <script src="../src/modules/header/header-functions.js" defer></script>
+
+  <!-- ========== CHAT BOT — carrega por último para ter window.products disponível ========== -->
+  <script src="../src/modules/chat/chat-bot.js" defer></script>
 
   <!-- ========== ATUALIZAR STATUS DESKTOP ========== -->
   <script>
@@ -745,8 +752,6 @@
       }
     };
   </script>
-  <!--========== CHAT BOT MODULE ==========-->
-  <script src="../src/modules/chat/chat-bot.js" defer></script>
 </body>
 
 </html>

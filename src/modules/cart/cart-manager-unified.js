@@ -96,6 +96,13 @@ class UnifiedCartManager {
       this.cartOverlay.addEventListener('click', () => this.closeCart());
     }
 
+    // Botão de Checkout (Finalizar Pedido)
+    if (this.checkoutButton) {
+      this.checkoutButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.checkout();
+      });
+    }
 
     // Fechar com ESC
     document.addEventListener('keydown', (e) => {
@@ -257,10 +264,10 @@ class UnifiedCartManager {
         this.cartItems.innerHTML = this.getEmptyCartHTML();
         // Esconder botões/blocos que não fazem sentido com carrinho vazio
         if (document.getElementById('cart-clear-btn')) document.getElementById('cart-clear-btn').classList.add('hidden');
-        if (document.getElementById('checkout-button')) {
-          document.getElementById('checkout-button').className = "w-full bg-gray-300 text-white font-bold text-[17px] py-[14px] rounded-lg cursor-not-allowed border-none flex items-center justify-center";
-          document.getElementById('checkout-button').innerHTML = "Carrinho Vazio";
-          document.getElementById('checkout-button').disabled = true;
+        if (this.checkoutButton) {
+          this.checkoutButton.className = "w-full bg-gray-300 text-white font-bold text-[17px] py-[14px] rounded-lg cursor-not-allowed border-none flex items-center justify-center";
+          this.checkoutButton.innerHTML = "Carrinho Vazio";
+          this.checkoutButton.disabled = true;
         }
       } else {
         this.cartItems.innerHTML = this.cart.map(item => this.createCartItemHTML(item)).join('');
@@ -275,10 +282,10 @@ class UnifiedCartManager {
           };
         }
 
-        if (document.getElementById('checkout-button')) {
-          document.getElementById('checkout-button').className = "w-full bg-[#069C54] text-white font-bold text-[17px] py-[14px] rounded-lg hover:bg-[#048654] transition-colors border-none cursor-pointer flex items-center justify-center gap-2";
-          document.getElementById('checkout-button').innerHTML = "Continuar";
-          document.getElementById('checkout-button').disabled = false;
+        if (this.checkoutButton) {
+          this.checkoutButton.className = "w-full bg-[#069C54] text-white font-bold text-[17px] py-[14px] rounded-lg hover:bg-[#048654] transition-colors border-none cursor-pointer flex items-center justify-center gap-2";
+          this.checkoutButton.innerHTML = "Continuar";
+          this.checkoutButton.disabled = false;
         }
       }
     }

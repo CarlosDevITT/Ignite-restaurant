@@ -1,195 +1,811 @@
-// chat-bot.js - Atendente Inteligente Ignite com Integração Supabase
-// Design Elegante e Efeitos de Digitação
+/**
+ * @file chat-bot.js
+ * @description Atendente Inteligente Ignite — Integração Supabase + IA (Gemini / DeepSeek)
+ * @author Ignite Dev Team
+ * @version 2.0.0
+ *
+ * Arquitetura:
+ *  ┌─────────────────────────────────────────┐
+ *  │            ChatBot (orquestrador)        │
+ *  │  ┌──────────────┐  ┌──────────────────┐ │
+ *  │  │  UIManager   │  │  AIProvider      │ │
+ *  │  │  (Renderiza) │  │  (Gemini/Deep.)  │ │
+ *  │  └──────────────┘  └──────────────────┘ │
+ *  │  ┌──────────────┐  ┌──────────────────┐ │
+ *  │  │ ProductCard  │  │ SupabaseService  │ │
+ *  │  │  (UI Prod.)  │  │  (Dados)         │ │
+ *  │  └──────────────┘  └──────────────────┘ │
+ *  └─────────────────────────────────────────┘
+ */
 
-document.addEventListener('DOMContentLoaded', () => {
-    const chatInput = document.getElementById('chat-input');
-    const chatSendBtn = document.getElementById('chat-send-btn');
-    const chatMessagesContainer = document.getElementById('chat-messages');
+// ============================================================
+// ⚙️  CONFIGURAÇÃO CENTRALIZADA
+// ============================================================
+const CHAT_CONFIG = {
+    bot: {
+        nome: "Ignite Assistente",
+        avatar: "🔥",
+        mensagemInicial: "Olá! Sou o assistente do **Ignite** 🔥\nPosso te mostrar o cardápio, informar preços e tirar dúvidas sobre entrega. Como posso ajudar?",
+    },
 
-    if (!chatInput || !chatSendBtn || !chatMessagesContainer) return;
+    restaurante: {
+        unidades: [
+            { cidade: "Manaus", endereco: "Vieiralves, 04" },
+            { cidade: "Itajaí", endereco: "R. Fridolim Herthal Júnior, 97" },
+        ],
+        horario: "Todos os dias das 09:00 às 22:00",
+        entrega: { base: 5.00, porKm: 1.50 },
+    },
 
-    // Configurações Basicas
-    const BOT_NAME = "Ignite Assistente";
-    const INITIAL_MESSAGE = "Olá! Sou o assistente virtual do Ignite. Como posso ajudar você hoje? Posso te mostrar o cardápio, dar informações sobre entrega ou tirar dúvidas!";
+    // -------------------------------------------------------
+    // 🔑 Chaves de API — substitua pelos valores reais
+    // Para produção considere usar variáveis de ambiente ou
+    // um backend proxy para não expor as chaves no frontend.
+    // -------------------------------------------------------
+    ai: {
+        // Google Gemini (modelo gratuito): gemini-1.5-flash
+        gemini: {
+            enabled: true,
+            apiKey: "SUA_CHAVE_GEMINI_AQUI",           // 🔑 Google AI Studio → makersuite.google.com
+            model: "gemini-1.5-flash",
+            endpoint: "https://generativelanguage.googleapis.com/v1beta/models",
+        },
+        // DeepSeek (modelo gratuito): deepseek-chat
+        deepseek: {
+            enabled: false,
+            apiKey: "SUA_CHAVE_DEEPSEEK_AQUI",          // 🔑 platform.deepseek.com
+            model: "deepseek-chat",
+            endpoint: "https://api.deepseek.com/v1/chat/completions",
+        },
+        // Qual provedor usar primeiro ("gemini" | "deepseek")
+        provedor: "gemini",
+    },
 
-    // Inicialização
-    appendMessage('bot', INITIAL_MESSAGE, true); // true para mensagem instantânea no início
+    ui: {
+        // Velocidade do efeito de digitação em ms por palavra
+        velocidadeDigitacao: 28,
+        // Delay simulando "pensamento" do bot em ms
+        delayPensamento: 700,
+    },
+};
 
-    chatSendBtn.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
+// ============================================================
+// 🤖  SERVIÇO DE IA — Gemini + DeepSeek com fallback
+// ============================================================
+const AIProvider = (() => {
+    /**
+     * Monta o system prompt com contexto dinâmico do restaurante e produtos.
+     * @param {Array} produtos - Lista de produtos carregados do Supabase
+     * @returns {string}
+     */
+    function _buildSystemPrompt(produtos) {
+        const { restaurante } = CHAT_CONFIG;
+        const unidadesTxt = restaurante.unidades
+            .map(u => `${u.cidade}: ${u.endereco}`)
+            .join(" | ");
 
-    async function sendMessage() {
-        const text = chatInput.value.trim();
-        if (!text) return;
+        // Serializa os produtos em formato compacto para o contexto da IA
+        const produtosTxt = produtos.length
+            ? produtos
+                .slice(0, 40) // Limita para não exceder contexto
+                .map(p => `- ${p.nome || p.name} (${p.categoria || p.category}) — R$ ${Number(p.preco || p.price).toFixed(2)}`)
+                .join("\n")
+            : "Cardápio temporariamente indisponível.";
 
-        // Limpar e desabilitar
-        chatInput.value = '';
-        chatInput.disabled = true;
+        return `Você é o assistente virtual do restaurante Ignite, especializado em hambúrgueres artesanais.
+Responda SEMPRE em português brasileiro, de forma amigável, objetiva e com emojis leves.
+Use **negrito** para destacar nomes de produtos e preços.
+Nunca invente informações; se não souber, diga que vai verificar.
 
-        // 1. Mostrar mensagem do usuário
-        appendMessage('user', text);
+=== DADOS DO RESTAURANTE ===
+Unidades: ${unidadesTxt}
+Horário: ${restaurante.horario}
+Taxa de entrega: R$ ${restaurante.entrega.base.toFixed(2)} + R$ ${restaurante.entrega.porKm.toFixed(2)}/km
 
-        // 2. Mostrar indicador de digitando
-        const loadingId = showTypingIndicator();
+=== CARDÁPIO ATUAL ===
+${produtosTxt}
 
-        try {
-            // Pequeno delay para simular pensamento
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // 3. Lógica de Resposta (Supabase + Inteligência Básica)
-            const response = await generateElegantResponse(text);
-
-            // 4. Remover loading e mostrar resposta com efeito
-            removeTypingIndicator(loadingId);
-            await appendMessageWithEffect('bot', response);
-
-        } catch (error) {
-            console.error("Erro no Chat Bot:", error);
-            removeTypingIndicator(loadingId);
-            appendMessage('bot', "Desculpe, tive um probleminha técnico. Pode repetir?");
-        } finally {
-            chatInput.disabled = false;
-            chatInput.focus();
-        }
+=== REGRAS ===
+- Ao recomendar produtos, mencione o nome e preço.
+- Se o usuário pedir ver um produto, inclua no final da resposta uma linha especial:
+  [MOSTRAR_PRODUTO: nome exato do produto]
+- Máximo 3 parágrafos por resposta.
+- Não faça perguntas desnecessárias; resolva direto.`;
     }
 
     /**
-     * Lógica Principal de Resposta
+     * Chama a API do Google Gemini.
+     * @param {string} mensagem
+     * @param {Array}  historico - [{role, content}]
+     * @param {Array}  produtos
+     * @returns {Promise<string>}
      */
-    async function generateElegantResponse(query) {
-        const q = query.toLowerCase();
+    async function _chamarGemini(mensagem, historico, produtos) {
+        const { gemini } = CHAT_CONFIG.ai;
+        const systemPrompt = _buildSystemPrompt(produtos);
 
-        // 1. Informações fixas do restaurante
-        if (q.includes('endereço') || q.includes('onde fica') || q.includes('localização')) {
-            return "Temos duas unidades para melhor te atender:\n📍 **Manaus:** Vieiralves, 04.\n📍 **Itajaí:** R. Fridolim Herthal Júnior, 97.";
-        }
+        // Gemini usa "contents" com roles "user" e "model"
+        const contents = [
+            // Injeta o system prompt como primeira mensagem do usuário
+            { role: "user", parts: [{ text: systemPrompt }] },
+            { role: "model", parts: [{ text: "Entendido! Estou pronto para atender. 🔥" }] },
+            // Histórico da conversa
+            ...historico.map(h => ({
+                role: h.role === "assistant" ? "model" : "user",
+                parts: [{ text: h.content }],
+            })),
+            // Mensagem atual
+            { role: "user", parts: [{ text: mensagem }] },
+        ];
 
-        if (q.includes('horário') || q.includes('aberto') || q.includes('fecha')) {
-            return "Nosso horário de funcionamento é todos os dias, das **09:00h às 22:00h**. Ficaremos felizes em te receber!";
-        }
-
-        if (q.includes('taxa') || q.includes('entrega') || q.includes('valor do frete')) {
-            return "Nossa taxa de entrega é calculada por distância: R$ 5,00 fixos + R$ 1,50 por KM. Você pode calcular o valor exato clicando no botão **'Calcular taxa e tempo de entrega'** no topo do cardápio!";
-        }
-
-        // 2. Busca de Produtos (Supabase/Global)
-        const products = window.products || [];
-        if (q.includes('cardápio') || q.includes('comida') || q.includes('comer') || q.includes('ver itens')) {
-            if (products.length > 0) {
-                const categorias = [...new Set(products.map(p => p.category || p.categoria))].slice(0, 4);
-                return `Nosso cardápio é variado! Temos **${categorias.join(', ')}** e muito mais. Qual categoria você gostaria de ver?`;
-            }
-            return "Você pode conferir todo o nosso cardápio rolando a página principal! Temos hambúrgueres, lanches e bebidas geladinhas.";
-        }
-
-        // Busca específica de produto
-        const foundProduct = products.find(p => {
-            const name = (p.name || p.nome || '').toLowerCase();
-            return q.includes(name) && name.length > 3;
+        const url = `${gemini.endpoint}/${gemini.model}:generateContent?key=${gemini.apiKey}`;
+        const resposta = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents,
+                generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
+            }),
         });
 
-        if (foundProduct) {
-            return `O **${foundProduct.name || foundProduct.nome}** é uma ótima escolha! Ele sai por **R$ ${foundProduct.price.toFixed(2).replace('.', ',')}**. Quer que eu te ajude a adicionar ao carrinho?`;
-        }
-
-        // 3. Fallback Gemini (se chave configurada) ou Resposta Genérica
-        return "Legal! Como assistente virtual, ainda estou aprendendo. Você gostaria de saber mais sobre nosso **cardápio**, **horários** ou **unidades**? Se quiser falar com um humano, é só pedir!";
+        if (!resposta.ok) throw new Error(`Gemini HTTP ${resposta.status}`);
+        const json = await resposta.json();
+        return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
 
     /**
-     * Efeito de Digitação (Elegant Typing)
+     * Chama a API do DeepSeek (compatível OpenAI).
+     * @param {string} mensagem
+     * @param {Array}  historico
+     * @param {Array}  produtos
+     * @returns {Promise<string>}
      */
-    async function appendMessageWithEffect(sender, text) {
-        const timeSt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const div = document.createElement('div');
-        div.className = "bg-white border border-gray-100 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] self-start shadow-sm text-sm break-words transition-all duration-300 opacity-0 translate-y-2 mb-2";
+    async function _chamarDeepSeek(mensagem, historico, produtos) {
+        const { deepseek } = CHAT_CONFIG.ai;
 
-        // Estrutura básica
-        div.innerHTML = `
-            <div class="message-content"></div>
-            <span class="block text-[10px] text-gray-400 mt-1 text-right">${timeSt}</span>
-        `;
+        const messages = [
+            { role: "system", content: _buildSystemPrompt(produtos) },
+            ...historico,
+            { role: "user", content: mensagem },
+        ];
 
-        chatMessagesContainer.appendChild(div);
+        const resposta = await fetch(deepseek.endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${deepseek.apiKey}`,
+            },
+            body: JSON.stringify({
+                model: deepseek.model,
+                messages,
+                max_tokens: 512,
+                temperature: 0.7,
+            }),
+        });
 
-        // Fade in
-        setTimeout(() => {
-            div.classList.remove('opacity-0', 'translate-y-2');
-        }, 50);
+        if (!resposta.ok) throw new Error(`DeepSeek HTTP ${resposta.status}`);
+        const json = await resposta.json();
+        return json.choices?.[0]?.message?.content || "";
+    }
 
-        const contentDiv = div.querySelector('.message-content');
+    /**
+     * Ponto de entrada público — chama o provedor configurado com fallback.
+     * @param {string} mensagem
+     * @param {Array}  historico
+     * @param {Array}  produtos
+     * @returns {Promise<string>}
+     */
+    async function responder(mensagem, historico, produtos) {
+        const { provedor, gemini, deepseek } = CHAT_CONFIG.ai;
 
-        // Efeito de aparecer texto
-        let lines = text.split('\n');
-        for (let line of lines) {
-            let p = document.createElement('p');
-            p.className = "mb-1 last:mb-0";
-            contentDiv.appendChild(p);
+        // Guard: evita chamadas com chave placeholder — vai direto ao fallback local
+        const geminiPronto = gemini.enabled && gemini.apiKey && !gemini.apiKey.includes("SUA_CHAVE");
+        const deepseekPronto = deepseek.enabled && deepseek.apiKey && !deepseek.apiKey.includes("SUA_CHAVE");
 
-            // Parse simples de negrito
-            let formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        if (!geminiPronto && !deepseekPronto) {
+            console.warn("⚠️ Nenhuma chave de API configurada — usando respostas locais.");
+            return _respostaLocalFallback(mensagem, produtos);
+        }
 
-            // Simular digitação por palavras para ser mais fluido e "elegante"
-            let words = formattedLine.split(' ');
-            for (let word of words) {
-                p.innerHTML += word + ' ';
-                scrollToBottom();
-                await new Promise(r => setTimeout(r, 40));
+        try {
+            if (provedor === "gemini" && geminiPronto) {
+                return await _chamarGemini(mensagem, historico, produtos);
+            }
+            if (provedor === "deepseek" && deepseekPronto) {
+                return await _chamarDeepSeek(mensagem, historico, produtos);
+            }
+            throw new Error("Provedor principal não disponível.");
+        } catch (erro) {
+            console.warn(`⚠️ Provedor '${provedor}' falhou:`, erro.message);
+
+            // Fallback automático para o outro provedor
+            try {
+                if (provedor === "gemini" && deepseekPronto) {
+                    console.info("🔄 Usando DeepSeek como fallback...");
+                    return await _chamarDeepSeek(mensagem, historico, produtos);
+                }
+                if (provedor === "deepseek" && geminiPronto) {
+                    console.info("🔄 Usando Gemini como fallback...");
+                    return await _chamarGemini(mensagem, historico, produtos);
+                }
+            } catch (erroFallback) {
+                console.error("❌ Fallback também falhou:", erroFallback.message);
+            }
+
+            // Fallback local quando ambas as APIs falham
+            return _respostaLocalFallback(mensagem, produtos);
+        }
+    }
+
+    /**
+     * Respostas locais de emergência (sem API).
+     * @param {string} q
+     * @param {Array}  produtos
+     * @returns {string}
+     */
+    function _respostaLocalFallback(q, produtos) {
+        const texto = q.toLowerCase();
+        const { restaurante } = CHAT_CONFIG;
+
+        if (/endere[çc]o|onde fica|localiza[çc]/.test(texto)) {
+            return restaurante.unidades
+                .map(u => `📍 **${u.cidade}:** ${u.endereco}`)
+                .join("\n");
+        }
+        if (/hor[áa]rio|abre|fecha/.test(texto)) {
+            return `⏰ Estamos abertos **${restaurante.horario}**.`;
+        }
+        if (/entrega|taxa|frete/.test(texto)) {
+            return `🛵 Taxa de entrega: **R$ ${restaurante.entrega.base.toFixed(2)}** + **R$ ${restaurante.entrega.porKm.toFixed(2)}/km**.`;
+        }
+        if (/card[áa]pio|produtos|opç[õo]es/.test(texto) && produtos.length) {
+            const categorias = [...new Set(produtos.map(p => p.categoria || p.category))];
+            return `🍔 Temos **${categorias.join(", ")}**. Qual categoria você prefere?`;
+        }
+
+        const produtoAchado = produtos.find(p =>
+            texto.includes((p.nome || p.name || "").toLowerCase())
+        );
+        if (produtoAchado) {
+            const preco = Number(produtoAchado.preco || produtoAchado.price);
+            return `😍 **${produtoAchado.nome || produtoAchado.name}** por **R$ ${preco.toFixed(2)}**!`;
+        }
+
+        return "Eita, estou com dificuldade técnica agora. Pode perguntar sobre cardápio, endereço ou horários!";
+    }
+
+    // API pública do módulo
+    return { responder };
+})();
+
+// ============================================================
+// 🃏  CARD DE PRODUTO — Renderiza produto no chat
+// ============================================================
+const ProductCard = {
+    /**
+     * Busca produto pelo nome (case-insensitive) na lista global.
+     * @param {string} nomeProduto
+     * @param {Array}  produtos
+     * @returns {Object|null}
+     */
+    buscar(nomeProduto, produtos) {
+        const busca = nomeProduto.toLowerCase().trim();
+        return (
+            produtos.find(p => (p.nome || p.name || "").toLowerCase() === busca) ||
+            produtos.find(p => (p.nome || p.name || "").toLowerCase().includes(busca)) ||
+            null
+        );
+    },
+
+    /**
+     * Cria elemento DOM do card do produto.
+     * @param {Object} produto
+     * @returns {HTMLElement}
+     */
+    criar(produto) {
+        const preco = Number(produto.preco || produto.price || 0);
+        const nome = produto.nome || produto.name || "Produto";
+        const descricao = produto.descricao || produto.description || "";
+        const imagem = produto.imagem_url || produto.image_url || produto.foto || "";
+        const categoria = produto.categoria || produto.category || "";
+
+        const card = document.createElement("div");
+        card.className = "produto-card";
+        card.setAttribute("role", "article");
+        card.setAttribute("aria-label", `Produto: ${nome}`);
+
+        card.innerHTML = `
+      <div class="produto-card__inner">
+        ${imagem
+                ? `<div class="produto-card__imagem-wrap">
+               <img src="${imagem}" alt="${nome}" class="produto-card__imagem" loading="lazy"
+                    onerror="this.parentElement.style.display='none'">
+             </div>`
+                : `<div class="produto-card__imagem-placeholder" aria-hidden="true">🍔</div>`
+            }
+        <div class="produto-card__info">
+          ${categoria ? `<span class="produto-card__badge">${categoria}</span>` : ""}
+          <h4 class="produto-card__nome">${nome}</h4>
+          ${descricao ? `<p class="produto-card__descricao">${descricao}</p>` : ""}
+          <div class="produto-card__rodape">
+            <span class="produto-card__preco">R$ ${preco.toFixed(2).replace(".", ",")}</span>
+            <button class="produto-card__btn-add" data-produto-id="${produto.id || ""}" data-produto-nome="${nome}">
+              + Adicionar
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+        // Evento de adicionar ao carrinho — integra com a lógica global do site
+        const btnAdd = card.querySelector(".produto-card__btn-add");
+        btnAdd.addEventListener("click", () => {
+            if (typeof window.adicionarAoCarrinho === "function") {
+                window.adicionarAoCarrinho(produto);
+                btnAdd.textContent = "✓ Adicionado!";
+                btnAdd.disabled = true;
+                setTimeout(() => {
+                    btnAdd.textContent = "+ Adicionar";
+                    btnAdd.disabled = false;
+                }, 2000);
+            } else {
+                // Caso a função global não exista, dispara evento customizado
+                window.dispatchEvent(new CustomEvent("ignite:add-to-cart", { detail: produto }));
+                btnAdd.textContent = "✓ Adicionado!";
+                btnAdd.disabled = true;
+                setTimeout(() => {
+                    btnAdd.textContent = "+ Adicionar";
+                    btnAdd.disabled = false;
+                }, 2000);
+            }
+        });
+
+        return card;
+    },
+};
+
+// ============================================================
+// 🖥️  GERENCIADOR DE UI — Responsável apenas por renderização
+// ============================================================
+const UIManager = (() => {
+    let container = null;
+
+    /** Referência ao container de mensagens */
+    function setContainer(el) { container = el; }
+
+    /**
+     * Rola suavemente ao final do chat.
+     */
+    function scrollParaBaixo() {
+        if (!container) return;
+        container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    }
+
+    /**
+     * Cria e retorna o wrapper base de uma mensagem.
+     * @param {"user"|"bot"} remetente
+     * @returns {HTMLElement}
+     */
+    function _criarWrapperMensagem(remetente) {
+        const hora = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const div = document.createElement("div");
+
+        div.setAttribute("role", "listitem");
+        div.setAttribute("aria-label", remetente === "user" ? "Você" : CHAT_CONFIG.bot.nome);
+
+        if (remetente === "user") {
+            div.className = "chat-msg chat-msg--user";
+            div.innerHTML = `
+        <div class="chat-msg__balao chat-msg__balao--user">
+          <div class="chat-msg__conteudo"></div>
+          <time class="chat-msg__hora">${hora}</time>
+        </div>
+      `;
+        } else {
+            div.className = "chat-msg chat-msg--bot";
+            div.innerHTML = `
+        <div class="chat-msg__avatar" aria-hidden="true">${CHAT_CONFIG.bot.avatar}</div>
+        <div class="chat-msg__balao chat-msg__balao--bot">
+          <div class="chat-msg__conteudo"></div>
+          <time class="chat-msg__hora">${hora}</time>
+        </div>
+      `;
+        }
+
+        return div;
+    }
+
+    /**
+     * Parseia Markdown básico (**negrito**, \n → <br>).
+     * @param {string} texto
+     * @returns {string} HTML sanitizado básico
+     */
+    function _parseMarkdown(texto) {
+        return texto
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\n/g, "<br>");
+    }
+
+    /**
+     * Exibe mensagem instantaneamente (sem efeito).
+     * @param {"user"|"bot"} remetente
+     * @param {string}       texto
+     */
+    function adicionarMensagem(remetente, texto) {
+        if (!container) return;
+        const msg = _criarWrapperMensagem(remetente);
+        msg.querySelector(".chat-msg__conteudo").innerHTML = _parseMarkdown(texto);
+        container.appendChild(msg);
+        scrollParaBaixo();
+    }
+
+    /**
+     * Exibe mensagem do bot com efeito de digitação palavra a palavra.
+     * @param {string} texto
+     * @returns {Promise<void>}
+     */
+    async function adicionarMensagemComEfeito(texto) {
+        if (!container) return;
+
+        const msg = _criarWrapperMensagem("bot");
+        const conteudo = msg.querySelector(".chat-msg__conteudo");
+        container.appendChild(msg);
+        scrollParaBaixo();
+
+        // Separa o texto da diretiva especial [MOSTRAR_PRODUTO: ...]
+        const { textoLimpo, nomeProduto } = _extrairDiretivaProduto(texto);
+        const linhas = textoLimpo.split("\n");
+
+        for (let i = 0; i < linhas.length; i++) {
+            const linha = linhas[i];
+            if (!linha.trim()) {
+                conteudo.appendChild(document.createElement("br"));
+                continue;
+            }
+
+            const p = document.createElement("p");
+            p.className = i < linhas.length - 1 ? "mb-1" : "mb-0";
+            conteudo.appendChild(p);
+
+            // Digita palavra por palavra
+            const palavras = linha.split(" ");
+            for (const palavra of palavras) {
+                p.innerHTML += palavra + " ";
+                scrollParaBaixo();
+                await _esperar(CHAT_CONFIG.ui.velocidadeDigitacao);
+            }
+        }
+
+        // Se a IA pediu para mostrar um produto, renderiza o card abaixo
+        if (nomeProduto) {
+            const produtos = _getProdutosGlobais();
+            const produto = ProductCard.buscar(nomeProduto, produtos);
+            if (produto) {
+                const cardEl = ProductCard.criar(produto);
+                cardEl.classList.add("chat-produto-card");
+                container.appendChild(cardEl);
+                scrollParaBaixo();
             }
         }
     }
 
-    function appendMessage(sender, text, instant = false) {
-        const timeSt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const div = document.createElement('div');
-
-        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        formattedText = formattedText.replace(/\n/g, '<br>');
-
-        if (sender === 'user') {
-            div.className = "bg-primary text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] self-end shadow-md text-sm break-words mb-2 animate-in fade-in slide-in-from-right-2 duration-300";
-            div.innerHTML = `
-                ${formattedText}
-                <span class="block text-[10px] text-green-100 mt-1 text-right">${timeSt}</span>
-            `;
-        } else {
-            div.className = "bg-white border border-gray-100 text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] self-start shadow-sm text-sm break-words mb-2";
-            div.innerHTML = `
-                ${formattedText}
-                <span class="block text-[10px] text-gray-400 mt-1 text-right">${timeSt}</span>
-            `;
-        }
-
-        chatMessagesContainer.appendChild(div);
-        scrollToBottom();
+    /**
+     * Extrai a diretiva [MOSTRAR_PRODUTO: nome] da resposta da IA.
+     * @param {string} texto
+     * @returns {{ textoLimpo: string, nomeProduto: string|null }}
+     */
+    function _extrairDiretivaProduto(texto) {
+        const regex = /\[MOSTRAR_PRODUTO:\s*([^\]]+)\]/i;
+        const match = texto.match(regex);
+        const nomeProduto = match ? match[1].trim() : null;
+        const textoLimpo = texto.replace(regex, "").trim();
+        return { textoLimpo, nomeProduto };
     }
 
-    function showTypingIndicator() {
-        const id = 'typing-' + Date.now();
-        const div = document.createElement('div');
+    /**
+     * Mostra indicador de "digitando..." e retorna id para removê-lo.
+     * @returns {string} id do elemento
+     */
+    function mostrarDigitando() {
+        if (!container) return "";
+        const id = `typing-${Date.now()}`;
+        const div = document.createElement("div");
         div.id = id;
-        div.className = "bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none self-start shadow-sm text-sm flex gap-1.5 items-center h-[42px] mb-2 px-4";
+        div.className = "chat-digitando";
+        div.setAttribute("role", "status");
+        div.setAttribute("aria-label", "Assistente digitando");
         div.innerHTML = `
-            <div class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></div>
-            <div class="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-            <div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-        `;
-        chatMessagesContainer.appendChild(div);
-        scrollToBottom();
+      <div class="chat-msg__avatar" aria-hidden="true">${CHAT_CONFIG.bot.avatar}</div>
+      <div class="chat-digitando__bolinhas">
+        <span></span><span></span><span></span>
+      </div>
+    `;
+        container.appendChild(div);
+        scrollParaBaixo();
         return id;
     }
 
-    function removeTypingIndicator(id) {
-        const div = document.getElementById(id);
-        if (div) div.remove();
+    /**
+     * Remove indicador de "digitando..." com transição suave.
+     * @param {string} id
+     */
+    function removerDigitando(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+        el.style.opacity = "0";
+        el.style.transform = "scale(0.95)";
+        setTimeout(() => el.remove(), 220);
     }
 
-    function scrollToBottom() {
-        chatMessagesContainer.scrollTo({
-            top: chatMessagesContainer.scrollHeight,
-            behavior: 'smooth'
+    // Helpers internos -------------------------------------------
+
+    /** Aguarda N milissegundos */
+    function _esperar(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /** Retorna lista de produtos do escopo global do site */
+    function _getProdutosGlobais() {
+        return (
+            window.produtos ||
+            window.products ||
+            window.$produtos ||
+            []
+        );
+    }
+
+    // API pública
+    return {
+        setContainer,
+        adicionarMensagem,
+        adicionarMensagemComEfeito,
+        mostrarDigitando,
+        removerDigitando,
+    };
+})();
+
+// ============================================================
+// 🗄️  SERVIÇO SUPABASE — Carrega e expõe produtos
+// ============================================================
+const SupabaseService = (() => {
+    /**
+     * Carrega produtos do Supabase via `window.supabaseManager` (supabase-config.js).
+     * Normaliza os campos para garantir compatibilidade.
+     * @returns {Promise<Array>}
+     */
+    async function carregarProdutos() {
+        // ─── Estratégia de múltiplas fontes ───────────────────────
+        // 1. Tenta reutilizar produtos já carregados pelo script.js (window.products)
+        // 2. Faz query direta no Supabase buscando pela tabela correta ('products')
+        // 3. Cai no fallback de array vazio (respostas locais ainda funcionam)
+        // ──────────────────────────────────────────────────────────
+
+        // Fonte 1: window.products já populado pelo script principal (42 produtos nos logs)
+        const globais = window.products || window.produtos || window.$produtos;
+        if (Array.isArray(globais) && globais.length > 0) {
+            const normalizados = _normalizar(globais);
+            console.log(`✅ ChatBot: ${normalizados.length} produtos reutilizados de window.products.`);
+            return normalizados;
+        }
+
+        // Fonte 2: aguarda o SupabaseManager e faz query direto na tabela correta
+        try {
+            if (!window.supabaseManager?.isConnected()) {
+                console.warn("⚠️ SupabaseManager ainda não conectado; aguardando...");
+                await _aguardarConexao();
+            }
+
+            // O hint do erro mostrou que a tabela correta é 'products' (inglês)
+            const { data, error } = await window.supabaseManager.client
+                .from("products")
+                .select("*")
+                .eq("available", true);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                console.warn("⚠️ Nenhum produto retornado da tabela 'products'.");
+                return [];
+            }
+
+            const normalizados = _normalizar(data);
+
+            // Disponibiliza globalmente para que o script.js e outros módulos usem
+            window.products = normalizados;
+            window.produtos = normalizados;
+
+            console.log(`✅ ChatBot: ${normalizados.length} produtos carregados da tabela 'products'.`);
+            return normalizados;
+        } catch (erro) {
+            console.error("❌ Erro ao carregar produtos para o chatbot:", erro);
+            return [];
+        }
+    }
+
+    /**
+     * Normaliza campos da API para nomes consistentes em pt-br.
+     * Garante que tanto tabelas em inglês quanto em português funcionem.
+     * @param {Array} lista
+     * @returns {Array}
+     */
+    function _normalizar(lista) {
+        return lista.map(p => ({
+            ...p,
+            nome: p.nome || p.name || "Produto",
+            preco: p.preco || p.price || 0,
+            categoria: p.categoria || p.category || "",
+            descricao: p.descricao || p.description || "",
+            imagem_url: p.imagem_url || p.image_url || p.foto || "",
+            disponivel: p.disponivel !== false && p.available !== false,
+        }));
+    }
+
+    /**
+     * Aguarda até o SupabaseManager estar conectado (max 5s).
+     * @returns {Promise<void>}
+     */
+    function _aguardarConexao(tentativas = 0) {
+        return new Promise((resolve, reject) => {
+            const intervalo = setInterval(() => {
+                tentativas++;
+                if (window.supabaseManager?.isConnected()) {
+                    clearInterval(intervalo);
+                    resolve();
+                } else if (tentativas > 50) { // 50 × 100ms = 5 segundos
+                    clearInterval(intervalo);
+                    reject(new Error("Supabase não conectou em 5 segundos."));
+                }
+            }, 100);
         });
     }
-});
+
+    return { carregarProdutos };
+})();
+
+// ============================================================
+// 🧠  CHATBOT — Orquestrador principal
+// ============================================================
+const ChatBot = (() => {
+    // Estado interno
+    const estado = {
+        produtos: [],   // Cache local de produtos
+        historico: [],   // [{role: "user"|"assistant", content: "..."}]
+        ocupado: false,
+    };
+
+    /**
+     * Inicializa o chatbot: conecta elementos DOM, carrega dados e exibe msg inicial.
+     */
+    async function init() {
+        const inputEl = document.getElementById("chat-input");
+        const btnEnviarEl = document.getElementById("chat-send-btn");
+        const mensagensEl = document.getElementById("chat-messages");
+
+        // Guard: elementos obrigatórios devem existir no DOM
+        if (!inputEl || !btnEnviarEl || !mensagensEl) {
+            console.warn("⚠️ ChatBot: elementos DOM não encontrados. Verifique os IDs.");
+            return;
+        }
+
+        // Configura o gerenciador de UI
+        UIManager.setContainer(mensagensEl);
+        mensagensEl.setAttribute("role", "list");
+        mensagensEl.setAttribute("aria-label", "Conversa com o assistente");
+
+        // Mensagem de boas-vindas imediata — não bloqueia na carga de produtos
+        UIManager.adicionarMensagem("bot", CHAT_CONFIG.bot.mensagemInicial);
+
+        // Carrega produtos em background (não trava o chat)
+        // Aguarda um tick para o script.js ter chance de popular window.products
+        setTimeout(async () => {
+            estado.produtos = await SupabaseService.carregarProdutos();
+            if (estado.produtos.length) {
+                console.log(`✅ ChatBot pronto com ${estado.produtos.length} produtos.`);
+            }
+        }, 1500); // 1.5s é suficiente: os logs mostram produtos em ~1s
+
+        // Auto-expansão da textarea
+        inputEl.addEventListener("input", () => _autoExpand(inputEl));
+
+        // Enviar com botão
+        btnEnviarEl.addEventListener("click", () => _enviarMensagem(inputEl));
+
+        // Enviar com Enter (Shift+Enter = quebra de linha)
+        inputEl.addEventListener("keydown", e => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                _enviarMensagem(inputEl);
+            }
+        });
+    }
+
+    /**
+     * Processa e envia a mensagem do usuário.
+     * @param {HTMLTextAreaElement|HTMLInputElement} inputEl
+     */
+    async function _enviarMensagem(inputEl) {
+        const texto = inputEl.value.trim();
+        if (!texto || estado.ocupado) return;
+
+        // Bloqueia novos envios enquanto processa
+        estado.ocupado = true;
+        inputEl.value = "";
+        inputEl.style.height = "auto";
+        inputEl.disabled = true;
+
+        // 1️⃣ Exibe mensagem do usuário
+        UIManager.adicionarMensagem("user", texto);
+
+        // 2️⃣ Registra no histórico
+        estado.historico.push({ role: "user", content: texto });
+
+        // 3️⃣ Mostra "digitando..."
+        const digitandoId = UIManager.mostrarDigitando();
+
+        try {
+            // Delay de "pensamento"
+            await _esperar(CHAT_CONFIG.ui.delayPensamento);
+
+            // 4️⃣ Obtém resposta da IA — usa produtos do estado ou do window como fallback
+            const produtosContexto = estado.produtos.length
+                ? estado.produtos
+                : (window.products || window.produtos || []);
+            const resposta = await AIProvider.responder(
+                texto,
+                estado.historico.slice(-10), // Últimas 10 trocas para contexto
+                produtosContexto              // Produtos com fallback para window.products
+            );
+
+            // 5️⃣ Remove indicador e exibe resposta com efeito
+            UIManager.removerDigitando(digitandoId);
+            await UIManager.adicionarMensagemComEfeito(resposta);
+
+            // 6️⃣ Registra resposta no histórico
+            estado.historico.push({ role: "assistant", content: resposta });
+
+            // Limita histórico a 20 mensagens para não explodir o contexto
+            if (estado.historico.length > 20) {
+                estado.historico = estado.historico.slice(-20);
+            }
+
+        } catch (erro) {
+            console.error("❌ ChatBot._enviarMensagem:", erro);
+            UIManager.removerDigitando(digitandoId);
+            UIManager.adicionarMensagem(
+                "bot",
+                "Ops! Tive um probleminha técnico. Pode tentar novamente? 🙏"
+            );
+        } finally {
+            estado.ocupado = false;
+            inputEl.disabled = false;
+            inputEl.focus();
+        }
+    }
+
+    /**
+     * Expande textarea conforme conteúdo digitado.
+     * @param {HTMLTextAreaElement} el
+     */
+    function _autoExpand(el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 120) + "px";
+        el.style.overflowY = el.scrollHeight > 120 ? "auto" : "hidden";
+    }
+
+    /** Aguarda N milissegundos */
+    function _esperar(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // API pública
+    return { init };
+})();
+
+// ============================================================
+// 🚀  BOOTSTRAP — Aguarda DOM e inicializa
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => ChatBot.init());

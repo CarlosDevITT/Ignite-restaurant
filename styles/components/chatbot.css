@@ -1,0 +1,664 @@
+/**
+ * @file chat-bot.css
+ * @description Design System do Chat Ignite — v3.0
+ *
+ * Índice:
+ *  1. Tokens de Design (variáveis CSS)
+ *  2. Mensagens (chat-msg)
+ *  3. Indicador de digitação (chat-digitando)
+ *  4. Avaliação 👍👎 (chat-avaliacao)
+ *  5. Chips de sugestão rápida (chat-chip)
+ *  6. Card de produto (produto-card)
+ *  7. Carrossel de produtos (produto-carrossel)
+ *  8. Animações & Keyframes
+ *  9. Responsividade
+ */
+
+/* ============================================================
+   1. TOKENS DE DESIGN
+   ============================================================ */
+:root {
+    /* Marca Ignite */
+    --ignite-primary: #f97316;
+    --ignite-primary-dark: #ea580c;
+    --ignite-accent: #fbbf24;
+
+    /* Superfícies */
+    --ignite-bg-chat: #f4f4f5;
+    --ignite-bg-card: #ffffff;
+    --ignite-bg-user: var(--ignite-primary);
+
+    /* Texto */
+    --ignite-text-main: #18181b;
+    --ignite-text-muted: #71717a;
+    --ignite-text-ts: #a1a1aa;
+    --ignite-text-white: #ffffff;
+
+    /* Bordas */
+    --ignite-border: #e4e4e7;
+    --ignite-border-card: #f0f0f0;
+
+    /* Raios */
+    --r-msg: 1rem;
+    --r-card: .75rem;
+    --r-badge: .25rem;
+    --r-chip: 2rem;
+    --r-btn: .375rem;
+
+    /* Sombras */
+    --shadow-msg: 0 1px 3px rgba(0, 0, 0, .08);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, .10);
+    --shadow-btn: 0 2px 6px rgba(249, 115, 22, .35);
+
+    /* Tipografia */
+    --font: 'Inter', system-ui, sans-serif;
+    --fs-msg: .875rem;
+    --fs-meta: .6875rem;
+    --fs-card: .8125rem;
+
+    /* Transições */
+    --t-fast: 150ms ease;
+    --t-base: 250ms ease;
+}
+
+/* ============================================================
+   2. MENSAGENS — .chat-msg
+   ============================================================ */
+.chat-msg {
+    display: flex;
+    align-items: flex-end;
+    gap: .5rem;
+    margin-bottom: .5rem;
+    animation: msgEntrar var(--t-base) both;
+}
+
+.chat-msg--user {
+    flex-direction: row-reverse;
+}
+
+/* Avatar do bot */
+.chat-msg__avatar {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    background: var(--ignite-bg-card);
+    border: 1px solid var(--ignite-border);
+    border-radius: 50%;
+    font-size: 1rem;
+    box-shadow: var(--shadow-msg);
+    align-self: flex-end;
+}
+
+/* Balão base */
+.chat-msg__balao {
+    max-width: 85%;
+    padding: .75rem 1rem;
+    border-radius: var(--r-msg);
+    box-shadow: var(--shadow-msg);
+    font-family: var(--font);
+    font-size: var(--fs-msg);
+    line-height: 1.55;
+    word-break: break-word;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-msg__balao--user {
+    background: var(--ignite-bg-user);
+    color: var(--ignite-text-white);
+    border-bottom-right-radius: .25rem;
+}
+
+.chat-msg__balao--bot {
+    background: var(--ignite-bg-card);
+    color: var(--ignite-text-main);
+    border: 1px solid var(--ignite-border);
+    border-bottom-left-radius: .25rem;
+}
+
+.chat-msg__conteudo p {
+    margin: 0 0 .25rem;
+}
+
+.chat-msg__conteudo p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-msg__conteudo strong {
+    font-weight: 600;
+}
+
+/* Rodapé do balão (hora + avaliação) */
+.chat-msg__rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-top: .35rem;
+}
+
+/* Timestamp */
+.chat-msg__hora {
+    display: block;
+    font-size: var(--fs-meta);
+    color: var(--ignite-text-ts);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.chat-msg__balao--user .chat-msg__hora {
+    color: rgba(255, 255, 255, .6);
+}
+
+/* ============================================================
+   3. INDICADOR DE DIGITAÇÃO — .chat-digitando
+   ============================================================ */
+.chat-digitando {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+    animation: msgEntrar var(--t-base) both;
+}
+
+.chat-digitando__bolinhas {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    background: var(--ignite-bg-card);
+    border: 1px solid var(--ignite-border);
+    border-radius: var(--r-msg);
+    border-bottom-left-radius: .25rem;
+    padding: .6rem .85rem;
+    box-shadow: var(--shadow-msg);
+}
+
+.chat-digitando__bolinhas span {
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ignite-primary);
+    animation: bolinhasPulsar 1.2s infinite ease-in-out;
+}
+
+.chat-digitando__bolinhas span:nth-child(1) {
+    animation-delay: 0s;
+    opacity: .4;
+}
+
+.chat-digitando__bolinhas span:nth-child(2) {
+    animation-delay: .2s;
+    opacity: .6;
+}
+
+.chat-digitando__bolinhas span:nth-child(3) {
+    animation-delay: .4s;
+    opacity: 1;
+}
+
+/* ============================================================
+   4. AVALIAÇÃO 👍👎 — .chat-avaliacao
+   ============================================================ */
+.chat-avaliacao {
+    display: flex;
+    align-items: center;
+    gap: .2rem;
+    opacity: 0;
+    /* Aparece quando o balão for hover ou focus-within */
+    transition: opacity var(--t-fast);
+}
+
+/* Exibe avaliação ao passar o mouse no balão */
+.chat-msg__balao--bot:hover .chat-avaliacao,
+.chat-msg__balao--bot:focus-within .chat-avaliacao {
+    opacity: 1;
+}
+
+.chat-avaliacao__btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: .85rem;
+    line-height: 1;
+    padding: .15rem .25rem;
+    border-radius: .25rem;
+    transition: transform var(--t-fast), background var(--t-fast);
+}
+
+.chat-avaliacao__btn:hover {
+    background: #f4f4f5;
+    transform: scale(1.2);
+}
+
+.chat-avaliacao__btn:focus-visible {
+    outline: 2px solid var(--ignite-primary);
+    outline-offset: 2px;
+}
+
+/* Texto de confirmação após votar */
+.chat-avaliacao__obrigado {
+    font-size: var(--fs-meta);
+    color: var(--ignite-text-muted);
+    white-space: nowrap;
+}
+
+/* ============================================================
+   5. CHIPS DE SUGESTÃO — .chat-chip / #chat-chips
+   ============================================================ */
+#chat-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    padding: .5rem .75rem;
+    max-height: 80px;
+    overflow: hidden;
+    transition: opacity .3s ease, max-height .3s ease;
+}
+
+/* Estado de saída com animação */
+#chat-chips.chat-chips--saindo {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.chat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .35rem .75rem;
+    background: var(--ignite-bg-card);
+    border: 1px solid var(--ignite-border);
+    border-radius: var(--r-chip);
+    font-family: var(--font);
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--ignite-text-main);
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: var(--shadow-msg);
+    transition:
+        background var(--t-fast),
+        border-color var(--t-fast),
+        transform var(--t-fast),
+        color var(--t-fast);
+    animation: chipEntrar var(--t-base) both;
+}
+
+/* Stagger de entrada dos chips */
+.chat-chip:nth-child(1) {
+    animation-delay: .05s;
+}
+
+.chat-chip:nth-child(2) {
+    animation-delay: .10s;
+}
+
+.chat-chip:nth-child(3) {
+    animation-delay: .15s;
+}
+
+.chat-chip:nth-child(4) {
+    animation-delay: .20s;
+}
+
+.chat-chip:nth-child(5) {
+    animation-delay: .25s;
+}
+
+.chat-chip:hover {
+    background: #fff7ed;
+    border-color: var(--ignite-primary);
+    color: var(--ignite-primary-dark);
+    transform: translateY(-1px);
+}
+
+.chat-chip:active {
+    transform: translateY(0);
+}
+
+.chat-chip:focus-visible {
+    outline: 2px solid var(--ignite-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================================
+   6. CARD DE PRODUTO — .produto-card
+   ============================================================ */
+
+/* Wrapper de entrada no chat */
+.chat-produto-card {
+    margin-bottom: .5rem;
+    margin-left: calc(2rem + .5rem);
+    /* alinha com o texto do bot */
+    max-width: calc(85% - 2.5rem);
+    animation: msgEntrar var(--t-base) both;
+}
+
+.produto-card {
+    background: var(--ignite-bg-card);
+    border: 1px solid var(--ignite-border-card);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    min-width: 220px;
+    transition: transform var(--t-base), box-shadow var(--t-base);
+}
+
+.produto-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+/* Versão compacta para uso no carrossel */
+.produto-card--compacto {
+    min-width: 160px;
+    max-width: 180px;
+}
+
+/* Imagem */
+.produto-card__imagem-wrap {
+    width: 100%;
+    height: 130px;
+    overflow: hidden;
+    background: #fafafa;
+}
+
+.produto-card--compacto .produto-card__imagem-wrap {
+    height: 100px;
+}
+
+.produto-card__imagem {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 350ms ease;
+}
+
+.produto-card:hover .produto-card__imagem {
+    transform: scale(1.04);
+}
+
+/* Placeholder sem imagem */
+.produto-card__imagem-placeholder {
+    height: 90px;
+    display: grid;
+    place-items: center;
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+}
+
+.produto-card--compacto .produto-card__imagem-placeholder {
+    height: 70px;
+    font-size: 2rem;
+}
+
+/* Info */
+.produto-card__info {
+    padding: .65rem .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+/* Badge de categoria */
+.produto-card__badge {
+    display: inline-block;
+    font-size: .625rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ignite-primary-dark);
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: var(--r-badge);
+    padding: .1rem .35rem;
+    width: fit-content;
+}
+
+/* Nome */
+.produto-card__nome {
+    margin: 0;
+    font-family: var(--font);
+    font-size: var(--fs-msg);
+    font-weight: 700;
+    color: var(--ignite-text-main);
+    line-height: 1.3;
+}
+
+.produto-card--compacto .produto-card__nome {
+    font-size: .8125rem;
+}
+
+/* Descrição (oculta na versão compacta via JS) */
+.produto-card__descricao {
+    margin: 0;
+    font-size: var(--fs-card);
+    color: var(--ignite-text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Rodapé: preço + botão */
+.produto-card__rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .4rem;
+    margin-top: .3rem;
+}
+
+.produto-card__preco {
+    font-size: .9375rem;
+    font-weight: 800;
+    color: var(--ignite-primary);
+    letter-spacing: -.02em;
+}
+
+.produto-card--compacto .produto-card__preco {
+    font-size: .875rem;
+}
+
+/* Botão adicionar */
+.produto-card__btn-add {
+    flex-shrink: 0;
+    padding: .3rem .65rem;
+    background: var(--ignite-primary);
+    color: var(--ignite-text-white);
+    border: none;
+    border-radius: var(--r-btn);
+    font-size: .7rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-btn);
+    transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.produto-card__btn-add:hover:not(:disabled) {
+    background: var(--ignite-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(249, 115, 22, .45);
+}
+
+.produto-card__btn-add:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.produto-card__btn-add:disabled {
+    background: #86efac;
+    box-shadow: none;
+    cursor: default;
+}
+
+.produto-card__btn-add:focus-visible {
+    outline: 2px solid var(--ignite-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================================
+   7. CARROSSEL DE PRODUTOS — .produto-carrossel
+   ============================================================ */
+
+/* Wrapper de entrada no chat (mesma margem do card único) */
+.chat-produto-carrossel {
+    margin-bottom: .5rem;
+    margin-left: calc(2rem + .5rem);
+    max-width: calc(100% - 2.5rem);
+    animation: msgEntrar var(--t-base) both;
+    position: relative;
+}
+
+.produto-carrossel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+/* Faixa rolável */
+.produto-carrossel__faixa {
+    display: flex;
+    gap: .75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Firefox */
+    padding: .25rem .1rem .5rem;
+    /* espaço para a sombra dos cards */
+    flex: 1;
+}
+
+.produto-carrossel__faixa::-webkit-scrollbar {
+    display: none;
+}
+
+/* Chrome/Safari */
+
+/* Cada card dentro da faixa ocupa um "snap point" */
+.produto-carrossel__faixa .produto-card {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+}
+
+/* Setas de navegação */
+.produto-carrossel__seta {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ignite-bg-card);
+    border: 1px solid var(--ignite-border);
+    border-radius: 50%;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--shadow-msg);
+    color: var(--ignite-text-muted);
+    transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+    z-index: 1;
+}
+
+.produto-carrossel__seta:hover {
+    background: var(--ignite-primary);
+    color: var(--ignite-text-white);
+    transform: scale(1.1);
+}
+
+.produto-carrossel__seta:focus-visible {
+    outline: 2px solid var(--ignite-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================================
+   8. ANIMAÇÕES & KEYFRAMES
+   ============================================================ */
+
+/* Entrada de mensagens e cards */
+@keyframes msgEntrar {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Entrada dos chips com leve slide */
+@keyframes chipEntrar {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Pulsação das bolinhas de digitação */
+@keyframes bolinhasPulsar {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(.8);
+        opacity: .5;
+    }
+
+    40% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* ============================================================
+   9. RESPONSIVIDADE
+   ============================================================ */
+@media (max-width: 480px) {
+
+    /* Balões maiores em telas pequenas */
+    .chat-msg__balao {
+        max-width: 92%;
+    }
+
+    /* Cards e carrossel alinham à esquerda sem offset */
+    .chat-produto-card,
+    .chat-produto-carrossel {
+        margin-left: 0;
+        max-width: 95%;
+    }
+
+    /* Carrossel com cards um pouco menores */
+    .produto-card--compacto {
+        min-width: 145px;
+        max-width: 160px;
+    }
+
+    /* Chips em linha única com scroll horizontal */
+    #chat-chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: .65rem;
+        scrollbar-width: none;
+    }
+
+    #chat-chips::-webkit-scrollbar {
+        display: none;
+    }
+}

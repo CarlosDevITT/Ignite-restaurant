@@ -368,6 +368,12 @@
     background: #fafafa;
 }
 
+/* Quando a imagem está dentro do info (chat), dar pequeno espaçamento */
+.produto-card__info .produto-card__imagem-wrap {
+    margin-bottom: .5rem;
+    border-radius: .5rem;
+}
+
 .produto-card--compacto .produto-card__imagem-wrap {
     height: 100px;
 }

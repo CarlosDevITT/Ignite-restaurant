@@ -482,7 +482,7 @@ function renderNewProducts() {
     const priceInfo = getDisplayPrice(product);
 
     return `
-      <div class="min-w-[200px] bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden produto-card" data-category="${product.category || ''}">
+      <div class="min-w-[200px] bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden produto-card cursor-pointer" data-id="${product.id}" data-category="${product.category || ''}">
         <div class="relative">
           <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
             ${product.image_url ?
@@ -600,11 +600,11 @@ function renderMenuProducts() {
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          ${categoryProducts.map(product => {
+            ${categoryProducts.map(product => {
       const priceInfo = getDisplayPrice(product);
 
       return `
-              <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex produto-card group" data-category="${product.category || ''}">
+              <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex produto-card group cursor-pointer" data-id="${product.id}" data-category="${product.category || ''}">
                 <div class="relative">
                   <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0">
                     ${product.image_url ?
@@ -651,8 +651,8 @@ function renderMenuProducts() {
                   ` : ''}
                   
                   <div class="flex gap-2">
-                    <button class="share-product flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-center" 
-                            onclick="window.shareProduct('${product.name}', '${product.description}', '${product.id}')">
+                        <button class="share-product flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-center" 
+                          onclick="window.shareProduct('${product.name}', '${product.description}', '${product.id}')">
                       <i class="fas fa-share-alt mr-2"></i>Share
                     </button>
                     

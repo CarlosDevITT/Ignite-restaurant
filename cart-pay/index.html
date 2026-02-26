@@ -633,12 +633,18 @@
   <!-- ========== PRODUCTS MODULE ========== -->
   <!-- IMPORTANTE: script.js deve carregar ANTES de product-loader.js -->
   <script src="../src/modules/products/script.js?v=1.1" defer></script>
+  <script src="../src/modules/products/product-detail.js" defer></script>
   <script src="../src/modules/products/product-loader.js" defer></script>
 
   <!-- ========== HEADER FUNCTIONS ========== -->
   <script src="../src/modules/header/header-functions.js" defer></script>
 
   <!-- ========== CHAT BOT — carrega por último para ter window.products disponível ========== -->
+  <script src="../src/modules/chat/chat-cache-manager.js" defer></script>
+  <script src="../src/modules/chat/chat-cart-integration.js" defer></script>
+  <script src="../src/modules/chat/chat-compatibility.js" defer></script>
+  <script src="../src/modules/chat/chat-enhancements.js" defer></script>
+  <script src="../src/modules/chat/chat-validator.js" defer></script>
   <script src="../src/modules/chat/chat-bot.js" defer></script>
 
   <!-- ========== ATUALIZAR STATUS DESKTOP ========== -->

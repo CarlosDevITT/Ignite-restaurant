@@ -41,34 +41,41 @@ self.addEventListener('activate', (event) => {
 
 // Estratégia de Fetch: Network First, falling back to cache
 self.addEventListener('fetch', (event) => {
-    // Check if the request is for a browser extension or other schemes that shouldn't be cached
+    // Ignore browser-extension requests or analytics probes
     if (event.request.url.startsWith('chrome-extension') || event.request.url.includes('google-analyzer')) {
         return;
     }
 
-    event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // If the response is valid, clone it and put it in the cache
-                if (response && response.status === 200 && response.type === 'basic') {
-                    const responseToCache = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-                return response;
-            })
-            .catch(() => {
-                // Se falhar (offline), tenta retornar do cache
-                return caches.match(event.request).then((response) => {
-                    if (response) {
-                        return response;
-                    }
-                    // Se não estiver no cache e for uma navegação (página HTML), mostra offline.html
-                    if (event.request.mode === 'navigate') {
-                        return caches.match('/offline.html');
-                    }
-                });
-            })
-    );
+    event.respondWith((async () => {
+        try {
+            const networkResponse = await fetch(event.request);
+
+            // Cache same-origin successful basic responses for offline use
+            if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                const responseToCache = networkResponse.clone();
+                const cache = await caches.open(CACHE_NAME);
+                cache.put(event.request, responseToCache).catch(() => { /* ignore cache put errors */ });
+            }
+
+            return networkResponse;
+        } catch (err) {
+            // Network failed — try cache first
+            const cached = await caches.match(event.request);
+            if (cached) return cached;
+
+            // If the request looks like a navigation or accepts HTML, return offline page
+            const acceptHeader = event.request.headers && event.request.headers.get && event.request.headers.get('accept');
+            const isHtmlRequest = event.request.mode === 'navigate' || (acceptHeader && acceptHeader.includes('text/html'));
+
+            if (isHtmlRequest) {
+                const offline = await caches.match('/offline.html');
+                if (offline) return offline;
+                // As a last resort, return a basic offline Response
+                return new Response('<!doctype html><meta charset="utf-8"><title>Offline</title><h1>Você está offline</h1>', { headers: { 'Content-Type': 'text/html' } });
+            }
+
+            // For non-HTML requests, return a generic error response
+            return new Response('Network error', { status: 408, statusText: 'Network error' });
+        }
+    })());
 });

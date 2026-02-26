@@ -100,7 +100,7 @@ function renderStories(featuredProducts) {
 
   featuredProducts.forEach((product, index) => {
     const storySlide = document.createElement('div');
-    storySlide.className = 'w-full flex-shrink-0 relative';
+    storySlide.className = 'w-full flex-shrink-0 relative story-card cursor-pointer';
     storySlide.style.width = `${100 / featuredProducts.length}%`;
 
     const priceInfo = getDisplayPrice(product);
@@ -155,6 +155,8 @@ function renderStories(featuredProducts) {
       </div>
     `;
 
+    // mark element with product id for delegation
+    storySlide.setAttribute('data-id', product.id);
     container.appendChild(storySlide);
   });
 

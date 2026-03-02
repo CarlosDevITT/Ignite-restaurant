@@ -55,9 +55,15 @@ const CHAT_CONFIG = {
     ai: {
         gemini: {
             enabled: true,
-            apiKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_GEMINI_KEY) || "SUA_CHAVE_GEMINI_AQUI",
+            apiKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_GEMINI_KEY) || "AIzaSyCd2uDIgqmh7bRDczfbK3BJj63KNpbG4mE",
             model: "gemini-1.5-flash",
             endpoint: "https://generativelanguage.googleapis.com/v1beta/models",
+        },
+        openrouter: {
+            enabled: true,
+            apiKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_OPENROUTER_KEY) || "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",
+            model: "openai/gpt-3.5-turbo",
+            endpoint: "https://openrouter.ai/api/v1/chat/completions",
         },
         deepseek: {
             enabled: false,
@@ -65,7 +71,7 @@ const CHAT_CONFIG = {
             model: "deepseek-chat",
             endpoint: "https://api.deepseek.com/v1/chat/completions",
         },
-        provedor: "local", // provedor principal: "local" (fallback) | "gemini" | "deepseek"
+        provedor: "openrouter", // provedor principal: "local" (fallback) | "gemini" | "openrouter" | "deepseek"
         usarFallbackLocal: true, // usar sempre fallback inteligente quando API falhar
     },
 
@@ -263,19 +269,51 @@ Para mostrar MÚLTIPLOS produtos em carrossel (máx 5), inclua ao final:
         return json.choices?.[0]?.message?.content || "";
     }
 
+    /** Chama OpenRouter (acesso a múltiplos modelos). */
+    async function _chamarOpenRouter(mensagem, historico, produtos) {
+        const { openrouter } = CHAT_CONFIG.ai;
+        const messages = [
+            { role: "system", content: _buildSystemPrompt(produtos) },
+            ...historico,
+            { role: "user", content: mensagem },
+        ];
+
+        const res = await fetch(openrouter.endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${openrouter.apiKey}`,
+                "HTTP-Referer": window.location.origin,
+                "X-Title": "Ignite Restaurant"
+            },
+            body: JSON.stringify({
+                model: openrouter.model,
+                messages: messages,
+                max_tokens: 600,
+                temperature: 0.7
+            }),
+        });
+
+        if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}`);
+        const json = await res.json();
+        return json.choices?.[0]?.message?.content || "";
+    }
+
+
     /**
      * Ponto de entrada público com prioridade para fallback local.
      * Fluxo: local inteligente → API (se chave disponível) → fallback local.
      */
     async function responder(mensagem, historico, produtos) {
-        const { provedor, gemini, deepseek, usarFallbackLocal } = CHAT_CONFIG.ai;
+        const { provedor, gemini, deepseek, openrouter, usarFallbackLocal } = CHAT_CONFIG.ai;
 
         // Guard: não chama API com chave placeholder
         const geminiOk = gemini.enabled && !gemini.apiKey.includes("SUA_CHAVE");
         const deepseekOk = deepseek.enabled && !deepseek.apiKey.includes("SUA_CHAVE");
+        const openrouterOk = openrouter.enabled && !openrouter.apiKey.includes("SUA_CHAVE") && openrouter.apiKey.length > 20;
 
         // Se nenhuma chave válida, usar fallback local imediatamente
-        if (!geminiOk && !deepseekOk) {
+        if (!geminiOk && !deepseekOk && !openrouterOk) {
             console.info("ℹ️ Usando fallback local — sem chave de API configurada.");
             return _fallbackLocal(mensagem, produtos);
         }
@@ -286,13 +324,18 @@ Para mostrar MÚLTIPLOS produtos em carrossel (máx 5), inclua ao final:
         }
 
         try {
+            if (provedor === "openrouter" && openrouterOk) return await _chamarOpenRouter(mensagem, historico, produtos);
             if (provedor === "gemini" && geminiOk) return await _chamarGemini(mensagem, historico, produtos);
             if (provedor === "deepseek" && deepseekOk) return await _chamarDeepSeek(mensagem, historico, produtos);
             throw new Error("Provedor principal indisponível.");
         } catch (erro) {
             console.warn(`⚠️ AIProvider '${provedor}' falhou:`, erro.message);
             try {
+                if (provedor === "openrouter" && geminiOk) return await _chamarGemini(mensagem, historico, produtos);
+                if (provedor === "openrouter" && deepseekOk) return await _chamarDeepSeek(mensagem, historico, produtos);
+                if (provedor === "gemini" && openrouterOk) return await _chamarOpenRouter(mensagem, historico, produtos);
                 if (provedor === "gemini" && deepseekOk) return await _chamarDeepSeek(mensagem, historico, produtos);
+                if (provedor === "deepseek" && openrouterOk) return await _chamarOpenRouter(mensagem, historico, produtos);
                 if (provedor === "deepseek" && geminiOk) return await _chamarGemini(mensagem, historico, produtos);
             } catch (e2) {
                 console.error("❌ Fallback de API falhou:", e2.message);

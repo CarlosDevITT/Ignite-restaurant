@@ -244,6 +244,72 @@
       };
     }
 
+    // ────────────────────────────────────────────────────────────
+    // 11. Menu de ações (+ button em mobile)
+    // ────────────────────────────────────────────────────────────
+    const actionsToggle = document.getElementById('chat-actions-toggle');
+    const actionsMenu = document.getElementById('chat-actions-menu');
+
+    if (actionsToggle && actionsMenu && !actionsToggle.dataset.enhancedActions) {
+      actionsToggle.dataset.enhancedActions = 'true';
+
+      // Toggle menu ao clicar no botão "+"
+      actionsToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = actionsMenu.classList.contains('hidden');
+        if (isHidden) {
+          actionsMenu.classList.remove('hidden');
+          // Trigger animation
+          setTimeout(() => actionsMenu.classList.add('animate-in'), 10);
+        } else {
+          actionsMenu.classList.add('hidden');
+        }
+      });
+
+      // Fechar menu ao clicar em uma ação
+      actionsMenu.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          actionsMenu.classList.add('hidden');
+
+          // Ações específicas
+          if (btn.innerHTML.includes('Anexar') || btn.innerHTML.includes('imagem')) {
+            // Abrir file picker para imagem
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.addEventListener('change', (evt) => {
+              const file = evt.target.files?.[0];
+              if (file && chatInput) {
+                chatInput.value += chatInput.value ? `\n📷 ${file.name}` : `📷 ${file.name}`;
+                chatInput.focus();
+                chatInput.style.height = 'auto';
+                chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+              }
+            });
+            input.click();
+          } else if (btn.innerHTML.includes('cardápio') || btn.innerHTML.includes('Cardápio') || btn.innerHTML.includes('utensils')) {
+            // Enviar mensagem pré-programada
+            if (chatInput) {
+              chatInput.value = 'Ver cardápio';
+              const sendBtn = document.getElementById('chat-send-btn');
+              if (sendBtn && !sendBtn.disabled) {
+                setTimeout(() => sendBtn.click(), 50);
+              }
+            }
+          }
+        });
+      });
+
+      // Fechar menu ao clicar fora
+      document.addEventListener('click', (e) => {
+        const isClickInside = actionsToggle.contains(e.target) || actionsMenu.contains(e.target);
+        if (!isClickInside && !actionsMenu.classList.contains('hidden')) {
+          actionsMenu.classList.add('hidden');
+        }
+      });
+    }
+
     console.log('✨ Chat enhancements aplicados com sucesso!');
   }
 

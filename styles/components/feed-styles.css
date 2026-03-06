@@ -1,0 +1,31 @@
+/* feed-styles.css - estilos específicos para a seção Feed */
+
+/* scrollbars escondidas já usadas em outros lugares */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* small styling for story items */
+#feed-stories-bar .story-item {
+  flex-shrink: 0;
+  text-align: center;
+}
+#feed-stories-bar .story-item img {
+  display: block;
+}
+
+/* comments sheet textarea fix */
+#comments-sheet textarea {
+  resize: none;
+}
+
+/* make feed modal scrollable on desktop */
+@media (min-width: 1024px) {
+  #feed-modal > div {
+    max-height: 90vh;
+  }
+}

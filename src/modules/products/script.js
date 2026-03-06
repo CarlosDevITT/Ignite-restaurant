@@ -506,16 +506,16 @@ function renderNewProducts() {
         </div>
         
         <div class="p-4">
-          <h3 class="font-bold text-gray-800 truncate mb-1">${product.name}</h3>
-          <p class="text-sm text-gray-600 line-clamp-2 h-10 mb-3">${product.description || 'Delicioso produto especial'}</p>
+          <h3 class="produto-card-title">${product.name}</h3>
+          <p class="produto-card-description line-clamp-2 h-10 mb-3">${product.description || 'Delicioso produto especial'}</p>
           
           <div class="flex justify-between items-center">
             <div class="flex flex-col">
               ${priceInfo.hasPromo ? `
-                <span class="font-bold text-lg text-red-600">R$ ${priceInfo.final.toFixed(2)}</span>
-                <span class="text-xs text-gray-500 line-through">R$ ${priceInfo.original.toFixed(2)}</span>
+                <span class="price price-promo">R$ ${priceInfo.final.toFixed(2)}</span>
+                <span class="price-original">R$ ${priceInfo.original.toFixed(2)}</span>
               ` : `
-                <span class="font-bold text-lg text-primary">R$ ${priceInfo.final.toFixed(2)}</span>
+                <span class="price">R$ ${priceInfo.final.toFixed(2)}</span>
               `}
             </div>
             
@@ -536,7 +536,7 @@ function renderNewProducts() {
           
           ${product.promo_text ? `
             <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-              <p class="text-xs text-amber-800 font-medium">${product.promo_text}</p>
+              <p class="promo-text">${product.promo_text}</p>
             </div>
           ` : ''}
         </div>
@@ -629,24 +629,24 @@ function renderMenuProducts() {
                 
                 <div class="p-4 flex-1 min-w-0 flex flex-col">
                   <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-gray-800 truncate flex-1 mr-2">${product.name}</h3>
+                    <h3 class="produto-card-title truncate flex-1 mr-2">${product.name}</h3>
                     <div class="text-right">
                       ${priceInfo.hasPromo ? `
                         <div class="flex flex-col items-end">
-                          <span class="font-bold text-red-600">R$ ${priceInfo.final.toFixed(2)}</span>
-                          <span class="text-xs text-gray-500 line-through">R$ ${priceInfo.original.toFixed(2)}</span>
+                          <span class="price price-promo">R$ ${priceInfo.final.toFixed(2)}</span>
+                          <span class="price-original">R$ ${priceInfo.original.toFixed(2)}</span>
                         </div>
                       ` : `
-                        <span class="font-bold text-primary">R$ ${priceInfo.final.toFixed(2)}</span>
+                        <span class="price">R$ ${priceInfo.final.toFixed(2)}</span>
                       `}
                     </div>
                   </div>
                   
-                  <p class="text-sm text-gray-600 mb-3 flex-1">${product.description || ''}</p>
+                  <p class="produto-card-description mb-3 flex-1">${product.description || ''}</p>
                   
                   ${product.promo_text ? `
                     <div class="mb-3 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
-                      <p class="text-xs text-amber-800">${product.promo_text}</p>
+                      <p class="promo-text">${product.promo_text}</p>
                     </div>
                   ` : ''}
                   

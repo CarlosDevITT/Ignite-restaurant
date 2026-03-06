@@ -193,11 +193,12 @@
 }
 
 .search-bar-mobile.is-sticky-search {
+  /* manter no topo mesmo após rolagem; apenas adicionar sombra se quiser */
   position: fixed;
-  top: 68px;
+  top: 0;
   left: 0;
   width: 100%;
-  z-index: 999;
+  z-index: 1100;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -349,14 +350,20 @@
   font-size: 0.9rem;
 }
 
-/* Barra de Busca Mobile */
+/* Barra de Busca Mobile: agora fixa e sobre o cabeçalho */
 .search-bar-mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1100; /* acima do header */
   padding: 0.75rem 1rem;
   background: white;
-  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  /* quando aberta push o conteúdo abaixo, fazemos overflow oculto via JS se necessário */
 }
 
 .search-bar-mobile.hidden {

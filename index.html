@@ -1,544 +1,366 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#069C54">
-    <meta name="description" content="Ignite - Restaurante pub com as melhores refeições da cidade. MELHOPUB092">
-    <meta name="keywords" content="MELHOPUB092, restaurante, pub, delivery, manaus, ignite">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#069C54">
+  <meta name="description" content="Ignite – Restaurante pub com as melhores refeições da cidade. MELHOPUB092">
+  <meta name="keywords" content="MELHOPUB092, restaurante, pub, delivery, manaus, itajaí, ignite">
 
-    <!-- Preconnect para otimização -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="https://cdn.botpress.cloud">
+  <!-- Favicons -->
+  <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/x-icon">
+  <link rel="apple-touch-icon" href="assets/images/logos/ignite.jpg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ignite">
 
-    <!-- Favicons -->
-    <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/x-icon">
-    <link rel="apple-touch-icon" href="assets/images/logos/ignite.jpg">
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Ignite">
+  <!-- SEO & Social -->
+  <meta property="og:title" content="Ignite – Restaurante Pub">
+  <meta property="og:description" content="As melhores refeições e delivery da cidade. Confira nosso cardápio online!">
+  <meta property="og:image" content="https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg">
+  <meta property="og:url" content="https://ignite-restaurant.vercel.app">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
 
-    <!--========== BOX ICONS ==========-->
-    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-        integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
-        crossorigin="anonymous" />
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!--========== CSS ==========-->
-    <link rel="stylesheet" href="styles.css">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Tailwind CSS (Unificado com checkout) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#069C54',
-                        secondary: '#1a365d',
-                        accent: '#f7f9fc'
-                    }
-                }
-            }
-        }
-    </script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
-
-    <!--========== SEO & SOCIAL SHARING ==========-->
-    <meta property="og:title" content="Ignite - Restaurante Pub">
-    <meta property="og:description"
-        content="As melhores refeições e delivery da cidade. Confira nosso cardápio online!">
-    <meta property="og:image" content="https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg">
-    <meta property="og:url" content="https://ignite-restaurant.vercel.app">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Restaurant",
-      "name": "Ignite - Restaurante Pub - MELHOPUB092",
-      "image": "https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg",
-      "@id": "https://ignite-restaurant.vercel.app",
-      "url": "https://ignite-restaurant.vercel.app",
-      "telephone": "+5592985130951",
-      "priceRange": "$$",
-      "menu": "https://ignite-restaurant.vercel.app/cart-pay/index.html",
-      "servesCuisine": "Brasileira, Pub",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Av. Principal, 123",
-        "addressLocality": "Manaus",
-        "addressRegion": "AM",
-        "postalCode": "69000-000",
-        "addressCountry": "BR"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": -3.119027,
-        "longitude": -60.021731
-      },
-      "openingHoursSpecification": [
-        {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-          ],
-          "opens": "09:00",
-          "closes": "22:00"
-        }
-      ],
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "reviewCount": "128"
-      },
-      "sameAs": [
-        "https://www.instagram.com/ignite_restaurante",
-        "https://wa.me/5592985130951"
-      ]
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "Ignite – Restaurante Pub",
+    "image": "https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg",
+    "@id": "https://ignite-restaurant.vercel.app",
+    "url": "https://ignite-restaurant.vercel.app",
+    "telephone": "+5592985130951",
+    "priceRange": "$$",
+    "menu": "https://ignite-restaurant.vercel.app/cart-pay/index.html",
+    "servesCuisine": "Brasileira, Pub",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Manaus",
+      "addressRegion": "AM",
+      "addressCountry": "BR"
+    },
+    "openingHoursSpecification": [{
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "09:00",
+      "closes": "22:00"
+    }],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "128"
     }
-    </script>
+  }
+  </script>
 
-    <title>Ignite - Restaurante Pub</title>
+  <title>Ignite – Restaurante Pub</title>
 </head>
 
 <body>
-    <!--========== SCROLL TOP ==========-->
-    <a href="#" class="scrolltop" id="scroll-top">
-        <i class='bx bx-chevron-up scrolltop__icon'></i>
-    </a>
 
-    <!--========== HEADER ==========-->
-    <header class="l-header" id="header">
-        <nav class="nav bd-container">
-            <a href="#" class="nav__logo">Ignite</a>
+  <!-- ===== SCROLL TOP ===== -->
+  <a href="#" class="scrolltop" id="scroll-top" aria-label="Voltar ao topo">
+    <i class='bx bx-chevron-up scrolltop__icon'></i>
+  </a>
 
-            <div class="nav__menu" id="nav-menu">
-                <ul class="nav__list">
-                    <li class="nav__item"><a href="#home" class="nav__link active-link">Home</a></li>
-                    <li class="nav__item"><a href="#about" class="nav__link">Sobre</a></li>
-                    <li class="nav__item"><a href="#services" class="nav__link">Services</a></li>
-                    <li class="nav__item"><a href="cart-pay/index.html" class="nav__link">Cardápio</a></li>
-                    <li class="nav__item"><a href="#contact" class="nav__link">Contato</a></li>
+  <!-- ===== HEADER ===== -->
+  <header class="l-header" id="header">
+    <nav class="nav">
 
-                    <li class="nav__item">
-                        <button id="cart-button-header"
-                            class="nav__link bg-transparent border-none cursor-pointer relative">
-                            <i class='bx bx-shopping-bag text-xl'></i>
-                            <span id="cart-count-header"
-                                class="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
-                        </button>
-                    </li>
+      <!-- Logo -->
+      <a href="#home" class="nav__logo">
+        <span class="nav__logo-flame">🔥</span>
+        Ignite<span>.</span>
+      </a>
 
-                    <li class="nav__item">
-                        <button id="share-button" class="nav__link bg-transparent border-none cursor-pointer">
-                            <i class='bx bx-share-alt text-xl'></i>
-                        </button>
-                    </li>
+      <!-- Menu -->
+      <div class="nav__menu" id="nav-menu">
+        <ul class="nav__list">
+          <li><a href="#home"     class="nav__link active-link">Home</a></li>
+          <li><a href="#about"    class="nav__link">Sobre</a></li>
+          <li><a href="#services" class="nav__link">Serviços</a></li>
+          <li><a href="cart-pay/index.html" class="nav__link">Cardápio</a></li>
+          <li><a href="#contact"  class="nav__link">Contato</a></li>
 
-                    <li class="nav__item">
-                        <button onclick="navOpenProfile()" class="nav__link bg-transparent border-none cursor-pointer">
-                            <i class='bx bx-user text-xl'></i>
-                        </button>
-                    </li>
+          <!-- Share -->
+          <li>
+            <button id="share-button" class="nav__link" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.3rem;" aria-label="Compartilhar">
+              <i class='bx bx-share-alt'></i>
+            </button>
+          </li>
 
-                    <li class="nav__item">
-                        <button onclick="navOpenChat()" class="nav__link bg-transparent border-none cursor-pointer">
-                            <i class='bx bx-message-rounded-dots text-xl'></i>
-                        </button>
-                    </li>
+          <!-- Theme toggle -->
+          <li>
+            <i class='bx bx-moon change-theme' id="theme-button" role="button" aria-label="Alternar tema"></i>
+          </li>
 
-                    <li><i class='bx bx-moon change-theme' id="theme-button"></i></li>
+          <!-- CTA desktop -->
+          <li class="nav__cta">
+            <a href="cart-pay/index.html" class="button" style="padding:.55rem 1.2rem;font-size:.82rem;">
+              <i class="fas fa-utensils"></i> Pedir agora
+            </a>
+          </li>
+        </ul>
+      </div>
 
-                </ul>
+      <!-- Toggle mobile -->
+      <div class="nav__toggle" id="nav-toggle" aria-label="Abrir menu">
+        <i class='bx bx-menu'></i>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="l-main">
+
+    <!-- ──── HOME ──────────────────────────────────────── -->
+    <section class="home section" id="home">
+      <div class="home__container bd-container">
+
+        <!-- Data -->
+        <div class="home__data reveal">
+          <span class="home__eyebrow">
+            <span class="home__eyebrow-dot"></span>
+            Aberto agora · Delivery disponível
+          </span>
+
+          <h1 class="home__title">
+            Ignite<br>
+            <span class="home__title-accent">Lounge</span>
+          </h1>
+
+          <p class="home__subtitle">
+            Onde cada mordida<br>é uma delícia inesquecível.
+          </p>
+
+          <div class="home__actions">
+            <a href="cart-pay/index.html" class="button">
+              <i class="fas fa-fire"></i> Peça agora
+            </a>
+            <a href="#about" class="button button--outline">
+              Conheça mais
+            </a>
+          </div>
+
+          <!-- Stats -->
+          <div class="home__stats">
+            <div>
+              <span class="home__stat-value" data-count="128" data-suffix="+">128+</span>
+              <span class="home__stat-label">Avaliações</span>
             </div>
-
-            <div class="nav__toggle" id="nav-toggle">
-                <i class='bx bx-menu'></i>
+            <div>
+              <span class="home__stat-value" data-count="4" data-suffix=".9★">4.9★</span>
+              <span class="home__stat-label">Nota média</span>
             </div>
-
-
-
-        </nav>
-    </header>
-
-    <main class="l-main">
-        <!--========== HOME ==========-->
-        <section class="home" id="home">
-            <div class="home__container bd-container bd-grid">
-                <div class="home__data">
-                    <h1 class="home__title">Ignite lounge </h1>
-                    <h2 class="home__subtitle">Onde cada mordida <br> é uma delícia.</h2>
-                    <a href="cart-pay/index.html"><button class="button border-none cursor-pointer">Peça
-                            agora</button></a>
-                </div>
-
-                <img src="assets/images/logos/ignite2.png" alt="" class="home__img">
+            <div>
+              <span class="home__stat-value" data-count="2" data-suffix=" un.">2 un.</span>
+              <span class="home__stat-label">Unidades</span>
             </div>
-        </section>
-
-        <!--========== ABOUT ==========-->
-        <section class="about section bd-container" id="about">
-            <div class="about__container  bd-grid">
-                <div class="about__data">
-                    <span class="section-subtitle about__initial">Sobre nós</span>
-                    <h2 class="section-title about__initial">Aviso: nossa comida <br> é viciante</h2>
-                    <p class="about__description">Preparamos a melhor comida de toda a cidade, com excelente
-                        atendimento,
-                        as melhores refeições e ao melhor preço, visite-nos.</p>
-                    <button onclick="window.toggleCart()" class="button border-none cursor-pointer">Explore
-                        agora!</button>
-
-                </div>
-
-                <img src="assets/l2.jpg" alt="" class="about__img">
-            </div>
-        </section>
-
-        <!--========== SERVICES ==========-->
-        <section class="services section bd-container" id="services">
-            <span class="section-subtitle">Oferta</span>
-            <h2 class="section-title">Nossos serviços</h2>
-
-            <div class="services__container  bd-grid">
-                <div class="services__content">
-                    <img src="assets/s1.png" alt="">
-                    <h3 class="services__title">Marmitex : Sabor na Sua Mesa!</h3>
-                    <p class="services__description">Cansado de refeições sem graça? Experimente nossos Marmitex
-                        Variados! Pratos deliciosos e frescos que vão transformar seu dia a dia. Venha saborear a melhor
-                        comida da cidade!</p>
-                </div>
-
-                <div class="services__content">
-                    <img src="assets/s2.png" alt="">
-                    <h3 class="services__title">Fast Food: Sabor Rápido!</h3>
-                    <p class="services__description">Sem tempo, mas quer comer bem? Nossos Fast Foods são a solução!
-                        Delícias em minutos, perfeitas para a sua rotina agitada. Venha experimentar e satisfaça sua
-                        fome com sabor!</p>
-                </div>
-
-                <div class="services__content">
-                    <img src="assets/s3.png" alt="">
-                    <h3 class="services__title">Marmitex Fit: Saúde e Sabor!</h3>
-                    <p class="services__description">Quer comer saudável sem perder o sabor? Nossos Marmitex Fit são a
-                        escolha certa! Pratos nutritivos e deliciosos que vão te ajudar a manter a forma. Experimente e
-                        sinta a diferença!</p>
-                </div>
-            </div>
-        </section>
-
-
-    </main>
-    <!--========== CONTACT US ==========-->
-    <section class="contact section bd-container" id="contact">
-        <div class="contact__container bd-grid">
-            <div class="contact__data">
-                <span class="section-subtitle contact__initial">Vamos conversar </span>
-                <h2 class="section-title contact__initial">Contate-nos</h2>
-                <p class="contact__description">Se você deseja o delivery do nosso restaurante, entre em contato conosco
-                    e atenderemos você rapidamente, com nosso atendimento por chat 24 horas por dia, 7 dias por semana.
-                </p>
-            </div>
-
-            <div class="contact__button">
-                <a href="https://wa.me/p/9150303315061573/559285130951" class="button">Entre em contato agora!</a>
-            </div>
+          </div>
         </div>
+
+        <!-- Image -->
+        <div class="home__img-wrap reveal reveal-delay-2">
+          <span class="home__img-ring"></span>
+          <img src="assets/images/logos/ignite2.png" alt="Ignite Restaurante" class="home__img">
+        </div>
+
+      </div>
     </section>
-    <!--========== FOOTER ==========-->
-    <footer class="footer section bd-container">
-        <div class="footer__container bd-grid">
-            <div class="footer__content">
-                <a href="#" class="footer__logo">Ignite</a>
-                <span class="footer__description">Restaurante</span>
-                <div>
-                    <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i
-                            class='bx bxl-facebook'></i></a>
-                    <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i
-                            class='bx bxl-instagram'></i></a>
-                    <a href="https://www.instagram.com/ignite_restaurant" class="footer__social"><i
-                            class='bx bxl-twitter'></i></a>
-                </div>
-            </div>
 
-            <div class="footer__content">
-                <h3 class="footer__title">Services</h3>
-                <ul>
-                    <li><a href="cart-pay/index.html" class="footer__link">Delivery</a></li>
-                    <li><a href="cart-pay/index.html" class="footer__link">Pricing</a></li>
-                    <li><a href="cart-pay/index.html" class="footer__link">Fast food</a></li>
-                    <li><a href="cart-pay/index.html" class="footer__link">Reserve</a></li>
-                </ul>
-            </div>
+    <!-- ──── ABOUT ─────────────────────────────────────── -->
+    <section class="about section bd-container" id="about">
+      <div class="about__container bd-grid">
 
-            <div class="footer__content">
-                <h3 class="footer__title">Informação</h3>
-                <ul>
-                    <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link">Eventos</a></li>
-                    <li><a href="https://wa.me/5592985130951" class="footer__link">Contato</a></li>
-                    <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit?usp=sharing"
-                            class="footer__link">Privacy policy</a></li>
-                    <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit?usp=sharing"
-                            class="footer__link">Terms of services</a></li>
-                </ul>
-            </div>
-
-            <div class="footer__content">
-                <h3 class="footer__title">Endereço</h3>
-                <ul>
-                    <li>Estamos com 2 Unidades </li>
-                    <li>Manaus - AM</li>
-                    <li>Itajaí - SC</li>
-                    <li>+55 92 98513-0951</li>
-                    <li>Ignite@Gmail.com</li>
-                </ul>
-            </div>
+        <div class="about__data reveal">
+          <span class="section-label">Sobre nós</span>
+          <h2 class="section-title" style="text-align:left;">
+            Aviso: nossa comida<br>é <em style="color:var(--green);font-style:normal;">viciante</em>
+          </h2>
+          <p class="about__description">
+            Preparamos a melhor comida de toda a cidade, com excelente
+            atendimento, as melhores refeições e ao melhor preço. Com duas
+            unidades — Manaus e Itajaí — estamos sempre perto de você.
+          </p>
+          <a href="cart-pay/index.html" class="button">
+            <i class="fas fa-book-open"></i> Ver cardápio completo
+          </a>
         </div>
 
-        <p class="footer__copy">&#169; All right reserved</p>
-    </footer>
+        <img src="assets/l2.jpg" alt="Ignite restaurante ambiente" class="about__img reveal reveal-delay-1">
 
+      </div>
+    </section>
 
-    <!--========== CORE UTILS & PROTECTION ==========-->
-    <script src="src/modules/utils/storage-helper.js"></script>
+    <!-- ──── SERVICES ──────────────────────────────────── -->
+    <section class="services section" id="services">
+      <div class="bd-container">
+        <span class="section-subtitle">O que oferecemos</span>
+        <h2 class="section-title">Nossos serviços</h2>
 
-    <!--========== SPLASH SCREEN MODULE ==========-->
-    <script src="src/state/splash-module.js"></script>
-    <script>
-        // Inicializar splash screen com proteção de storage
-        new SplashScreen({
-            duration: 3000,
-            autoShow: true,
-            showOnce: true,
-            storageKey: 'igniteSplashShown'
-        });
-    </script>
+        <div class="services__container">
 
-    <!--========== SECTION LOADER MODULE ==========-->
-    <script src="src/state/section-loader.js" defer></script>
-
-    <!--========== APP NAVIGATION (Bottom Nav & Modals) ==========-->
-    <script src="src/modules/app/navigation.js" defer></script>
-
-    <!--========== SCROLL REVEAL ==========-->
-    <script src="https://unpkg.com/scrollreveal" defer></script>
-
-    <!--========== PWA INSTALL BANNER ==========-->
-    <div id="install-banner" class="install-banner">
-        <div class="install-banner__header">
-            <img src="assets/images/logos/ignite.jpg" alt="Ignite Icon" class="install-banner__icon">
-            <div class="install-banner__content">
-                <h3 class="install-banner__title">Instalar Ignite App</h3>
-                <p class="install-banner__text">Acesse nosso cardápio mais rápido e peça com um toque direto da sua tela
-                    inicial.</p>
+          <div class="services__content">
+            <div class="services__icon-wrap">
+              <img src="assets/s1.png" alt="" class="services__img">
             </div>
+            <h3 class="services__title">Marmitex Variados</h3>
+            <p class="services__description">
+              Pratos deliciosos e frescos que vão transformar seu dia a dia.
+              Ingredientes selecionados, porções generosas.
+            </p>
+          </div>
+
+          <div class="services__content">
+            <div class="services__icon-wrap">
+              <img src="assets/s2.png" alt="" class="services__img">
+            </div>
+            <h3 class="services__title">Fast Food Premium</h3>
+            <p class="services__description">
+              Sem tempo, mas quer comer bem? Delícias em minutos, perfeitas
+              para qualquer rotina. Sabor que não abre mão da qualidade.
+            </p>
+          </div>
+
+          <div class="services__content">
+            <div class="services__icon-wrap">
+              <img src="assets/s3.png" alt="" class="services__img">
+            </div>
+            <h3 class="services__title">Marmitex Fit</h3>
+            <p class="services__description">
+              Quer comer saudável sem perder o sabor? Pratos nutritivos e
+              balanceados que te ajudam a manter a forma com prazer.
+            </p>
+          </div>
+
         </div>
-        <div class="install-banner__buttons">
-            <button id="btn-install" class="install-banner__btn install-banner__btn--install">Instalar Agora</button>
-            <button id="btn-close-banner" class="install-banner__btn install-banner__btn--close">Depois</button>
-        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ──── CONTACT ──────────────────────────────────────── -->
+  <section class="contact section" id="contact">
+    <div class="contact__container bd-container bd-grid">
+      <div class="contact__data reveal">
+        <span class="section-subtitle">Fale conosco</span>
+        <h2 class="section-title" style="text-align:left;color:#fff;">Vamos conversar</h2>
+        <p class="contact__description">
+          Delivery disponível agora. Entre em contato pelo WhatsApp e
+          atenderemos você rapidamente — 24h, 7 dias por semana.
+        </p>
+      </div>
+      <div class="contact__button reveal reveal-delay-1">
+        <a href="https://wa.me/p/9150303315061573/559285130951" class="button" target="_blank" rel="noopener">
+          <i class="fab fa-whatsapp"></i> Falar no WhatsApp
+        </a>
+      </div>
     </div>
+  </section>
 
-    <!--========== SERVICE WORKER & INSTALL LOGIC ==========-->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('SW registrado com sucesso:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('Falha ao registrar o SW:', error);
-                    });
-            });
-        }
+  <!-- ──── FOOTER ───────────────────────────────────────── -->
+  <footer class="footer bd-container">
+    <div class="footer__container bd-grid">
 
-        // Lógica do Banner de Instalação Customizado
-        let deferredPrompt;
-        const installBanner = document.getElementById('install-banner');
-        const btnInstall = document.getElementById('btn-install');
-        const btnClose = document.getElementById('btn-close-banner');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Previne o mini-infobar padrão do navegador
-            e.preventDefault();
-            // Guarda o evento para ser disparado depois
-            deferredPrompt = e;
-
-            // Verifica se o usuário já fechou o banner nesta sessão
-            if (!sessionStorage.getItem('installBannerClosed')) {
-                // Mostra o banner customizado com um pequeno delay para não ser intrusivo
-                setTimeout(() => {
-                    installBanner.classList.add('show');
-                }, 4000);
-            }
-        });
-
-        btnInstall.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                // Mostra o prompt de instalação
-                deferredPrompt.prompt();
-                // Aguarda a escolha do usuário
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`Usuário escolheu: ${outcome}`);
-                // Limpa o prompt
-                deferredPrompt = null;
-                // Esconde o banner
-                installBanner.classList.remove('show');
-            }
-        });
-
-        btnClose.addEventListener('click', () => {
-            installBanner.classList.remove('show');
-            // Marca que o usuário fechou o banner nesta sessão
-            sessionStorage.setItem('installBannerClosed', 'true');
-        });
-
-        // Esconde o banner se o app for instalado com sucesso
-        window.addEventListener('appinstalled', (event) => {
-            console.log('App instalado com sucesso!');
-            installBanner.classList.remove('show');
-            deferredPrompt = null;
-        });
-
-        // Web Share Global
-        document.getElementById('share-button')?.addEventListener('click', async () => {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Ignite - Restaurante Pub',
-                        text: 'Confira os melhores pratos da cidade no Ignite! 🔥',
-                        url: window.location.href,
-                    });
-                } catch (err) { if (err.name !== 'AbortError') console.error(err); }
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link copiado!', showConfirmButton: false, timer: 2000 });
-            }
-        });
-
-        window.shareProduct = async function (name, desc, id) {
-            const text = `Olha esse ${name} do Ignite! 😋\n\nConfere aqui:`;
-            const url = `${window.location.origin}/cart-pay/index.html?item=${id}`;
-            if (navigator.share) {
-                try { await navigator.share({ title: name, text: text, url: url }); }
-                catch (err) { if (err.name !== 'AbortError') console.error(err); }
-            } else {
-                navigator.clipboard.writeText(`${text} ${url}`);
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Copiado!', showConfirmButton: false, timer: 2000 });
-            }
-        };
-    </script>
-
-    <!-- ========== PERFIL MODAL ========== -->
-    <div id="profile-modal" class="fixed inset-0 z-[60] bg-gray-50/95 backdrop-blur-sm hidden overflow-y-auto">
-        <div class="min-h-full flex items-center justify-center p-4 sm:p-6 mb-16 lg:mb-0">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
-                <button onclick="closeAllModals()"
-                    class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-
-                <!-- VIEW 1: Cadastrar -->
-                <div id="profile-view-register" class="hidden">
-                    <div class="text-center mb-6 mt-4">
-                        <h2 class="text-xl font-bold text-slate-800 mb-2">Faltam algumas informações</h2>
-                        <p class="text-sm text-gray-500">Você só precisa preencher estes dados uma vez</p>
-                    </div>
-                    <form id="profile-form-register" class="flex flex-col gap-4" onsubmit="saveProfileRegister(event)">
-                        <input type="tel" id="prof-reg-phone" placeholder="Telefone *" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                        <input type="text" id="prof-reg-name" placeholder="Seu nome *" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none uppercase">
-                        <textarea id="prof-reg-address" placeholder="Endereço p/ Entrega *" required rows="2"
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"></textarea>
-                        <input type="password" id="prof-reg-pass" placeholder="Senha *" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                        <input type="password" id="prof-reg-pass-confirm" placeholder="Confirmar Senha *" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                        <button type="submit"
-                            class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">CONFIRMAR</button>
-                    </form>
-                </div>
-
-                <!-- VIEW 2: Editar -->
-                <div id="profile-view-edit" class="hidden">
-                    <div class="text-center mb-6 mt-4">
-                        <h2 class="text-xl font-bold text-slate-800 mb-2">Meu Perfil</h2>
-                    </div>
-                    <form id="profile-form-edit" class="flex flex-col gap-4" onsubmit="saveProfileEdit(event)">
-                        <input type="tel" id="prof-edit-phone" placeholder="Telefone" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                        <input type="text" id="prof-edit-name" placeholder="Nome" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none uppercase">
-                        <textarea id="prof-edit-address" placeholder="Endereço" required rows="2"
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"></textarea>
-                        <input type="email" id="prof-edit-email" placeholder="E-mail"
-                            class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                        <button type="submit"
-                            class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">SALVAR
-                            ALTERAÇÕES</button>
-                    </form>
-                    <button onclick="logoutProfile()"
-                        class="mt-4 w-full bg-red-50 text-red-600 font-bold py-2 rounded-lg hover:bg-red-100 transition-colors text-sm">Sair
-                        da Conta</button>
-                </div>
-            </div>
+      <div class="footer__content">
+        <a href="#home" class="footer__logo">🔥 Ignite</a>
+        <span class="footer__description">Restaurante Pub · MELHOPUB092</span>
+        <div>
+          <a href="https://www.instagram.com/ignite_restaurant" class="footer__social" target="_blank" rel="noopener" aria-label="Facebook">
+            <i class='bx bxl-facebook'></i>
+          </a>
+          <a href="https://www.instagram.com/ignite_restaurant" class="footer__social" target="_blank" rel="noopener" aria-label="Instagram">
+            <i class='bx bxl-instagram'></i>
+          </a>
+          <a href="https://wa.me/5592985130951" class="footer__social" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <i class='bx bxl-whatsapp'></i>
+          </a>
         </div>
-    </div>
-    <!-- ========== CHAT MODAL ========== -->
-    <div id="chat-modal"
-        class="fixed inset-0 z-[60] bg-gray-50/95 hidden flex-col items-center justify-center backdrop-blur-sm">
-        <div
-            class="bg-white w-full h-full lg:max-w-md lg:max-h-[80vh] lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
-            <div class="bg-primary text-white p-4 flex items-center justify-between shadow-md">
-                <div class="flex items-center gap-3">
-                    <button onclick="closeAllModals()" class="text-white hover:opacity-80 transition-opacity">
-                        <i class="fas fa-arrow-left text-xl lg:hidden"></i>
-                        <i class="fas fa-times text-xl hidden lg:block"></i>
-                    </button>
-                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-inner">
-                        <img src="assets/images/logos/logo.png" class="w-8 h-8 object-contain">
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-lg leading-tight">Atendimento Ignite</h3>
-                        <p class="text-xs text-green-200"><i
-                                class="fas fa-circle text-[8px] mr-1 animate-pulse"></i>Online</p>
-                    </div>
-                </div>
-            </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-4"></div>
-            <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2 mb-16 lg:mb-0">
-                <input type="text" id="chat-input" placeholder="Digite sua mensagem..."
-                    class="flex-1 bg-gray-100 border-none rounded-full px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-400">
-                <button id="chat-send-btn"
-                    class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:rotate-12 transition-transform active:scale-90">
-                    <i class="fas fa-paper-plane ml-[-2px]"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+      </div>
 
-    <!--========== CHAT BOT MODULE ==========-->
-    <script src="src/modules/chat/chat-bot.js" defer></script>
+      <div class="footer__content">
+        <h3 class="footer__title">Serviços</h3>
+        <ul>
+          <li><a href="cart-pay/index.html" class="footer__link">Delivery</a></li>
+          <li><a href="cart-pay/index.html" class="footer__link">Cardápio</a></li>
+          <li><a href="cart-pay/index.html" class="footer__link">Fast Food</a></li>
+          <li><a href="cart-pay/index.html" class="footer__link">Reservas</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__content">
+        <h3 class="footer__title">Informação</h3>
+        <ul>
+          <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link" target="_blank" rel="noopener">Eventos</a></li>
+          <li><a href="https://wa.me/5592985130951" class="footer__link" target="_blank" rel="noopener">Contato</a></li>
+          <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit" class="footer__link" target="_blank" rel="noopener">Privacidade</a></li>
+          <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit" class="footer__link" target="_blank" rel="noopener">Termos</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__content">
+        <h3 class="footer__title">Endereço</h3>
+        <ul>
+          <li style="margin-bottom:.4rem;font-size:.85rem;">2 Unidades</li>
+          <li class="footer__link" style="cursor:default;">📍 Manaus – AM</li>
+          <li class="footer__link" style="cursor:default;">📍 Itajaí – SC</li>
+          <li style="margin-top:.5rem;">
+            <a href="tel:+5592985130951" class="footer__link">+55 92 98513-0951</a>
+          </li>
+          <li>
+            <a href="mailto:contato@ignite.restaurant" class="footer__link">contato@ignite.restaurant</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+    <p class="footer__copy">© 2025 Ignite Restaurante Pub · Todos os direitos reservados</p>
+  </footer>
+
+  <!-- ──── PWA INSTALL BANNER ───────────────────────────── -->
+  <div id="install-banner" class="install-banner" role="dialog" aria-label="Instalar app">
+    <div class="install-banner__header">
+      <img src="assets/images/logos/ignite.jpg" alt="Ignite" class="install-banner__icon">
+      <div class="install-banner__content">
+        <h3 class="install-banner__title">Instalar Ignite App</h3>
+        <p class="install-banner__text">Acesse o cardápio mais rápido e peça com um toque da tela inicial.</p>
+      </div>
+    </div>
+    <div class="install-banner__buttons">
+      <button id="btn-install" class="install-banner__btn install-banner__btn--install">Instalar</button>
+      <button id="btn-close-banner" class="install-banner__btn install-banner__btn--close">Depois</button>
+    </div>
+  </div>
+
+  <!-- ──── CORE SCRIPTS ─────────────────────────────────── -->
+  <script src="src/modules/utils/storage-helper.js"></script>
+  <script src="src/state/splash-module.js"></script>
+  <script>
+    if (typeof SplashScreen !== 'undefined') {
+      new SplashScreen({ duration: 2800, autoShow: true, showOnce: true, storageKey: 'igniteSplashShown' });
+    }
+  </script>
+
+  <!-- Main JS — all interactions -->
+  <script src="main.js" defer></script>
+
 </body>
-
 </html>

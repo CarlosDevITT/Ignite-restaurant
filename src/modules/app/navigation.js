@@ -25,6 +25,17 @@ function navOpenChat() {
     highlightNav('chat');
 }
 
+function navOpenFeed() {
+    closeAllModals();
+    const modal = document.getElementById('feed-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+    highlightNav('feed');
+    // feed-modal.js irá carregar os posts automaticamente
+}
+
 function navOpenProfile() {
     closeAllModals();
     const modal = document.getElementById('profile-modal');
@@ -61,14 +72,27 @@ function navOpenProfile() {
 function closeAllModals() {
     const chat = document.getElementById('chat-modal');
     const profile = document.getElementById('profile-modal');
+    const feed = document.getElementById('feed-modal');
+    const newPost = document.getElementById('new-post-sheet');
+    const comments = document.getElementById('comments-sheet');
 
     if (chat) {
-        chat.classList.add('hidden');
-        chat.classList.remove('flex');
+        chat.classList && chat.classList.add('hidden');
+        chat.classList && chat.classList.remove('flex');
     }
     if (profile) {
         profile.classList.add('hidden');
         profile.classList.remove('flex');
+    }
+    if (feed) {
+        feed.classList.add('hidden');
+        feed.classList.remove('flex');
+    }
+    if (newPost) {
+        newPost.classList.add('hidden');
+    }
+    if (comments) {
+        comments.classList.add('hidden');
     }
 }
 
@@ -87,7 +111,8 @@ function highlightNav(activeId) {
         if (activeId === 'home' && index === 0) isMatch = true;
         if (activeId === 'pedidos' && index === 1) isMatch = true;
         if (activeId === 'chat' && index === 2) isMatch = true;
-        if (activeId === 'perfil' && index === 3) isMatch = true;
+        if (activeId === 'feed' && index === 3) isMatch = true;
+        if (activeId === 'perfil' && index === 4) isMatch = true;
 
         if (isMatch) {
             btn.classList.remove('text-gray-400', 'hover:text-primary');
@@ -200,6 +225,7 @@ window.navOpenHome = navOpenHome;
 window.navOpenPedidos = navOpenPedidos;
 window.navOpenChat = navOpenChat;
 window.navOpenProfile = navOpenProfile;
+window.navOpenFeed = navOpenFeed;
 window.saveProfileRegister = saveProfileRegister;
 window.saveProfileEdit = saveProfileEdit;
 window.logoutProfile = logoutProfile;

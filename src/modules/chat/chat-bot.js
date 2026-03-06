@@ -55,19 +55,22 @@ const CHAT_CONFIG = {
     ai: {
         gemini: {
             enabled: true,
-            apiKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_GEMINI_KEY) || "AIzaSyCd2uDIgqmh7bRDczfbK3BJj63KNpbG4mE",
+            apiKey: "AIzaSyCd2uDIgqmh7bRDczfbK3BJj63KNpbG4mE",
             model: "gemini-1.5-flash",
             endpoint: "https://generativelanguage.googleapis.com/v1beta/models",
+            // Optional: set to your server-side proxy URL to avoid CORS and hide API keys.
+            // Example: '/.netlify/functions/gemini-proxy' or 'https://your-backend.example.com/gemini'
+            proxy: "",
         },
         openrouter: {
             enabled: true,
-            apiKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_OPENROUTER_KEY) || "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",
+            apiKey: "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",
             model: "openai/gpt-3.5-turbo",
             endpoint: "https://openrouter.ai/api/v1/chat/completions",
         },
         deepseek: {
             enabled: false,
-            apiKey: (typeof process !== 'undefined' && process.env && process.env.REACT_APP_DEEPSEEK_KEY) || "SUA_CHAVE_DEEPSEEK_AQUI",
+            apiKey: "SUA_CHAVE_DEEPSEEK_AQUI",
             model: "deepseek-chat",
             endpoint: "https://api.deepseek.com/v1/chat/completions",
         },
@@ -235,18 +238,51 @@ Para mostrar MÚLTIPLOS produtos em carrossel (máx 5), inclua ao final:
             { role: "user", parts: [{ text: mensagem }] },
         ];
 
-        const res = await fetch(
-            `${gemini.endpoint}/${gemini.model}:generateContent?key=${gemini.apiKey}`,
-            {
+        // If a proxy is configured, call it (recommended to avoid CORS and hide API keys)
+        if (gemini.proxy && gemini.proxy.length > 4) {
+            const proxyRes = await fetch(gemini.proxy, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents, generationConfig: { temperature: 0.7, maxOutputTokens: 600 } }),
-            }
-        );
+                body: JSON.stringify({ model: gemini.model, contents }),
+            });
+            if (!proxyRes.ok) throw new Error(`Gemini proxy HTTP ${proxyRes.status}`);
+            const proxyJson = await proxyRes.json();
+            // Proxy should return { text: "..." } or mirror Gemini response
+            if (proxyJson && proxyJson.text) return proxyJson.text;
+            return proxyJson.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        }
 
-        if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
-        const json = await res.json();
-        return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        // No proxy: attempt direct call with a small retry for transient server errors
+        const url = `${gemini.endpoint}/${gemini.model}:generateContent?key=${gemini.apiKey}`;
+        let lastErr = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents, generationConfig: { temperature: 0.7, maxOutputTokens: 600 } }),
+                });
+
+                if (!res.ok) {
+                    // 4xx usually means bad key / CORS — don't retry except for 429
+                    if (res.status >= 400 && res.status < 500 && res.status !== 429) throw new Error(`Gemini HTTP ${res.status}`);
+                    if (res.status >= 500) {
+                        lastErr = new Error(`Gemini HTTP ${res.status}`);
+                        await new Promise(r => setTimeout(r, 300 * (attempt + 1)));
+                        continue;
+                    }
+                }
+
+                const json = await res.json();
+                return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            } catch (e) {
+                lastErr = e;
+                // If network/CORS error, break to allow fallback in caller
+                if (e.message && /Failed to fetch|NetworkError|TypeError/i.test(e.message)) break;
+                await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+            }
+        }
+        throw lastErr || new Error("Gemini failed");
     }
 
     /** Chama DeepSeek (compatível com formato OpenAI). */
@@ -496,11 +532,15 @@ Para mostrar MÚLTIPLOS produtos em carrossel (máx 5), inclua ao final:
         }
 
          // Resposta padrão amigável (fallback final) — ser mais acionável
-         return `Desculpe, não entendi bem. Posso ajudar com exemplos rápidos:\n\n` +
-             `• Peça o cardápio: "Ver cardápio" ou "Quais bebidas vocês têm?"\n` +
-             `• Pergunte sobre entrega: "Qual a taxa de entrega?"\n` +
-             `• Horários: "Que horas vocês abrem?"\n\n` +
-             `Também posso mostrar sugestões rápidas se você clicar em um dos chips acima. Quer que eu mostre o cardápio agora?`;
+         return `Desculpe, tive uma dificuldade técnica temporária. 🤖 Mas posso ajudar!\n\n` +
+             `**O que você gostaria de saber?**\n\n` +
+             `📋 Cardápio e produtos\n` +
+             `💰 Preços e promoções\n` +
+             `🚗 Entrega e taxas\n` +
+             `⏰ Horários de funcionamento\n` +
+             `📍 Endereço das unidades\n` +
+             `💳 Formas de pagamento\n\n` +
+             `Use o menu "+" para **Anexar imagem** ou **Ver cardápio**! 🔥`;
     }
 
     return { responder };
@@ -1129,8 +1169,9 @@ const ChatBot = (() => {
     /** Auto-expande o textarea conforme o conteúdo digitado. */
     function _autoExpand(el) {
         el.style.height = "auto";
-        el.style.height = Math.min(el.scrollHeight, 120) + "px";
-        el.style.overflowY = el.scrollHeight > 120 ? "auto" : "hidden";
+        const newHeight = Math.min(el.scrollHeight, 140);
+        el.style.height = newHeight + "px";
+        el.style.overflowY = el.scrollHeight > 140 ? "auto" : "hidden";
     }
 
     function _esperar(ms) { return new Promise(r => setTimeout(r, ms)); }

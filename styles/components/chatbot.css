@@ -53,6 +53,7 @@
     /* Tipografia */
     --font: 'Inter', system-ui, sans-serif;
     --fs-msg: .875rem;
+    --fs-msg-mobile: .95rem;
     --fs-meta: .6875rem;
     --fs-card: .8125rem;
 
@@ -79,22 +80,28 @@
 /* Avatar do bot */
 .chat-msg__avatar {
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
+    width: 2.25rem;
+    height: 2.25rem;
     display: grid;
     place-items: center;
-    background: var(--ignite-bg-card);
-    border: 1px solid var(--ignite-border);
+    background: linear-gradient(135deg, #069C54, #06B373);
+    border: 2px solid var(--ignite-primary);
     border-radius: 50%;
-    font-size: 1rem;
-    box-shadow: var(--shadow-msg);
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(6, 156, 84, 0.25);
     align-self: flex-end;
+    animation: avatarFloat 3s ease-in-out infinite;
+}
+
+@keyframes avatarFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
 }
 
 /* Balão base */
 .chat-msg__balao {
     max-width: 85%;
-    padding: .75rem 1rem;
+    padding: .9rem 1.05rem;
     border-radius: var(--r-msg);
     box-shadow: var(--shadow-msg);
     font-family: var(--font);
@@ -109,6 +116,11 @@
     background: var(--ignite-bg-user);
     color: var(--ignite-text-white);
     border-bottom-right-radius: .25rem;
+}
+
+/* Improve tap targets and spacing on mobile */
+#chat-modal .p-3 {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
 .chat-msg__balao--bot {
@@ -634,13 +646,87 @@
 }
 
 /* ============================================================
+   10. CHAT INPUT AREA REDESIGN
+   ============================================================ */
+
+/* Action Menu Toggle */
+#chat-actions-toggle {
+    transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+#chat-actions-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(6, 156, 84, 0.3);
+}
+
+#chat-actions-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Action Menu Dropdown */
+#chat-actions-menu {
+    animation: slideUpSmooth 200ms ease-out both;
+}
+
+#chat-actions-menu button {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+#chat-actions-menu button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 300ms ease;
+}
+
+#chat-actions-menu button:hover::before {
+    left: 100%;
+}
+
+#chat-actions-menu i {
+    flex-shrink: 0;
+}
+
+/* Textarea Improvements */
+#chat-input {
+    /* Smooth transitions for focus state */
+    transition: border-color 200ms ease, box-shadow 200ms ease, background-color 150ms ease;
+    /* Better mobile-friendly sizing */
+    letter-spacing: 0.3px;
+    line-height: 1.6;
+}
+
+#chat-input:focus {
+    background-color: #ffffff;
+    border-color: var(--ignite-primary);
+}
+
+#chat-input::placeholder {
+    color: #9ca3af;
+    opacity: 0.8;
+}
+
+/* Character Counter */
+#chat-char-count {
+    transition: opacity 200ms ease, color 200ms ease;
+}
+
+/* ============================================================
    9. RESPONSIVIDADE
    ============================================================ */
 @media (max-width: 480px) {
 
     /* Balões maiores em telas pequenas */
     .chat-msg__balao {
-        max-width: 92%;
+        max-width: 94%;
+        font-size: var(--fs-msg-mobile);
+        padding: .95rem 1rem;
     }
 
     /* Cards e carrossel alinham à esquerda sem offset */
@@ -666,5 +752,45 @@
 
     #chat-chips::-webkit-scrollbar {
         display: none;
+    }
+
+    /* Chat modal input area padding for safe-area and better spacing */
+    #chat-modal .bg-white:last-of-type {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    }
+
+    /* Buttons slightly smaller on mobile */
+    #chat-send-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    #chat-actions-toggle {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 360px) {
+    /* Very small screens: compress buttons a bit */
+    #chat-input {
+        font-size: 15px;
+        py: 3;
+    }
+
+    #chat-actions-menu {
+        width: 180px;
+    }
+}
+
+/* Animation: Slide up smooth */
+@keyframes slideUpSmooth {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

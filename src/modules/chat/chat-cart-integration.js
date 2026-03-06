@@ -65,39 +65,10 @@
   });
 
   // Criar botão 'Finalizar compra' dentro do chat (ao lado do enviar)
+  // DESATIVADO: Botão removido conforme solicitação
   function ensureCheckoutButton() {
-    const sendBtn = document.getElementById('chat-send-btn');
-    if (!sendBtn) return;
-
-    if (document.getElementById('chat-checkout-btn')) return; // já criado
-
-    const btn = document.createElement('button');
-    btn.id = 'chat-checkout-btn';
-    btn.className = 'bg-[#069C54] text-white px-3 py-2 rounded-lg ml-2 hover:bg-[#048654] transition-colors flex items-center gap-2';
-    btn.type = 'button';
-    btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Finalizar';
-    btn.title = 'Finalizar compra';
-
-    btn.addEventListener('click', () => {
-      // prioridade: chamar checkout direto, senão abrir o carrinho
-      if (window.unifiedCartManager && typeof window.unifiedCartManager.checkout === 'function') {
-        window.unifiedCartManager.checkout();
-        return;
-      }
-
-      // fallback: abrir carrinho (toggle)
-      if (typeof window.toggleCart === 'function') {
-        window.toggleCart();
-        return;
-      }
-
-      // ultima alternativa: abrir cart sidebar element if present
-      const sidebar = document.getElementById('cart-sidebar');
-      if (sidebar) sidebar.classList.remove('translate-x-full');
-    });
-
-    // Inserir antes do botão enviar para ficar visível
-    sendBtn.insertAdjacentElement('beforebegin', btn);
+    // Função desativada - botão "Finalizar compra" removido do chat
+    return;
   }
 
   // Tenta injetar o botão quando o DOM carregar e quando o chat abrir

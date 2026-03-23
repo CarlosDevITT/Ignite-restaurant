@@ -319,8 +319,6 @@
     }
   </style>
 
-  <!-- ========== SUPABASE CONFIG ========== -->
-  <script src="../config/supabase-config.js" defer></script>
 
   <!-- Configuração do Tailwind - APÓS carregar -->
   <script>
@@ -473,6 +471,11 @@
 
           <button onclick="navOpenProfile()" class="profile-btn-desktop" title="Meu Perfil">
             <i class="fas fa-user"></i>
+          </button>
+
+          <button onclick="toggleNotifications()" class="notifications-btn-desktop relative" title="Notificações">
+            <i class="fas fa-bell"></i>
+            <span id="notif-count-desktop" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full hidden items-center justify-center font-bold">0</span>
           </button>
 
           <button onclick="navOpenChat()" class="chat-btn-desktop" title="Conversar com Atendente">
@@ -705,10 +708,11 @@
       <i class="fas fa-shopping-bag text-[1.15rem] mb-0.5"></i>
       <span class="text-[0.6rem] font-medium tracking-wide">Pedidos</span>
     </button>
-    <button onclick="navOpenChat()"
-      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors">
-      <i class="fas fa-comments text-[1.15rem] mb-0.5"></i>
-      <span class="text-[0.6rem] font-medium tracking-wide">Chat</span>
+    <button onclick="toggleNotifications()"
+      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors relative">
+      <i class="fas fa-bell text-[1.15rem] mb-0.5"></i>
+      <span id="notif-count-mobile" class="absolute top-2 right-4 bg-red-500 text-white text-[9px] w-3.5 h-3.5 rounded-full hidden items-center justify-center font-bold">0</span>
+      <span class="text-[0.6rem] font-medium tracking-wide">Avisos</span>
     </button>
     <button onclick="navOpenFeed()"
       class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors"
@@ -895,139 +899,225 @@
     </div>
 
   <!-- ========== SEÇÃO/MODAL: PERFIL ========== -->
-  <div id="profile-modal" class="fixed inset-0 z-[60] bg-gray-50/95 backdrop-blur-sm hidden overflow-y-auto">
+  <div id="profile-modal" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-md hidden overflow-y-auto transition-all duration-300">
     <div class="min-h-full flex items-center justify-center p-4 sm:p-6 mb-16 lg:mb-0">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
-        <button onclick="closeAllModals()"
-          class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
-          <i class="fas fa-times"></i>
-        </button>
-
-        <!-- VIEW 1: Cadastrar (Faltam Informações) -->
-        <div id="profile-view-register" class="hidden">
-          <div class="text-center mb-6 mt-4">
-            <h2 class="text-xl font-bold text-title mb-2">Faltam algumas informações</h2>
-            <p class="text-sm text-text">Você só precisa preencher estes dados uma vez</p>
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-300">
+        
+        <!-- Header do Modal -->
+        <div class="bg-gradient-to-r from-primary to-[#059669] p-6 text-white relative">
+          <button onclick="closeAllModals()"
+            class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-all backdrop-blur-sm">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+          
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-inner">
+              <i class="fas fa-user-circle text-3xl"></i>
+            </div>
+            <div>
+              <h2 id="profile-title" class="text-xl font-black uppercase tracking-tight m-0">Meu Perfil</h2>
+              <p id="profile-subtitle" class="text-white/80 text-xs font-medium m-0 mt-1 uppercase tracking-widest">Ignite Experience</p>
+            </div>
           </div>
-
-          <form id="profile-form-register" class="flex flex-col gap-4" onsubmit="saveProfileRegister(event)">
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text border-transparent">Telefone
-                *</label>
-              <input type="tel" id="prof-reg-phone" placeholder="(92) 99999-9999" required
-                class="w-full border border-gray-300 rounded-lg p-3 pt-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title">
-            </div>
-
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text">Seu nome *</label>
-              <input type="text" id="prof-reg-name" placeholder="CARLOS" required
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title"
-                style="text-transform: uppercase;">
-            </div>
-
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text border-transparent">Endereço p/
-                Entrega *</label>
-              <textarea id="prof-reg-address" placeholder="Rua, Número, Bairro, Complemento..." required rows="2"
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title resize-none"></textarea>
-            </div>
-
-            <p class="text-xs text-center text-text my-2 leading-relaxed px-4">Escolha uma senha. Ela será usada para
-              garantir que só você terá acesso a suas informações e benefícios</p>
-
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text hidden">Senha *</label>
-              <input type="password" id="prof-reg-pass" placeholder="Senha *" required
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-            </div>
-
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text hidden">Confirmar Senha *</label>
-              <input type="password" id="prof-reg-pass-confirm" placeholder="Confirmar Senha *" required
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-            </div>
-
-            <button type="submit"
-              class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">CONFIRMAR</button>
-          </form>
         </div>
 
-        <!-- VIEW 2: Editar (Logado) -->
-        <div id="profile-view-edit" class="hidden">
-          <div class="text-center mb-6 mt-4">
-            <h2 class="text-xl font-bold text-title mb-2">Editar informações</h2>
-          </div>
+        <div class="p-6 sm:p-8">
+          <!-- VIEW 0: Login (Nova View) -->
+          <div id="profile-view-login" class="hidden space-y-6">
+            <div class="text-center space-y-1 mb-2">
+              <h3 class="text-2xl font-bold text-slate-800">Bem-vindo de volta!</h3>
+              <p class="text-sm text-slate-500">Acesse sua conta para fazer pedidos rapidinho</p>
+            </div>
 
-          <form id="profile-form-edit" class="flex flex-col gap-4" onsubmit="saveProfileEdit(event)">
-            <div
-              class="relative flex items-center border border-gray-300 rounded-lg focus-within:border-primary focus-within:ring-1 focus-within:ring-primary bg-white">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text z-10">Telefone</label>
-              <div class="flex items-center px-3 border-r border-gray-200">
-                <img src="https://flagcdn.com/w20/br.png" alt="BR" class="w-5 h-auto mr-1">
-                <span class="text-sm font-medium text-gray-700">+55</span>
-                <i class="fas fa-caret-down text-gray-400 ml-1 text-xs"></i>
+            <form id="profile-form-login" class="space-y-4" onsubmit="loginProfile(event)">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Telefone</label>
+                <div class="relative group">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                    <i class="fas fa-phone-alt"></i>
+                  </span>
+                  <input type="tel" id="prof-login-phone" placeholder="(92) 99999-9999" required
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 pl-12 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                </div>
               </div>
-              <input type="tel" id="prof-edit-phone" placeholder="(92) 99999-9999" required
-                class="w-full p-3 text-sm border-none bg-transparent outline-none text-title">
+
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Senha</label>
+                <div class="relative group">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" id="prof-login-pass" placeholder="••••••••" required
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 pl-12 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                </div>
+              </div>
+
+              <button type="submit"
+                class="w-full bg-primary hover:bg-primary-dark text-white font-black py-4 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all active:scale-95 uppercase tracking-widest text-sm">
+                Entrar agora
+              </button>
+            </form>
+
+            <div class="pt-4 text-center border-t border-slate-100">
+              <p class="text-sm text-slate-500">Não tem uma conta? 
+                <button onclick="toggleAuthView('register')" class="text-primary font-bold hover:underline">Cadastre-se</button>
+              </p>
+            </div>
+          </div>
+
+          <!-- VIEW 1: Cadastrar -->
+          <div id="profile-view-register" class="hidden space-y-6">
+            <div class="text-center space-y-1 mb-2">
+              <h3 class="text-2xl font-bold text-slate-800">Criar sua conta</h3>
+              <p class="text-sm text-slate-500">Faça parte do Ignite e ganhe benefícios</p>
             </div>
 
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text">Seu nome *</label>
-              <input type="text" id="prof-edit-name" placeholder="CARLOS" required
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title font-medium"
-                style="text-transform: uppercase;">
+            <form id="profile-form-register" class="space-y-4" onsubmit="saveProfileRegister(event)">
+              <div class="grid grid-cols-1 gap-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nome Completo *</label>
+                  <input type="text" id="prof-reg-name" placeholder="EX: CARLOS SILVA" required
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold uppercase transition-all">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">WhatsApp *</label>
+                  <input type="tel" id="prof-reg-phone" placeholder="(92) 99999-9999" required
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço de Entrega *</label>
+                  <textarea id="prof-reg-address" placeholder="Rua, Número, Bairro..." required rows="2"
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold resize-none transition-all"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Senha *</label>
+                    <input type="password" id="prof-reg-pass" placeholder="••••" required
+                      class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Confirmar *</label>
+                    <input type="password" id="prof-reg-pass-confirm" placeholder="••••" required
+                      class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit"
+                class="w-full bg-black hover:bg-slate-800 text-white font-black py-4 rounded-2xl shadow-xl transform hover:-translate-y-0.5 transition-all active:scale-95 uppercase tracking-widest text-sm mt-2">
+                Finalizar Cadastro
+              </button>
+            </form>
+
+            <div class="pt-4 text-center border-t border-slate-100">
+              <p class="text-sm text-slate-500">Já tem conta? 
+                <button onclick="toggleAuthView('login')" class="text-primary font-bold hover:underline">Fazer Login</button>
+              </p>
+            </div>
+          </div>
+
+          <!-- VIEW 2: Editar (Logado) -->
+          <div id="profile-view-edit" class="hidden space-y-6">
+            <div class="flex items-center justify-between mb-4">
+               <div>
+                  <h3 id="user-display-name" class="text-2xl font-black text-slate-800 m-0 uppercase line-clamp-1">CARLOS</h3>
+                  <p class="text-xs font-bold text-primary uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                    <i class="fas fa-crown text-[10px]"></i> Cliente VIP Ignite
+                  </p>
+               </div>
+               <div class="w-12 h-12 rounded-full border-2 border-primary/20 p-0.5">
+                  <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-primary font-black uppercase overflow-hidden" id="user-initials">
+                    C
+                  </div>
+               </div>
             </div>
 
-            <div class="relative">
-              <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-text border-transparent">Endereço p/
-                Entrega *</label>
-              <textarea id="prof-edit-address" placeholder="Rua, Número, Bairro, Complemento..." required rows="2"
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title resize-none"></textarea>
+            <!-- Stats Rápidos -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+               <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                  <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pedidos Feitos</span>
+                  <span class="text-lg font-black text-slate-800" id="user-stats-orders">0</span>
+               </div>
+               <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                  <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pontos Ignite</span>
+                  <span class="text-lg font-black text-primary" id="user-stats-points">0</span>
+               </div>
             </div>
 
-            <div class="relative">
-              <input type="email" id="prof-edit-email" placeholder="E-mail"
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title">
-            </div>
+            <form id="profile-form-edit" class="space-y-4" onsubmit="saveProfileEdit(event)">
+              <div class="space-y-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">WhatsApp</label>
+                  <div class="relative group">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <i class="fas fa-phone-alt"></i>
+                    </span>
+                    <input type="tel" id="prof-edit-phone" readonly
+                      class="w-full bg-slate-100/50 border-2 border-slate-100 rounded-2xl p-3.5 pl-12 text-sm outline-none text-slate-500 font-bold cursor-not-allowed">
+                  </div>
+                </div>
 
-            <div class="relative">
-              <input type="text" id="prof-edit-birth" placeholder="Data de nascimento"
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-title"
-                onfocus="(this.type='date')" onblur="(this.type='text')">
-            </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
+                  <input type="text" id="prof-edit-name" required
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3.5 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold uppercase transition-all">
+                </div>
 
-            <div class="relative">
-              <select id="prof-edit-gender"
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-gray-500 bg-white appearance-none">
-                <option value="" disabled selected>Gênero</option>
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-                <option value="Outro">Outro</option>
-              </select>
-              <i
-                class="fas fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-            </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço Principal</label>
+                  <textarea id="prof-edit-address" required rows="2"
+                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3.5 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold resize-none transition-all"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
+                    <input type="email" id="prof-edit-email" placeholder="seu@email.com"
+                      class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3.5 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Nascimento</label>
+                    <input type="date" id="prof-edit-birth"
+                      class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3.5 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold transition-all">
+                  </div>
+                </div>
+              </div>
 
-            <button type="submit"
-              class="mt-4 w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors uppercase">Atualizar
-              Cadastro</button>
-          </form>
-
-          <!-- Botão Sair para fins de teste/reset -->
-          <button onclick="logoutProfile()"
-            class="mt-4 w-full bg-red-50 text-red-600 font-bold py-2 rounded-lg hover:bg-red-100 transition-colors text-sm">Sair
-            da Conta</button>
+              <div class="grid grid-cols-1 gap-3 pt-2">
+                <button type="submit"
+                  class="w-full bg-primary hover:bg-primary-dark text-white font-black py-4 rounded-2xl shadow-lg transform hover:-translate-y-0.5 transition-all uppercase tracking-widest text-sm">
+                  Salvar Alterações
+                </button>
+                <button type="button" onclick="logoutProfile()"
+                  class="w-full bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-500 font-bold py-3 rounded-2xl transition-all uppercase tracking-widest text-[11px] border border-slate-100">
+                  Sair da Conta
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+
 
       </div>
     </div>
   </div>
+
+  <!-- ========== SUPABASE CONFIG ========== -->
+  <script src="../config/supabase-config.js"></script>
 
   <!-- ========== PERFORMANCE OPTIMIZER ========== -->
   <script src="../src/state/performance-optimizer.js" defer></script>
 
   <!-- ========== APP NAVIGATION (Bottom Nav & Modals) ========== -->
   <script src="../src/modules/app/navigation.js" defer></script>
+  <!-- ========== NOTIFICATIONS MODULE ========== -->
+  <script src="../src/modules/app/notifications.js" defer></script>
   <!-- ========== FEED MODULES ========== -->
   <script src="../src/modules/feed/feed-modal.js" defer></script>
   <script src="../src/modules/feed/feed-post-form.js" defer></script>

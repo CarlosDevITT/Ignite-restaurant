@@ -138,11 +138,7 @@ async function submitPost() {
     return;
   }
 
-  const profile = JSON.parse(
-    localStorage.getItem('ignite_user_profile') ||
-      localStorage.getItem('userProfile') ||
-      '{}'
-  );
+  const profile = JSON.parse(localStorage.getItem('igniteProfile') || '{}');
   const nomeUsuario = profile.name || profile.nome || telefone;
   const tipo = telefone === '92999999999' ? 'restaurante' : 'cliente';
 

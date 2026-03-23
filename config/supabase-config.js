@@ -6,7 +6,7 @@
  * URL: https://qgnqztsxfeugopuhyioq.supabase.co
  */
 
-const SUPABASE_CONFIG = {
+var SUPABASE_CONFIG = {
   // URLs e Chaves
   url: 'https://qgnqztsxfeugopuhyioq.supabase.co',
   anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnbnF6dHN4ZmV1Z29wdWh5aW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1MTg4MjEsImV4cCI6MjA3MzA5NDgyMX0.mW88-7P_Af3WMVAUT7ha4Mf0nyKJoSiNjMfuXiCllIA',
@@ -18,7 +18,9 @@ const SUPABASE_CONFIG = {
     pedidos: 'orders',
     usuarios: 'customers',
     categorias: 'categorias',
-    promocoes: 'promocoes'
+    promocoes: 'promocoes',
+    feed_posts: 'feed_posts',
+    feed_comentarios: 'feed_comentarios'
   },
 
   // Configurações
@@ -182,45 +184,75 @@ class SupabaseManager {
     }
 
     try {
-      // Upsert baseado no telefone (assumindo que a tabela permite ou via update manual caso exista)
-      const { data: existingUser } = await this.client
+      const userData = {
+        name: perfil.name,
+        address: perfil.address || null,
+        email: perfil.email || null,
+        birth_date: perfil.birthDate || null,
+        gender: perfil.gender || null,
+        password: perfil.password || null // NOTA: Em app real, use Argon2/Bcrypt no backend
+      };
+
+      const { data, error } = await this.client
         .from(SUPABASE_CONFIG.tables.usuarios)
-        .select('*')
-        .eq('telefone', perfil.phone)
+        .upsert({
+          phone: perfil.phone,
+          ...userData,
+          data_cadastro: new Date().toISOString()
+        }, { onConflict: 'phone' })
+        .select()
         .single();
 
-      if (existingUser) {
-        const { data, error } = await this.client
-          .from(SUPABASE_CONFIG.tables.usuarios)
-          .update({
-            nome: perfil.name,
-            endereco: perfil.address || null,
-            email: perfil.email || null,
-            data_nascimento: perfil.birthDate || null,
-            genero: perfil.gender || null
-          })
-          .eq('telefone', perfil.phone);
-        if (error) throw error;
-        return data;
-      } else {
-        const { data, error } = await this.client
-          .from(SUPABASE_CONFIG.tables.usuarios)
-          .insert([{
-            telefone: perfil.phone,
-            nome: perfil.name,
-            endereco: perfil.address || null,
-            email: perfil.email || null,
-            data_nascimento: perfil.birthDate || null,
-            genero: perfil.gender || null,
-            data_cadastro: new Date().toISOString()
-          }]);
-        if (error) throw error;
-        return data;
-      }
-
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('❌ Erro ao salvar/atualizar usuário:', error);
       return null;
+    }
+  }
+
+  async buscarUsuarioPorTelefone(telefone) {
+    if (!this.isConnected()) return null;
+    try {
+      const { data, error } = await this.client
+        .from(SUPABASE_CONFIG.tables.usuarios)
+        .select('*')
+        .eq('phone', telefone)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async verificarSenha(telefone, senha) {
+    const user = await this.buscarUsuarioPorTelefone(telefone);
+    if (!user) return { success: false, message: 'Usuário não encontrado' };
+    
+    // Comparação simples (em produção usar hash)
+    if ((user.password && user.password === senha) || (user.senha && user.senha === senha)) {
+      return { success: true, user };
+    }
+    return { success: false, message: 'Senha incorreta' };
+  }
+
+  async getUserStats(telefone) {
+    if (!this.isConnected()) return { ordersCount: 0, points: 0 };
+    try {
+      const cleanPhone = telefone.replace(/\D/g, '');
+      const { count, error } = await this.client
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('phone', cleanPhone);
+      
+      if (error) throw error;
+      return { 
+        ordersCount: count || 0,
+        points: (count || 0) * 10 // Gamificação simples
+      };
+    } catch (e) {
+      return { ordersCount: 0, points: 0 };
     }
   }
 
@@ -327,10 +359,10 @@ class SupabaseManager {
         .insert([{
           items: pedido.items,
           total: pedido.total,
-          endereco: pedido.endereco,
-          telefone: pedido.telefone,
+          address: pedido.endereco,
+          phone: pedido.telefone,
           status: 'pendente',
-          data_pedido: new Date().toISOString()
+          data_order: new Date().toISOString()
         }]);
 
       if (error) throw error;

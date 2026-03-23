@@ -14,9 +14,9 @@ const SUPABASE_CONFIG = {
 
   // Tabelas
   tables: {
-    produtos: 'produtos',
-    pedidos: 'pedidos',
-    usuarios: 'usuarios',
+    produtos: 'products',
+    pedidos: 'orders',
+    usuarios: 'customers',
     categorias: 'categorias',
     promocoes: 'promocoes'
   },
@@ -130,7 +130,7 @@ class SupabaseManager {
       let query = this.client
         .from(SUPABASE_CONFIG.tables.produtos)
         .select('*')
-        .eq('disponivel', true);
+        .eq('available', true);
 
       if (categoria) {
         query = query.eq('categoria', categoria);
@@ -225,6 +225,96 @@ class SupabaseManager {
   }
 
   // ========== PEDIDOS ==========
+  async finalizarPedido(pedido) {
+    if (!this.isConnected()) {
+      console.error('❌ Supabase não conectado');
+      return { success: false, error: 'Sem conexão com banco' };
+    }
+
+    try {
+      // 1. Sanitização e Validação
+      if (!pedido.items || pedido.items.length === 0) throw new Error('Carrinho vazio');
+      const cleanPhone = String(pedido.telefone).replace(/\D/g, '');
+      if (cleanPhone.length < 10) throw new Error('Telefone inválido');
+      const cleanName = String(pedido.nome).trim();
+
+      // Recalcular total baseando-se nos itens para segurança
+      let calculatedTotal = 0;
+      let totalQuantity = 0;
+      const orderItems = pedido.items.map(item => {
+        const qty = parseInt(item.quantidade || item.quantity || 1, 10);
+        const price = parseFloat(item.preco_unitario || item.price || 0);
+        if (qty <= 0 || price < 0) throw new Error('Dados de item inválidos');
+        const subtotal = qty * price;
+        calculatedTotal += subtotal;
+        totalQuantity += qty;
+        
+        return {
+          product_id: item.id,
+          product_name: String(item.nome || item.name),
+          quantity: qty,
+          unit_price: price,
+          total_price: subtotal
+        };
+      });
+
+      // 2. Buscar/Criar cliente
+      let customerId;
+      let { data: customer, error: customerError } = await this.client
+        .from('customers')
+        .select('id, name')
+        .eq('phone', cleanPhone)
+        .maybeSingle(); // evita erro se não achar
+
+      if (!customer) {
+         const { data: newCustomer, error: createError } = await this.client
+           .from('customers')
+           .insert([{ name: cleanName, phone: cleanPhone }])
+           .select('id, name')
+           .single();
+           
+         if (createError) throw new Error('Erro ao criar cliente');
+         customer = newCustomer;
+      }
+      customerId = customer.id;
+
+      // 3. Criar registro em "orders"
+      const { data: order, error: orderError } = await this.client
+        .from('orders')
+        .insert([{
+          customer_id: customerId,
+          customer_name: customer.name,
+          total: calculatedTotal,
+          status: 'pending',
+          items_count: totalQuantity,
+          phone: cleanPhone
+        }])
+        .select('id')
+        .single();
+
+      if (orderError) throw new Error('Erro ao registrar pedido');
+
+      // 4. Inserir itens em "order_items"
+      orderItems.forEach(item => item.order_id = order.id);
+      const { error: itemsError } = await this.client
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        // Fallback: se os itens falharem, tentar deletar a order (atomicidade básica simulada se não houver trigger)
+        await this.client.from('orders').delete().eq('id', order.id);
+        throw new Error('Erro ao inserir itens');
+      }
+
+      console.log('✅ Pedido finalizado com sucesso no Supabase');
+      return { success: true, order: order };
+    } catch (error) {
+      console.error('❌ Erro transacional ao finalizar pedido:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Fallback legad
   async salvarPedido(pedido) {
     if (!this.isConnected()) {
       console.error('❌ Supabase não conectado');

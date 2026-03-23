@@ -38,9 +38,9 @@
   <!-- Font Awesome para ícones -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Google Fonts - Inter e Poppins -->
+  <!-- Google Fonts -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
   <!-- Header Mobile Styles -->
@@ -52,6 +52,8 @@
   <link rel="stylesheet" href="../styles/components/chatbot.css">
   <!-- Payment Styles -->
   <link rel="stylesheet" href="../styles/components/payment-styles.css">
+  <!-- Feed Styles -->
+  <link rel="stylesheet" href="../styles/components/feed-styles.css">
 
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
@@ -59,28 +61,293 @@
   <!-- ========== CORE UTILS & PROTECTION ========== -->
   <script src="../src/modules/utils/storage-helper.js"></script>
 
+  <!-- Enhanced styles -->
+  <style>
+    /* ── Root variables ─────────────────────────────────────── */
+    :root {
+      --color-primary: #069C54;
+      --color-primary-dark: #048654;
+      --color-primary-glow: rgba(6,156,84,0.18);
+      --color-title: #1a1a2e;
+      --color-text: #64748b;
+      --color-text-light: #94a3b8;
+      --color-body: #f8fafc;
+      --color-card: #ffffff;
+      --radius-card: 18px;
+      --shadow-card: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+      --shadow-card-hover: 0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(6,156,84,0.08);
+      --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
+      background-color: var(--color-body);
+      color: var(--color-title);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Section headings ───────────────────────────────────── */
+    .section-heading {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--color-title);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .section-heading .icon-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      color: #fff;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px var(--color-primary-glow);
+    }
+
+    /* ── Product cards ──────────────────────────────────────── */
+    .product-name {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      color: var(--color-title);
+      margin-bottom: 0.2rem;
+    }
+
+    .product-price {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .product-price.original {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.75rem;
+      text-decoration: line-through;
+      color: var(--color-text-light);
+      -webkit-text-fill-color: var(--color-text-light);
+      background: none;
+      display: block;
+      margin-top: 1px;
+    }
+
+    .product-category,
+    .product-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      color: var(--color-text);
+      line-height: 1.5;
+    }
+
+    /* Card base */
+    .product-item {
+      background: var(--color-card);
+      border-radius: var(--radius-card);
+      padding: 0.875rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-card);
+      border: 1px solid rgba(0,0,0,0.04);
+      transition: transform 0.3s var(--transition-smooth),
+                  box-shadow 0.3s var(--transition-smooth);
+      cursor: pointer;
+    }
+    .product-item:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: rgba(6,156,84,0.12);
+    }
+
+    /* Image inside card */
+    .product-item .img-wrap {
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, #f0faf5, #eaf7f0);
+    }
+    .product-item img {
+      border-radius: 12px;
+      object-fit: cover;
+      transition: transform 0.4s var(--transition-smooth);
+      display: block;
+    }
+    .product-item:hover img {
+      transform: scale(1.06);
+    }
+
+    .product-item .product-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product-item .product-price { align-self: flex-start; }
+    .product-item .add-to-cart-btn { margin-top: 0.875rem; align-self: stretch; }
+
+    /* Add to cart button */
+    .add-to-cart-btn {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.01em;
+      border-radius: 10px;
+      transition: all 0.2s var(--transition-smooth);
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px var(--color-primary-glow);
+    }
+    .add-to-cart-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--color-primary-glow);
+    }
+    .add-to-cart-btn:active { transform: scale(0.96); }
+
+    /* ── Scrollbar global hide ──────────────────────────────── */
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* ── Main container ─────────────────────────────────────── */
+    main { background: var(--color-body); }
+
+    /* ── Cart sidebar tweaks ────────────────────────────────── */
+    #cart-sidebar { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; }
+
+    /* ── Stories slider ─────────────────────────────────────── */
+    #stories-slider {
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    /* ── Nav bottom animation ───────────────────────────────── */
+    nav button { transition: color 0.2s ease, transform 0.15s ease; }
+    nav button:active { transform: scale(0.9); }
+
+    /* ── Profile modal inputs ───────────────────────────────── */
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--color-primary) !important;
+      box-shadow: 0 0 0 3px var(--color-primary-glow);
+    }
+
+    /* ── Promo badge on cards ───────────────────────────────── */
+    .promo-card-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: linear-gradient(135deg, #ff4444, #ff6b35);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 16px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(255,68,68,0.35);
+      pointer-events: none;
+    }
+
+    /* ── Section fade-in animation ──────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    main > section {
+      animation: fadeUp 0.5s ease both;
+    }
+    main > section:nth-child(2) { animation-delay: 0.08s; }
+    main > section:nth-child(3) { animation-delay: 0.16s; }
+    main > section:nth-child(4) { animation-delay: 0.24s; }
+
+    /* ── Skeleton loading pulse ─────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+
+    /* ── Bottom nav badge pulse ─────────────────────────────── */
+    .cart-count-badge {
+      animation: none;
+    }
+    .cart-count-badge.has-items {
+      animation: badgePop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes badgePop {
+      from { transform: scale(0.5); }
+      to   { transform: scale(1); }
+    }
+
+    /* ── Checkout button ────────────────────────────────────── */
+    #checkout-button:not([disabled]):not(.cursor-not-allowed) {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+      box-shadow: 0 4px 16px var(--color-primary-glow);
+    }
+    #checkout-button:not([disabled]):not(.cursor-not-allowed):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--color-primary-glow);
+    }
+  </style>
+
   <!-- ========== SUPABASE CONFIG ========== -->
   <script src="../config/supabase-config.js" defer></script>
 
   <!-- Configuração do Tailwind - APÓS carregar -->
   <script>
-    // Aguardar tailwind carregar
     if (typeof tailwind !== 'undefined') {
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              primary: '#069C54',
+              primary:       '#069C54',
               'primary-alt': '#048654',
-              'title': '#393939',
-              'text': '#707070',
-              'text-light': '#A6A6A6',
-              'body': '#FBFEFD',
-              'container': '#FFFFFF',
+              'primary-light':'#e8f9f1',
+              title:         '#1a1a2e',
+              text:          '#64748b',
+              'text-light':  '#94a3b8',
+              body:          '#f8fafc',
+              container:     '#ffffff',
             },
-            spacing: {
-              'header-height': '3rem',
-            }
+            fontFamily: {
+              sans: ["'Plus Jakarta Sans'", "'Poppins'", 'sans-serif'],
+            },
+            boxShadow: {
+              card:       '0 2px 16px rgba(0,0,0,0.06)',
+              'card-hover':'0 12px 40px rgba(0,0,0,0.12)',
+            },
+            borderRadius: {
+              card: '18px',
+            },
           }
         }
       }
@@ -89,7 +356,7 @@
 
 </head>
 
-<body class="font-sans" style="font-family: 'Poppins', sans-serif; background-color: var(--body-color);">
+<body class="font-sans" style="background-color: var(--color-body)">
   <!-- Header Mobile e Desktop -->
   <header class="mobile-header">
     <!-- Container Principal -->
@@ -221,13 +488,13 @@
     </div>
   </header>
 
-  <main class="container mx-auto px-4 py-8 pb-24">
+  <main class="container mx-auto px-4 py-8 pb-28 max-w-7xl">
 
     <!-- Seção Novos Produtos -->
     <section class="mb-12">
-      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-        <i class="fas fa-star text-yellow-500"></i>
-        <span style="color: var(--title-color);">Novidades</span>
+      <h2 class="section-heading">
+        <span class="icon-pill"><i class="fas fa-star"></i></span>
+        Novidades
       </h2>
       <div id="new-products" class="flex overflow-x-auto pb-4 gap-4 scrollbar-hide">
         <!-- Novos produtos serão carregados via JS -->
@@ -236,33 +503,35 @@
 
     <!-- Menu Principal -->
     <section class="mb-12">
-      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-        <i class="fas fa-utensils" style="color: var(--first-color);"></i>
-        <span style="color: var(--title-color);">Menu Completo</span>
+      <h2 class="section-heading">
+        <span class="icon-pill"><i class="fas fa-utensils"></i></span>
+        Menu Completo
       </h2>
-      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         <!-- Produtos serão carregados aqui via JavaScript -->
       </div>
     </section>
 
     <section>
-      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
-        <i class="fas fa-utensils mr-2 text-primary"></i> Cardápio
+      <h2 class="section-heading">
+        <span class="icon-pill"><i class="fas fa-book-open"></i></span>
+        Cardápio
       </h2>
-      <div id="menu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div id="menu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <!-- Produtos serão carregados via JS -->
       </div>
     </section>
 
     <!-- Seção Stories Ignite versão integrada -->
     <section class="mb-8">
-      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
-        <!-- Ícone do Instagram com gradiente oficial (rosa/roxo), tamanho médio e hover effect -->
+      <h2 class="section-heading">
         <a href="https://www.instagram.com/" target="_blank"
-          class="inline-flex items-center justify-center w-6 h-6 mr-2 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 rounded-full text-white shadow-md hover:shadow-lg transition-all duration-200"
+          class="icon-pill"
+          style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);"
           aria-label="Instagram">
-          <i class="fab fa-instagram text-xs"></i>
-        </a> Stories Ignite
+          <i class="fab fa-instagram"></i>
+        </a>
+        Stories Ignite
       </h2>
 
       <!-- Container do Stories Slider -->
@@ -314,11 +583,11 @@
 
     <!-- Store Header -->
     <div class="px-5 py-4 flex items-center justify-between border-b border-gray-100 bg-white sticky top-0 z-20">
-      <h2 class="text-base font-bold text-slate-800 uppercase tracking-wide m-0">
+      <h2 class="text-sm font-black text-gray-900 uppercase tracking-widest m-0">
         IGNITE RESTAURANT
       </h2>
       <button id="close-cart" type="button"
-        class="text-gray-400 hover:text-gray-600 transition-colors bg-transparent border-none text-2xl leading-none">&times;</button>
+        class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-800">&times;</button>
     </div>
 
     <!-- Scrollable Content Area -->
@@ -410,9 +679,9 @@
     </div> <!-- End Scrollable Area -->
 
     <!-- Checkout Footer -->
-    <div class="p-4 bg-white shadow-[0_-4px_15px_rgba(0,0,0,0.05)] z-20">
+    <div class="p-4 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-20">
       <button id="checkout-button" type="button"
-        class="w-full bg-gray-500 text-white font-bold text-[17px] py-[14px] rounded-lg transition-colors hover:bg-gray-600 flex items-center justify-center gap-2 border-none cursor-not-allowed">
+        class="w-full bg-gray-400 text-white font-bold text-[16px] py-[14px] rounded-xl transition-all flex items-center justify-center gap-2 border-none cursor-not-allowed">
         Estabelecimento fechado
       </button>
     </div>
@@ -425,27 +694,32 @@
 
   <!-- ========== BOTTOM NAVIGATION MOBILE ========== -->
   <nav
-    class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-40 lg:hidden flex justify-around items-center h-16 safe-area-pb">
+    class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-sm border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.07)] z-40 lg:hidden flex justify-around items-center h-16 safe-area-pb">
     <button onclick="navOpenHome()"
       class="flex flex-col items-center justify-center w-full h-full text-primary transition-colors">
-      <i class="fas fa-home text-xl mb-1"></i>
-      <span class="text-[0.65rem] font-bold">Início</span>
+      <i class="fas fa-home text-[1.15rem] mb-0.5"></i>
+      <span class="text-[0.6rem] font-bold tracking-wide">Início</span>
     </button>
     <button onclick="navOpenPedidos()"
       class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors relative">
-      <i class="fas fa-shopping-bag text-xl mb-1"></i>
-      <span class="text-[0.65rem] font-medium">Pedidos</span>
-      <!-- Opcional: mini badge aqui se quiser, mas o carrinho superior já tem -->
+      <i class="fas fa-shopping-bag text-[1.15rem] mb-0.5"></i>
+      <span class="text-[0.6rem] font-medium tracking-wide">Pedidos</span>
     </button>
     <button onclick="navOpenChat()"
       class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors">
-      <i class="fas fa-comments text-xl mb-1"></i>
-      <span class="text-[0.65rem] font-medium">Chat</span>
+      <i class="fas fa-comments text-[1.15rem] mb-0.5"></i>
+      <span class="text-[0.6rem] font-medium tracking-wide">Chat</span>
+    </button>
+    <button onclick="navOpenFeed()"
+      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors"
+      id="nav-feed-btn">
+      <i class="fas fa-images text-[1.15rem] mb-0.5"></i>
+      <span class="text-[0.6rem] font-medium tracking-wide">Feed</span>
     </button>
     <button onclick="navOpenProfile()"
       class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors">
-      <i class="far fa-user text-xl mb-1"></i>
-      <span class="text-[0.65rem] font-medium">Perfil</span>
+      <i class="far fa-user text-[1.15rem] mb-0.5"></i>
+      <span class="text-[0.6rem] font-medium tracking-wide">Perfil</span>
     </button>
   </nav>
 
@@ -454,40 +728,171 @@
     class="fixed inset-0 z-[60] bg-gray-50/95 hidden flex-col items-center justify-center backdrop-blur-sm">
     <div
       class="bg-white w-full h-full lg:max-w-md lg:max-h-[80vh] lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
-      <div class="bg-primary text-white p-4 flex items-center justify-between shadow-md">
-        <div class="flex items-center gap-3">
-          <button onclick="closeAllModals()" class="text-white hover:opacity-80 transition-opacity">
-            <i class="fas fa-arrow-left text-xl lg:hidden"></i>
-            <i class="fas fa-times text-xl hidden lg:block"></i>
+      <div class="sticky top-0 z-40 bg-gradient-to-r from-primary to-[#069C54] text-white px-4 py-3.5 flex items-center justify-between shadow-lg border-b-4 border-yellow-400">
+        <div class="flex items-center gap-2.5 flex-1">
+          <button onclick="closeAllModals()" class="text-white hover:scale-110 transition-transform p-1">
+            <i class="fas fa-arrow-left text-lg lg:hidden"></i>
+            <i class="fas fa-times text-lg hidden lg:block"></i>
           </button>
-          <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-inner">
-            <img src="../assets/images/logos/logo.png" class="w-8 h-8 object-contain">
+          <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md border-2 border-yellow-300">
+            <span class="text-xl">🔥</span>
           </div>
-          <div>
-            <h3 class="font-bold text-lg leading-tight">Atendimento Ignite</h3>
-            <p class="text-xs text-green-200"><i class="fas fa-circle text-[8px] mr-1 animate-pulse"></i>Online</p>
+          <div class="flex-1">
+            <h3 class="font-bold text-base leading-tight">Ignite Atendimento</h3>
+            <p class="text-xs text-yellow-200 flex items-center gap-1"><span class="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>Online agora</p>
           </div>
         </div>
       </div>
 
-      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-4">
+
+          <!-- Comentários (Bottom Sheet) -->
+          <div id="comments-sheet" class="fixed inset-0 z-[70] hidden">
+            <div class="absolute inset-0 bg-black/50" onclick="closeComments()"></div>
+            <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
+              <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <h3 class="font-bold text-lg mb-4 text-center">Comentários</h3>
+              <div id="comments-list" class="space-y-3 mb-4"></div>
+              <textarea id="comment-input" rows="2" placeholder="Escreva um comentário..." class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
+              <button onclick="submitComment(currentCommentPostId)" class="w-full bg-primary text-white font-bold py-3 rounded-xl">Enviar</button>
+            </div>
+          </div>
+
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-4 scroll-smooth">
         <!-- Mensagens via JS -->
       </div>
 
       <!-- Chips de sugestão rápida — ocultados automaticamente após primeira interação -->
       <div id="chat-chips" aria-label="Sugestões rápidas"></div>
 
-      <div class="p-3 bg-white border-t border-gray-100 flex items-end gap-2 mb-16 lg:mb-0">
-        <textarea id="chat-input" placeholder="Digite sua mensagem..."
-          class="flex-1 bg-gray-100 border-none rounded-2xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-400 resize-none max-h-[120px] leading-relaxed"
-          rows="1"></textarea>
-        <button id="chat-send-btn"
-          class="bg-primary text-white w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center shadow-lg hover:rotate-12 transition-transform active:scale-90 mb-1">
-          <i class="fas fa-paper-plane ml-[-2px]"></i>
-        </button>
+      <!-- Input Area Redesignado -->
+      <div class="bg-white border-t border-gray-200 p-3 lg:mb-0 mb-16">
+        <div class="flex items-end gap-2.5">
+          <!-- Ações Menu (Mobile) -->
+          <div class="relative lg:hidden">
+            <button id="chat-actions-toggle"
+              class="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-[#069C54] text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95 flex-shrink-0">
+              <i class="fas fa-plus text-lg"></i>
+            </button>
+            <div id="chat-actions-menu" class="hidden absolute bottom-14 left-0 bg-white rounded-xl shadow-xl border border-gray-200 py-2 w-56 z-50">
+              <button class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left text-gray-700 font-medium">
+                <i class="fas fa-paperclip text-primary text-lg"></i>
+                <span>Anexar imagem</span>
+              </button>
+              <button class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left text-gray-700 font-medium border-t border-gray-100">
+                <i class="fas fa-utensils text-primary text-lg"></i>
+                <span>Ver cardápio</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Textarea -->
+          <textarea id="chat-input" placeholder="Sua mensagem aqui..."
+            class="flex-1 bg-gray-100 border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none placeholder-gray-500 resize-none max-h-[140px] leading-relaxed font-medium transition-all"
+            rows="1"></textarea>
+
+          <!-- Send Button -->
+          <button id="chat-send-btn"
+            class="w-11 h-11 bg-gradient-to-br from-primary to-[#069C54] text-white rounded-full flex-shrink-0 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-90 font-bold">
+            <i class="fas fa-paper-plane text-lg"></i>
+          </button>
+        </div>
+        <!-- Character counter (optional) -->
+        <div class="text-xs text-gray-400 mt-2 px-1 hidden" id="chat-char-count"></div>
       </div>
     </div>
   </div>
+
+    <!-- ========== FEED MODALS & COMPONENTS ========== -->
+    <div id="feed-modal" class="fixed inset-0 z-[60] bg-gray-50 hidden flex-col overflow-y-auto lg:items-center lg:justify-center">
+      <div class="w-full lg:max-w-md lg:rounded-xl lg:shadow-lg lg:overflow-hidden lg:bg-white">
+        <!-- Header do Feed -->
+        <div class="sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+          <button onclick="closeAllModals()" class="text-gray-600">
+            <i class="fas fa-arrow-left text-xl"></i>
+          </button>
+          <h2 class="font-bold text-lg">Feed Ignite 🔥</h2>
+          <!-- Botão novo post -->
+          <button onclick="openNewPostForm()" id="feed-new-post-btn"
+            class="bg-primary text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1">
+            <i class="fas fa-plus text-xs"></i> Post
+          </button>
+        </div>
+
+        <!-- Stories do Restaurante (linha horizontal) -->
+        <div id="feed-stories-bar" class="bg-white border-b border-gray-100 px-4 py-3 overflow-x-auto flex gap-3 scrollbar-hide">
+          <!-- Stories injetados via JS -->
+        </div>
+
+        <!-- Lista de Posts (estilo Instagram) -->
+        <div id="feed-posts-container" class="flex flex-col gap-0 pb-20">
+          <!-- Posts injetados via JS -->
+        </div>
+
+        <!-- Loading Skeleton -->
+        <div id="feed-loading" class="hidden px-4 py-8 text-center text-gray-400">
+          <i class="fas fa-spinner fa-spin text-2xl"></i>
+          <p class="mt-2 text-sm">Carregando feed...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulário de Novo Post (Bottom Sheet) -->
+    <div id="new-post-sheet" class="fixed inset-0 z-[70] hidden">
+      <div class="absolute inset-0 bg-black/50" onclick="closeNewPostForm()"></div>
+      <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+        <h3 class="font-bold text-lg mb-4 text-center">Compartilhar no Feed 📸</h3>
+
+        <!-- Preview da Imagem -->
+        <div id="post-image-preview"
+          class="w-full h-48 bg-gray-100 rounded-xl mb-4 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300"
+          onclick="document.getElementById('post-image-input').click()">
+          <div class="text-center text-gray-400">
+            <i class="fas fa-camera text-3xl mb-2"></i>
+            <p class="text-sm">Toque para adicionar foto</p>
+          </div>
+        </div>
+        <input type="file" id="post-image-input" accept="image/*" class="hidden">
+
+        <!-- Campo Descrição -->
+        <textarea id="post-descricao" placeholder="Conte sua experiência... 😋" rows="3"
+          class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
+
+        <!-- Avaliação em Estrelas -->
+        <div class="flex items-center gap-1 mb-4" id="star-rating-container">
+          <span class="text-sm text-gray-500 mr-2">Avaliação:</span>
+          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="1"></i>
+          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="2"></i>
+          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="3"></i>
+          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="4"></i>
+          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="5"></i>
+        </div>
+
+        <!-- Vincular produto (opcional) -->
+        <select id="post-produto-select"
+          class="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-500 mb-4 bg-white outline-none focus:border-primary">
+          <option value="">Vincular a um produto (opcional)</option>
+          <!-- Options injetadas via JS com produtos do cardápio -->
+        </select>
+
+        <button onclick="submitPost()"
+          class="w-full bg-primary text-white font-bold py-3 rounded-xl text-base">
+          Publicar no Feed
+        </button>
+      </div>
+    </div>
+
+    <!-- Comentários (Bottom Sheet) -->
+    <div id="comments-sheet" class="fixed inset-0 z-[70] hidden">
+      <div class="absolute inset-0 bg-black/50" onclick="closeComments()"></div>
+      <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+        <h3 class="font-bold text-lg mb-4 text-center">Comentários</h3>
+        <div id="comments-list" class="space-y-3 mb-4"></div>
+        <textarea id="comment-input" rows="2" placeholder="Escreva um comentário..." class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
+        <button onclick="submitComment(currentCommentPostId)" class="w-full bg-primary text-white font-bold py-3 rounded-xl">Enviar</button>
+      </div>
+    </div>
 
   <!-- ========== SEÇÃO/MODAL: PERFIL ========== -->
   <div id="profile-modal" class="fixed inset-0 z-[60] bg-gray-50/95 backdrop-blur-sm hidden overflow-y-auto">
@@ -623,6 +1028,10 @@
 
   <!-- ========== APP NAVIGATION (Bottom Nav & Modals) ========== -->
   <script src="../src/modules/app/navigation.js" defer></script>
+  <!-- ========== FEED MODULES ========== -->
+  <script src="../src/modules/feed/feed-modal.js" defer></script>
+  <script src="../src/modules/feed/feed-post-form.js" defer></script>
+  <script src="../src/modules/feed/feed-likes.js" defer></script>
 
   <!-- ========== CART MANAGER UNIFIED ========== -->
   <script src="../src/modules/cart/cart-manager-unified.js?v=1.1" defer></script>
@@ -711,16 +1120,10 @@
           if (window.scrollY > 150) {
             bottomMenu.classList.add('is-sticky');
             miniLogo.classList.remove('hidden');
-            // Anexar search bar logo abaixo
-            if (searchBarMobile && !searchBarMobile.classList.contains('hidden')) {
-              searchBarMobile.classList.add('is-sticky-search');
-            }
+            // search bar remains fixed at top regardless of scroll
           } else {
             bottomMenu.classList.remove('is-sticky');
             miniLogo.classList.add('hidden');
-            if (searchBarMobile) {
-              searchBarMobile.classList.remove('is-sticky-search');
-            }
           }
         });
       }
@@ -758,5 +1161,4 @@
     };
   </script>
 </body>
-
 </html>

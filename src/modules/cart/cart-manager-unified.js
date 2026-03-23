@@ -225,18 +225,23 @@ class UnifiedCartManager {
   }
 
   updateQuantity(productId, change) {
+    if (this._updating) return; // debounce
+    this._updating = true;
+    
     const item = this.cart.find(i => i.id == productId);
-    if (!item) return;
+    if (!item) { this._updating = false; return; }
 
     const newQuantity = item.quantity + change;
 
     if (newQuantity <= 0) {
       this.removeItem(productId);
+      this._updating = false;
       return;
     }
 
     if (newQuantity > 99) {
       this.showMessage('Quantidade máxima é 99', 'warning');
+      this._updating = false;
       return;
     }
 
@@ -244,6 +249,8 @@ class UnifiedCartManager {
     this.saveCartToStorage();
     this.updateCartUI();
     this.vibrate('soft');
+    
+    setTimeout(() => { this._updating = false; }, 100);
   }
 
   setDeliveryExtra(fee, time) {
@@ -520,9 +527,10 @@ class UnifiedCartManager {
       return;
     }
 
-    // Validar se usuário tem endereço
-    if (!profile.address || profile.address.length < 5) {
-      this.showMessage('Adicione um endereço no seu perfil.', 'warning');
+    // Validar se usuário tem endereço e telefone limpo
+    const cleanPhone = profile.phone ? profile.phone.replace(/\D/g, '') : '';
+    if (!cleanPhone || cleanPhone.length < 10 || !profile.address || profile.address.length < 5) {
+      this.showMessage('Corrija seu telefone e endereço no perfil.', 'warning');
       this.closeCart();
       setTimeout(() => {
         const modal = document.getElementById('profile-modal');
@@ -531,12 +539,12 @@ class UnifiedCartManager {
           window.navOpenProfile();
         }
 
-        // Focar no campo de endereço
+        // Focar no campo de telefone
         setTimeout(() => {
-          const addressInput = document.getElementById('prof-edit-address');
-          if (addressInput) {
-            addressInput.focus();
-            addressInput.style.border = '2px solid #069C54';
+          const phoneInput = document.getElementById('prof-edit-phone');
+          if (phoneInput) {
+            phoneInput.focus();
+            phoneInput.style.border = '2px solid #069C54';
           }
         }, 300);
       }, 400);
@@ -551,47 +559,64 @@ class UnifiedCartManager {
     const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const itemsSimplificados = this.cart.map(item => ({
       id: item.id,
-      nome: item.name,
-      quantidade: item.quantity,
-      preco_unitario: item.price,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
       subtotal: item.price * item.quantity,
       observacao: item.observacao || ''
     }));
 
-    // Tentar salvar no Supabase primeiro
-    if (window.supabaseManager && typeof window.supabaseManager.salvarPedido === 'function') {
+    // Start loading UX
+    if (this.checkoutButton) {
+      const originalText = this.checkoutButton.innerHTML;
+      this.checkoutButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
+      this.checkoutButton.disabled = true;
+      this.checkoutButton.classList.add('opacity-75', 'cursor-not-allowed');
+      
       try {
-        // Se formos salvar também via PIX depois, o status deveria ser pendente de pgto, master "novo" ou "pendente" atende
-        const pedidoEnviado = await window.supabaseManager.salvarPedido({
-          items: itemsSimplificados,
-          total: total,
-          endereco: address,
-          telefone: phone
-        });
+        // Tentar salvar no Supabase primeiro
+        if (window.supabaseManager && typeof window.supabaseManager.finalizarPedido === 'function') {
+           const payload = {
+             items: itemsSimplificados,
+             total: total,
+             endereco: address,
+             telefone: cleanPhone,
+             nome: name
+           };
+           
+           const result = await window.supabaseManager.finalizarPedido(payload);
 
-        if (!pedidoEnviado) {
-          console.warn("Aviso: Falha ao salvar no Supabase, mas prosseguiremos com WhatsApp.");
+           if (!result || !result.success) {
+             console.warn("Aviso: Falha ao salvar no Supabase, erro:", result?.error);
+             this.showMessage('Houve uma falha transacional. Tentando fallback pelo WhatsApp', 'warning');
+           }
         }
+
+        // Gerar mensagem WhatsApp
+        const message = this.generateWhatsAppMessage(address, cleanPhone, name);
+        const phoneNumber = '5592985130951';
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, '_blank');
+
+        // Limpar carrinho após envio
+        setTimeout(() => {
+          this.cart = [];
+          this.updateCartUI();
+          this.closeCart();
+          this.vibrate('success');
+          this.showMessage('Pedido enviado com sucesso! Acompanhe pelo WhatsApp.', 'success');
+        }, 1000);
+
       } catch (e) {
         console.error("Erro inesperado ao salvar pedido:", e);
+        this.showMessage('Erro ao processar. Tente novamente.', 'error');
+      } finally {
+        this.checkoutButton.innerHTML = originalText;
+        this.checkoutButton.disabled = false;
+        this.checkoutButton.classList.remove('opacity-75', 'cursor-not-allowed');
       }
     }
-
-    // Gerar mensagem WhatsApp
-    const message = this.generateWhatsAppMessage(address, phone, name);
-    const phoneNumber = '5592985130951';
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-    window.open(whatsappUrl, '_blank');
-
-    // Limpar carrinho após envio
-    setTimeout(() => {
-      this.cart = [];
-      this.updateCartUI();
-      this.closeCart();
-      this.vibrate('success');
-      this.showMessage('Pedido enviado com sucesso! Acompanhe pelo WhatsApp.', 'success');
-    }, 1000);
   }
 
   generateWhatsAppMessage(address, phone, name) {

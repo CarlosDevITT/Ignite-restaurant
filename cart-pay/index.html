@@ -40,7 +40,7 @@
 
   <!-- Google Fonts -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet">
 
   <!-- Header Mobile Styles -->
@@ -67,20 +67,24 @@
     :root {
       --color-primary: #069C54;
       --color-primary-dark: #048654;
-      --color-primary-glow: rgba(6,156,84,0.18);
+      --color-primary-glow: rgba(6, 156, 84, 0.18);
       --color-title: #1a1a2e;
       --color-text: #64748b;
       --color-text-light: #94a3b8;
       --color-body: #f8fafc;
       --color-card: #ffffff;
       --radius-card: 18px;
-      --shadow-card: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-      --shadow-card-hover: 0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(6,156,84,0.08);
+      --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+      --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(6, 156, 84, 0.08);
       --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* ── Base ───────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
 
     body {
       font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
@@ -101,6 +105,7 @@
       gap: 10px;
       margin-bottom: 1.25rem;
     }
+
     .section-heading .icon-pill {
       display: inline-flex;
       align-items: center;
@@ -136,6 +141,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
     .product-price.original {
       font-family: 'Inter', sans-serif;
       font-weight: 400;
@@ -165,15 +171,16 @@
       flex-direction: column;
       justify-content: space-between;
       box-shadow: var(--shadow-card);
-      border: 1px solid rgba(0,0,0,0.04);
+      border: 1px solid rgba(0, 0, 0, 0.04);
       transition: transform 0.3s var(--transition-smooth),
-                  box-shadow 0.3s var(--transition-smooth);
+        box-shadow 0.3s var(--transition-smooth);
       cursor: pointer;
     }
+
     .product-item:hover {
       transform: translateY(-5px);
       box-shadow: var(--shadow-card-hover);
-      border-color: rgba(6,156,84,0.12);
+      border-color: rgba(6, 156, 84, 0.12);
     }
 
     /* Image inside card */
@@ -183,12 +190,14 @@
       position: relative;
       background: linear-gradient(135deg, #f0faf5, #eaf7f0);
     }
+
     .product-item img {
       border-radius: 12px;
       object-fit: cover;
       transition: transform 0.4s var(--transition-smooth);
       display: block;
     }
+
     .product-item:hover img {
       transform: scale(1.06);
     }
@@ -199,8 +208,15 @@
       flex-direction: column;
       justify-content: space-between;
     }
-    .product-item .product-price { align-self: flex-start; }
-    .product-item .add-to-cart-btn { margin-top: 0.875rem; align-self: stretch; }
+
+    .product-item .product-price {
+      align-self: flex-start;
+    }
+
+    .product-item .add-to-cart-btn {
+      margin-top: 0.875rem;
+      align-self: stretch;
+    }
 
     /* Add to cart button */
     .add-to-cart-btn {
@@ -221,35 +237,56 @@
       gap: 6px;
       box-shadow: 0 2px 8px var(--color-primary-glow);
     }
+
     .add-to-cart-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 18px var(--color-primary-glow);
     }
-    .add-to-cart-btn:active { transform: scale(0.96); }
+
+    .add-to-cart-btn:active {
+      transform: scale(0.96);
+    }
 
     /* ── Scrollbar global hide ──────────────────────────────── */
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
     /* ── Main container ─────────────────────────────────────── */
-    main { background: var(--color-body); }
+    main {
+      background: var(--color-body);
+    }
 
     /* ── Cart sidebar tweaks ────────────────────────────────── */
-    #cart-sidebar { font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif; }
+    #cart-sidebar {
+      font-family: 'Plus Jakarta Sans', 'Poppins', sans-serif;
+    }
 
     /* ── Stories slider ─────────────────────────────────────── */
     #stories-slider {
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
       overflow: hidden;
     }
 
     /* ── Nav bottom animation ───────────────────────────────── */
-    nav button { transition: color 0.2s ease, transform 0.15s ease; }
-    nav button:active { transform: scale(0.9); }
+    nav button {
+      transition: color 0.2s ease, transform 0.15s ease;
+    }
+
+    nav button:active {
+      transform: scale(0.9);
+    }
 
     /* ── Profile modal inputs ───────────────────────────────── */
-    input:focus, textarea:focus, select:focus {
+    input:focus,
+    textarea:focus,
+    select:focus {
       outline: none;
       border-color: var(--color-primary) !important;
       box-shadow: 0 0 0 3px var(--color-primary-glow);
@@ -268,21 +305,38 @@
       padding: 3px 8px;
       border-radius: 16px;
       text-transform: uppercase;
-      box-shadow: 0 2px 6px rgba(255,68,68,0.35);
+      box-shadow: 0 2px 6px rgba(255, 68, 68, 0.35);
       pointer-events: none;
     }
 
     /* ── Section fade-in animation ──────────────────────────── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    main > section {
+
+    main>section {
       animation: fadeUp 0.5s ease both;
     }
-    main > section:nth-child(2) { animation-delay: 0.08s; }
-    main > section:nth-child(3) { animation-delay: 0.16s; }
-    main > section:nth-child(4) { animation-delay: 0.24s; }
+
+    main>section:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+
+    main>section:nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    main>section:nth-child(4) {
+      animation-delay: 0.24s;
+    }
 
     /* ── Skeleton loading pulse ─────────────────────────────── */
     .skeleton {
@@ -291,21 +345,34 @@
       animation: shimmer 1.4s infinite;
       border-radius: 8px;
     }
+
     @keyframes shimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position:  200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
 
     /* ── Bottom nav badge pulse ─────────────────────────────── */
     .cart-count-badge {
       animation: none;
     }
+
     .cart-count-badge.has-items {
-      animation: badgePop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     @keyframes badgePop {
-      from { transform: scale(0.5); }
-      to   { transform: scale(1); }
+      from {
+        transform: scale(0.5);
+      }
+
+      to {
+        transform: scale(1);
+      }
     }
 
     /* ── Checkout button ────────────────────────────────────── */
@@ -313,6 +380,7 @@
       background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
       box-shadow: 0 4px 16px var(--color-primary-glow);
     }
+
     #checkout-button:not([disabled]):not(.cursor-not-allowed):hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 20px var(--color-primary-glow);
@@ -327,21 +395,22 @@
         theme: {
           extend: {
             colors: {
-              primary:       '#069C54',
+              primary: '#069C54',
               'primary-alt': '#048654',
-              'primary-light':'#e8f9f1',
-              title:         '#1a1a2e',
-              text:          '#64748b',
-              'text-light':  '#94a3b8',
-              body:          '#f8fafc',
-              container:     '#ffffff',
+              'primary-light': '#e8f9f1',
+              title: '#1a1a2e',
+              text: '#64748b',
+              'text-light': '#94a3b8',
+              body: '#f8fafc',
+              container: '#ffffff',
             },
             fontFamily: {
               sans: ["'Plus Jakarta Sans'", "'Poppins'", 'sans-serif'],
+              rounded: ["'Outfit'", "'Nunito'", "'sans-serif'"],
             },
             boxShadow: {
-              card:       '0 2px 16px rgba(0,0,0,0.06)',
-              'card-hover':'0 12px 40px rgba(0,0,0,0.12)',
+              card: '0 2px 16px rgba(0,0,0,0.06)',
+              'card-hover': '0 12px 40px rgba(0,0,0,0.12)',
             },
             borderRadius: {
               card: '18px',
@@ -355,139 +424,96 @@
 </head>
 
 <body class="font-sans" style="background-color: var(--color-body)">
-  <!-- Header Mobile e Desktop -->
-  <header class="mobile-header">
-    <!-- Container Principal -->
-    <div class="header-container">
-      <!-- Logo Circular Centralizado -->
-      <div class="logo-wrapper">
-        <img src="../assets/images/logos/logo.png" alt="Ignite Logo" class="header-logo-circle">
-      </div>
-
-      <!-- Nome do Restaurante -->
-      <div class="restaurant-name">
-        <h1>IGNITE RESTAURANT</h1>
-      </div>
-
-      <!-- Informações de Localização -->
-      <div class="location-info">
-        <div class="location-item">
-          <i class="fas fa-map-marker-alt"></i>
-          <span>Vieiralves, 04 - Manaus - AM</span>
-          <span>Rua fridolin Erthal Júnior, 97 - Itajaí - SC</span>
-          <span class="separator">•</span>
-          <span class="more-info">Mais informações</span>
+  <header id="main-header">
+    <div class="mobile-header">
+      <!-- Mobile View -->
+      <div class="header-container lg:hidden">
+        <div class="logo-wrapper" onclick="window.location.href='/'" style="cursor: pointer;">
+          <img src="../assets/images/logos/logo.png" alt="Ignite Logo" class="header-logo-circle">
         </div>
-      </div>
-
-      <!-- Status do Restaurante -->
-      <div id="schedule-status" class="schedule-status"></div>
-
-      <!-- Botão Calcular Entrega -->
-      <button class="delivery-calc-btn" onclick="calculateDelivery()">
-        <i class="fas fa-question-circle"></i>
-        <span>Calcular taxa e tempo de entrega</span>
-        <i class="fas fa-chevron-right"></i>
-      </button>
-
-      <!-- Menu Inferior Mobile -->
-      <div id="bottom-menu" class="header-bottom-menu">
-        <img src="../assets/images/logos/logo.png" id="mini-logo" class="mini-logo hidden" alt="Logo mini">
-
-        <div class="categories-dropdown" id="categories-dropdown" onclick="toggleCategoriesMenu()">
-          <i class="fas fa-bars"></i>
-          <span id="categories-text">Lista de categorias</span>
-          <i class="fas fa-chevron-down" id="categories-arrow"></i>
+        <div class="restaurant-name">
+          <h1>IGNITE RESTAURANT</h1>
         </div>
-        <!-- Dropdown de Categorias -->
-        <div id="categories-menu" class="categories-menu hidden">
-          <div class="categories-loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Carregando categorias...</span>
+        <div class="schedule-status">
+          <span class="status-text aberto"><i class="fas fa-clock"></i> Aberto Agora</span>
+        </div>
+        <button class="delivery-calc-btn" onclick="calculateDelivery()">
+          <div style="display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-motorcycle"></i> Calcular Taxa e Tempo</div>
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="header-bottom-menu">
+          <div class="categories-dropdown" onclick="toggleCategoriesMenu()">
+            <i class="fas fa-grid-2"></i>
+            <span id="categories-text">Menu</span>
+            <i class="fas fa-chevron-down" id="categories-arrow"></i>
           </div>
-          <div id="categories-list" class="categories-list"></div>
+          
+          <div id="categories-menu" class="categories-menu hidden">
+            <div id="categories-list" class="categories-list">
+               <!-- JS load -->
+            </div>
+          </div>
+
+          <button class="search-btn-mobile" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
+          <button class="cart-btn-mobile" id="cart-button">
+            <i class="fas fa-shopping-basket"></i>
+            <span class="cart-count-badge" id="cart-count">0</span>
+          </button>
         </div>
-        <button id="cart-button" class="cart-btn-mobile">
-          <i class="fas fa-shopping-cart"></i>
-          <span id="cart-count" class="cart-count-badge">0</span>
-        </button>
-        <button class="search-btn-mobile" onclick="toggleSearch()">
-          <i class="fas fa-search"></i>
-        </button>
       </div>
 
-      <!-- Barra de Busca Mobile -->
-      <div id="search-bar-mobile" class="search-bar-mobile hidden">
-        <input type="text" id="search-input" placeholder="Busque por um produto..." class="search-input">
-        <button onclick="performSearch()" class="search-submit-btn">
-          <i class="fas fa-search"></i>
-        </button>
-        <button onclick="toggleSearch()" class="search-close-btn">
-          <i class="fas fa-times"></i>
-        </button>
+      <!-- Desktop View -->
+      <div class="header-desktop hidden lg:block">
+        <div class="header-desktop-container">
+          <div class="header-desktop-left">
+            <img src="../assets/images/logos/logo.png" class="header-desktop-logo" onclick="window.location.href='/'" style="cursor: pointer;">
+            <div class="header-desktop-info">
+              <h1>IGNITE</h1>
+              <div class="header-desktop-location">
+                <i class="fas fa-map-marker-alt"></i> Manaus e Itajaí
+              </div>
+              <div class="schedule-status-desktop">
+                <span class="status-text aberto"><i class="fas fa-clock"></i> Aberto Agora</span>
+              </div>
+            </div>
+          </div>
+          <div class="header-desktop-right">
+            <div class="header-desktop-search">
+               <input type="text" id="search-input-desktop" class="search-input-desktop" placeholder="Buscar pratos...">
+               <button class="search-submit-btn-desktop" onclick="performSearch()"><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div class="header-desktop-categories">
+              <button class="categories-btn-desktop" id="categories-btn-desktop" onclick="toggleCategoriesMenuDesktop()">
+                <i class="fas fa-grid-2"></i> Categorias <i class="fas fa-chevron-down text-xs"></i>
+              </button>
+              <div id="categories-menu-desktop" class="categories-menu-desktop hidden">
+                <div id="categories-list-desktop" class="categories-list-desktop">
+                  <!-- JS load -->
+                </div>
+              </div>
+            </div>
+
+            <button class="profile-btn-desktop" onclick="navOpenChat()" title="Atendimento">
+              <i class="fas fa-comment-dots"></i>
+            </button>
+            <button class="profile-btn-desktop" onclick="navOpenProfile()" title="Perfil">
+              <i class="fas fa-user-circle"></i>
+            </button>
+            <button class="cart-btn-desktop" id="cart-button-desktop">
+              <i class="fas fa-shopping-basket"></i>
+              <span class="cart-count-badge-desktop" id="cart-count-desktop">0</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- Header Desktop -->
-    <div class="header-desktop">
-      <div class="header-desktop-container">
-        <div class="header-desktop-left">
-          <img src="../assets/images/logos/logo.png" alt="Ignite Logo" class="header-desktop-logo">
-          <div class="header-desktop-info">
-            <h1>IGNITE RESTAURANT</h1>
-            <div class="header-desktop-location">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>Vieiralves, 04 - Manaus - AM</span>
-              <span class="separator">•</span>
-              <span>R. Fridolim Herthal Júnior, 97 - Itajaí - SC</span>
-            </div>
-            <div id="schedule-status-desktop" class="schedule-status-desktop"></div>
-          </div>
-        </div>
-
-        <div class="header-desktop-right">
-          <div class="header-desktop-search">
-            <input type="text" id="search-input-desktop" placeholder="Busque por um produto..."
-              class="search-input-desktop">
-            <button onclick="performSearch()" class="search-submit-btn-desktop">
-              <i class="fas fa-search"></i>
-            </button>
-          </div>
-
-          <div class="header-desktop-categories">
-            <button class="categories-btn-desktop" id="categories-btn-desktop" onclick="toggleCategoriesMenuDesktop()">
-              <i class="fas fa-bars"></i>
-              <span>Categorias</span>
-              <i class="fas fa-chevron-down"></i>
-            </button>
-            <div id="categories-menu-desktop" class="categories-menu-desktop hidden">
-              <div class="categories-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Carregando categorias...</span>
-              </div>
-              <div id="categories-list-desktop" class="categories-list-desktop"></div>
-            </div>
-          </div>
-
-          <button onclick="navOpenProfile()" class="profile-btn-desktop" title="Meu Perfil">
-            <i class="fas fa-user"></i>
-          </button>
-
-          <button onclick="toggleNotifications()" class="notifications-btn-desktop relative" title="Notificações">
-            <i class="fas fa-bell"></i>
-            <span id="notif-count-desktop" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full hidden items-center justify-center font-bold">0</span>
-          </button>
-
-          <button onclick="navOpenChat()" class="chat-btn-desktop" title="Conversar com Atendente">
-            <i class="fas fa-comments"></i>
-          </button>
-
-          <button id="cart-button-desktop" class="cart-btn-desktop">
-            <i class="fas fa-shopping-cart"></i>
-            <span id="cart-count-desktop" class="cart-count-badge-desktop">0</span>
-          </button>
-        </div>
-      </div>
+    
+    <!-- Mobile Search Area (Conditional) -->
+    <div id="search-bar-mobile" class="search-bar-mobile hidden">
+      <input type="text" id="search-input" placeholder="O que você quer comer?" class="search-input">
+      <button class="search-submit-btn" onclick="performSearch()"><i class="fas fa-search"></i></button>
+      <button class="search-close-btn" onclick="toggleSearch()"><i class="fas fa-times"></i></button>
     </div>
   </header>
 
@@ -525,72 +551,31 @@
       </div>
     </section>
 
-    <!-- Seção Stories Ignite versão integrada -->
-    <section class="mb-8">
-      <h2 class="section-heading">
-        <a href="https://www.instagram.com/" target="_blank"
-          class="icon-pill"
-          style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);"
-          aria-label="Instagram">
-          <i class="fab fa-instagram"></i>
-        </a>
-        Stories Ignite
-      </h2>
 
-      <!-- Container do Stories Slider -->
-      <div id="stories-slider" class="relative bg-white rounded-xl shadow-lg overflow-hidden">
-
-        <!-- Barra de Progresso FIXA -->
-        <div class="absolute top-0 left-0 w-full z-30 p-2 bg-gradient-to-b from-black/30 to-transparent">
-          <div id="progress-container" class="flex space-x-1 max-w-4xl mx-auto">
-            <!-- As barras de progresso serão inseridas aqui via JavaScript -->
-          </div>
-        </div>
-
-        <!-- Botões de Navegação -->
-        <button id="prev-story"
-          class="absolute left-2 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-50 transition-opacity">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button id="next-story"
-          class="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-50 transition-opacity">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-
-        <!-- Área de Conteúdo -->
-        <div id="stories-container" class="flex transition-transform duration-300 ease-in-out">
-          <!-- Os "slides" dos produtos serão inseridos aqui via JavaScript -->
-        </div>
-
-        <!-- Indicador quando não há produtos -->
-        <div id="stories-empty" class="hidden flex items-center justify-center h-64 text-gray-500">
-          <div class="text-center">
-            <i class="fas fa-star text-4xl mb-2"></i>
-            <p>Nenhum produto em destaque no momento</p>
-          </div>
-        </div>
-
-        <!-- Botão para expandir/recolher tela cheia -->
-        <button id="toggle-fullscreen"
-          class="absolute bottom-6 right-6 z-20 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-opacity">
-          <i class="fas fa-expand text-lg"></i>
-        </button>
-      </div>
-    </section>
 
   </main>
 
   <!-- Carrinho Sidebar Unificado (Redesign) -->
   <div id="cart-sidebar"
-    class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col h-full overflow-hidden font-sans pb-16 lg:pb-0">
+    class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-[2000] flex flex-col h-full overflow-hidden font-sans pb-16 lg:pb-0">
 
-    <!-- Store Header -->
-    <div class="px-5 py-4 flex items-center justify-between border-b border-gray-100 bg-white sticky top-0 z-20">
-      <h2 class="text-sm font-black text-gray-900 uppercase tracking-widest m-0">
-        IGNITE RESTAURANT
-      </h2>
+    <!-- Store Header Redesign -->
+    <div class="px-6 py-5 flex items-center justify-between bg-primary sticky top-0 z-20 shadow-md">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-sm flex-shrink-0">
+          <img src="../assets/images/logos/logo.png" alt="Logo" class="w-full h-full object-cover">
+        </div>
+        <div class="flex flex-col">
+          <h2 class="text-[11px] font-black text-white/70 uppercase tracking-[0.25em] m-0 leading-tight font-rounded">
+            Estabelecimento
+          </h2>
+          <h3 class="text-[18px] font-black text-white m-0 uppercase font-rounded tracking-tight drop-shadow-sm">IGNITE RESTAURANT</h3>
+        </div>
+      </div>
       <button id="close-cart" type="button"
-        class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-800">&times;</button>
+        class="w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-primary transition-all duration-300 flex items-center justify-center border-none cursor-pointer flex-shrink-0">
+        <i class="fas fa-times text-lg"></i>
+      </button>
     </div>
 
     <!-- Scrollable Content Area -->
@@ -608,11 +593,19 @@
         </button>
       </div>
 
-      <!-- Sua Sacola Header -->
-      <div class="px-5 py-4 pb-2 flex items-center justify-between bg-white mt-1">
-        <h3 class="text-[17px] font-bold text-slate-800 m-0">Sua sacola</h3>
+      <!-- Sua Sacola Header Redesign -->
+      <div class="px-6 py-6 pb-2 flex items-center justify-between bg-white mt-1">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <i class="fas fa-shopping-bag text-sm"></i>
+          </div>
+          <h3 class="text-[19px] font-black text-slate-800 m-0 font-rounded tracking-tight">Sua sacola</h3>
+        </div>
         <button id="cart-clear-btn"
-          class="text-[#1a365d] text-xs font-bold uppercase tracking-wider hover:text-blue-800 transition-colors bg-transparent border-none p-0 cursor-pointer">Limpar</button>
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-600 text-[11px] font-bold uppercase tracking-wider hover:bg-red-100 transition-all duration-300 border-none cursor-pointer">
+          <i class="fas fa-trash-alt text-[10px]"></i>
+          Limpar
+        </button>
       </div>
 
       <!-- Itens do Carrinho -->
@@ -628,50 +621,51 @@
         </button>
       </div>
 
-      <!-- Cross-Selling: Peça Também -->
-      <div class="py-5 bg-white border-b border-gray-100 mt-2">
-        <h3 class="text-[17px] font-bold text-slate-800 m-0 px-5 mb-4">Peça também</h3>
-        <div id="cross-selling-container" class="flex overflow-x-auto gap-4 px-5 pb-4 scrollbar-hide snap-x">
+      <!-- Cross-Selling: Peça Também Redesign -->
+      <div class="py-6 bg-white border-b border-gray-100 mt-2">
+        <div class="flex items-center gap-2 px-6 mb-4">
+          <div class="w-2 h-6 bg-primary rounded-full"></div>
+          <h3 class="text-[19px] font-black text-slate-800 m-0 font-rounded tracking-tight">Peça também</h3>
+        </div>
+        <div id="cross-selling-container" class="flex overflow-x-auto gap-4 px-6 pb-4 scrollbar-hide snap-x">
           <!-- Cross-selling items injetados via JS -->
         </div>
       </div>
 
-      <!-- Totals Block -->
-      <div class="px-5 py-4 bg-white border-b border-gray-100 mt-2 flex flex-col gap-2">
-        <div class="flex items-center justify-between text-[15px] text-gray-500">
-          <span>Subtotal</span>
-          <span id="cart-subtotal-val">R$ 0,00</span>
-        </div>
-        <div class="flex items-center justify-between text-[15px] text-gray-500">
-          <span>Taxa de entrega</span>
-          <span id="delivery-fee-val">A definir</span>
-        </div>
-        <div class="flex items-center justify-between text-[13px] text-green-600 font-medium" id="delivery-time-row">
-          <span>Tempo estimado</span>
-          <span id="delivery-time-val">-</span>
-        </div>
-        <div class="flex items-center justify-between mt-2">
-          <span class="text-lg font-bold text-slate-800">Total</span>
-          <span id="cart-total-val" class="text-xl font-bold text-slate-800">R$ 0,00</span>
+      <!-- Totals Block Redesign -->
+      <div class="px-6 py-6 bg-slate-50 mt-2 border-t border-b border-gray-100">
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between text-[14px] text-slate-500">
+            <span class="font-medium">Subtotal</span>
+            <span id="cart-subtotal-val" class="font-bold text-slate-700">R$ 0,00</span>
+          </div>
+          <div class="flex items-center justify-between text-[14px] text-slate-500">
+            <div class="flex items-center gap-2">
+              <span class="font-medium">Taxa de entrega</span>
+              <i class="fas fa-info-circle text-[10px] text-slate-300"></i>
+            </div>
+            <span id="delivery-fee-val" class="font-bold text-slate-700">A definir</span>
+          </div>
+          <div class="flex items-center justify-between py-2 px-3 bg-green-50 rounded-lg" id="delivery-time-row">
+            <div class="flex items-center gap-2 text-green-700">
+              <i class="far fa-clock text-xs"></i>
+              <span class="text-[12px] font-bold uppercase tracking-wider">Entrega em</span>
+            </div>
+            <span id="delivery-time-val" class="text-[12px] font-black text-green-700">-</span>
+          </div>
+          
+          <div class="h-px bg-slate-200 my-2"></div>
+          
+          <div class="flex items-center justify-between mt-2">
+            <div>
+              <span class="text-[12px] font-black text-slate-400 uppercase tracking-widest block leading-none font-rounded">Total Geral</span>
+            </div>
+            <span id="cart-total-val" class="text-3xl font-black text-slate-900 tracking-tight font-rounded">R$ 0,00</span>
+          </div>
         </div>
       </div>
 
-      <!-- Cupom -->
-      <div class="bg-green-50/50 px-5 py-2 border-b border-green-100 text-center text-sm">
-        <span class="text-green-600 font-bold">Cupom disponível</span>, veja as regras de aplicação
-      </div>
-      <div
-        class="px-5 py-4 bg-white border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-4 group">
-        <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
-          <i class="fas fa-ticket-alt"></i>
-        </div>
-        <div class="flex-1">
-          <p class="text-[15px] font-bold text-slate-800 m-0 group-hover:text-blue-700 transition-colors">Que tal usar
-            um cupom?</p>
-          <p class="text-sm text-gray-500 m-0">1 disponível</p>
-        </div>
-        <i class="fas fa-chevron-right text-gray-400"></i>
-      </div>
+
 
       <!-- Address and Phone Hidden Form (kept for JS logic compatibility) -->
       <div class="hidden">
@@ -692,7 +686,7 @@
   </div>
 
   <!-- Overlay do carrinho -->
-  <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300"></div>
+  <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[1999] hidden transition-opacity duration-300"></div>
 
 
   <!-- ========== BOTTOM NAVIGATION MOBILE ========== -->
@@ -708,11 +702,10 @@
       <i class="fas fa-shopping-bag text-[1.15rem] mb-0.5"></i>
       <span class="text-[0.6rem] font-medium tracking-wide">Pedidos</span>
     </button>
-    <button onclick="toggleNotifications()"
-      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors relative">
-      <i class="fas fa-bell text-[1.15rem] mb-0.5"></i>
-      <span id="notif-count-mobile" class="absolute top-2 right-4 bg-red-500 text-white text-[9px] w-3.5 h-3.5 rounded-full hidden items-center justify-center font-bold">0</span>
-      <span class="text-[0.6rem] font-medium tracking-wide">Avisos</span>
+    <button onclick="navOpenChat()"
+      class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors">
+      <i class="fas fa-comments text-[1.15rem] mb-0.5"></i>
+      <span class="text-[0.6rem] font-medium tracking-wide">Chat</span>
     </button>
     <button onclick="navOpenFeed()"
       class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-primary transition-colors"
@@ -729,37 +722,43 @@
 
   <!-- ========== SEÇÃO/MODAL: CHAT ========== -->
   <div id="chat-modal"
-    class="fixed inset-0 z-[60] bg-gray-50/95 hidden flex-col items-center justify-center backdrop-blur-sm">
+    class="fixed inset-0 z-[2000] bg-gray-50/95 hidden flex-col items-center justify-center backdrop-blur-sm">
     <div
       class="bg-white w-full h-full lg:max-w-md lg:max-h-[80vh] lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
-      <div class="sticky top-0 z-40 bg-gradient-to-r from-primary to-[#069C54] text-white px-4 py-3.5 flex items-center justify-between shadow-lg border-b-4 border-yellow-400">
+      <div
+        class="sticky top-0 z-40 bg-gradient-to-r from-primary to-[#069C54] text-white px-4 py-3.5 flex items-center justify-between shadow-lg border-b-4 border-yellow-400">
         <div class="flex items-center gap-2.5 flex-1">
           <button onclick="closeAllModals()" class="text-white hover:scale-110 transition-transform p-1">
             <i class="fas fa-arrow-left text-lg lg:hidden"></i>
             <i class="fas fa-times text-lg hidden lg:block"></i>
           </button>
-          <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md border-2 border-yellow-300">
+          <div
+            class="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md border-2 border-yellow-300">
             <span class="text-xl">🔥</span>
           </div>
           <div class="flex-1">
             <h3 class="font-bold text-base leading-tight">Ignite Atendimento</h3>
-            <p class="text-xs text-yellow-200 flex items-center gap-1"><span class="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>Online agora</p>
+            <p class="text-xs text-yellow-200 flex items-center gap-1"><span
+                class="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>Online agora</p>
           </div>
         </div>
       </div>
 
 
-          <!-- Comentários (Bottom Sheet) -->
-          <div id="comments-sheet" class="fixed inset-0 z-[70] hidden">
-            <div class="absolute inset-0 bg-black/50" onclick="closeComments()"></div>
-            <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
-              <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
-              <h3 class="font-bold text-lg mb-4 text-center">Comentários</h3>
-              <div id="comments-list" class="space-y-3 mb-4"></div>
-              <textarea id="comment-input" rows="2" placeholder="Escreva um comentário..." class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
-              <button onclick="submitComment(currentCommentPostId)" class="w-full bg-primary text-white font-bold py-3 rounded-xl">Enviar</button>
-            </div>
-          </div>
+      <!-- Comentários (Bottom Sheet) -->
+      <div id="comments-sheet" class="fixed inset-0 z-[2001] hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="closeComments()"></div>
+        <div
+          class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
+          <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <h3 class="font-bold text-lg mb-4 text-center">Comentários</h3>
+          <div id="comments-list" class="space-y-3 mb-4"></div>
+          <textarea id="comment-input" rows="2" placeholder="Escreva um comentário..."
+            class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
+          <button onclick="submitComment(currentCommentPostId)"
+            class="w-full bg-primary text-white font-bold py-3 rounded-xl">Enviar</button>
+        </div>
+      </div>
 
       <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 flex flex-col gap-3 pb-4 scroll-smooth">
         <!-- Mensagens via JS -->
@@ -777,12 +776,15 @@
               class="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-[#069C54] text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95 flex-shrink-0">
               <i class="fas fa-plus text-lg"></i>
             </button>
-            <div id="chat-actions-menu" class="hidden absolute bottom-14 left-0 bg-white rounded-xl shadow-xl border border-gray-200 py-2 w-56 z-50">
-              <button class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left text-gray-700 font-medium">
+            <div id="chat-actions-menu"
+              class="hidden absolute bottom-14 left-0 bg-white rounded-xl shadow-xl border border-gray-200 py-2 w-56 z-50">
+              <button
+                class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left text-gray-700 font-medium">
                 <i class="fas fa-paperclip text-primary text-lg"></i>
                 <span>Anexar imagem</span>
               </button>
-              <button class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left text-gray-700 font-medium border-t border-gray-100">
+              <button
+                class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-primary/10 transition-colors text-left text-gray-700 font-medium border-t border-gray-100">
                 <i class="fas fa-utensils text-primary text-lg"></i>
                 <span>Ver cardápio</span>
               </button>
@@ -806,117 +808,126 @@
     </div>
   </div>
 
-    <!-- ========== FEED MODALS & COMPONENTS ========== -->
-    <div id="feed-modal" class="fixed inset-0 z-[60] bg-gray-50 hidden flex-col overflow-y-auto lg:items-center lg:justify-center">
-      <div class="w-full lg:max-w-md lg:rounded-xl lg:shadow-lg lg:overflow-hidden lg:bg-white">
-        <!-- Header do Feed -->
-        <div class="sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <button onclick="closeAllModals()" class="text-gray-600">
-            <i class="fas fa-arrow-left text-xl"></i>
-          </button>
-          <h2 class="font-bold text-lg">Feed Ignite 🔥</h2>
-          <!-- Botão novo post -->
-          <button onclick="openNewPostForm()" id="feed-new-post-btn"
-            class="bg-primary text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1">
-            <i class="fas fa-plus text-xs"></i> Post
-          </button>
-        </div>
-
-        <!-- Stories do Restaurante (linha horizontal) -->
-        <div id="feed-stories-bar" class="bg-white border-b border-gray-100 px-4 py-3 overflow-x-auto flex gap-3 scrollbar-hide">
-          <!-- Stories injetados via JS -->
-        </div>
-
-        <!-- Lista de Posts (estilo Instagram) -->
-        <div id="feed-posts-container" class="flex flex-col gap-0 pb-20">
-          <!-- Posts injetados via JS -->
-        </div>
-
-        <!-- Loading Skeleton -->
-        <div id="feed-loading" class="hidden px-4 py-8 text-center text-gray-400">
-          <i class="fas fa-spinner fa-spin text-2xl"></i>
-          <p class="mt-2 text-sm">Carregando feed...</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Formulário de Novo Post (Bottom Sheet) -->
-    <div id="new-post-sheet" class="fixed inset-0 z-[70] hidden">
-      <div class="absolute inset-0 bg-black/50" onclick="closeNewPostForm()"></div>
-      <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
-        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
-        <h3 class="font-bold text-lg mb-4 text-center">Compartilhar no Feed 📸</h3>
-
-        <!-- Preview da Imagem -->
-        <div id="post-image-preview"
-          class="w-full h-48 bg-gray-100 rounded-xl mb-4 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300"
-          onclick="document.getElementById('post-image-input').click()">
-          <div class="text-center text-gray-400">
-            <i class="fas fa-camera text-3xl mb-2"></i>
-            <p class="text-sm">Toque para adicionar foto</p>
-          </div>
-        </div>
-        <input type="file" id="post-image-input" accept="image/*" class="hidden">
-
-        <!-- Campo Descrição -->
-        <textarea id="post-descricao" placeholder="Conte sua experiência... 😋" rows="3"
-          class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
-
-        <!-- Avaliação em Estrelas -->
-        <div class="flex items-center gap-1 mb-4" id="star-rating-container">
-          <span class="text-sm text-gray-500 mr-2">Avaliação:</span>
-          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="1"></i>
-          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="2"></i>
-          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="3"></i>
-          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="4"></i>
-          <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="5"></i>
-        </div>
-
-        <!-- Vincular produto (opcional) -->
-        <select id="post-produto-select"
-          class="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-500 mb-4 bg-white outline-none focus:border-primary">
-          <option value="">Vincular a um produto (opcional)</option>
-          <!-- Options injetadas via JS com produtos do cardápio -->
-        </select>
-
-        <button onclick="submitPost()"
-          class="w-full bg-primary text-white font-bold py-3 rounded-xl text-base">
-          Publicar no Feed
+  <!-- ========== FEED MODALS & COMPONENTS ========== -->
+  <div id="feed-modal"
+    class="fixed inset-0 z-[2000] bg-gray-50 hidden flex-col overflow-y-auto lg:items-center lg:justify-center">
+    <div class="w-full lg:max-w-md lg:rounded-xl lg:shadow-lg lg:overflow-hidden lg:bg-white">
+      <!-- Header do Feed -->
+      <div class="sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <button onclick="closeAllModals()" class="text-gray-600">
+          <i class="fas fa-arrow-left text-xl"></i>
+        </button>
+        <h2 class="font-bold text-lg">Feed Ignite 🔥</h2>
+        <!-- Botão novo post -->
+        <button onclick="openNewPostForm()" id="feed-new-post-btn"
+          class="bg-primary text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1">
+          <i class="fas fa-plus text-xs"></i> Post
         </button>
       </div>
-    </div>
 
-    <!-- Comentários (Bottom Sheet) -->
-    <div id="comments-sheet" class="fixed inset-0 z-[70] hidden">
-      <div class="absolute inset-0 bg-black/50" onclick="closeComments()"></div>
-      <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
-        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
-        <h3 class="font-bold text-lg mb-4 text-center">Comentários</h3>
-        <div id="comments-list" class="space-y-3 mb-4"></div>
-        <textarea id="comment-input" rows="2" placeholder="Escreva um comentário..." class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
-        <button onclick="submitComment(currentCommentPostId)" class="w-full bg-primary text-white font-bold py-3 rounded-xl">Enviar</button>
+      <!-- Stories do Restaurante (linha horizontal) -->
+      <div id="feed-stories-bar"
+        class="bg-white border-b border-gray-100 px-4 py-3 overflow-x-auto flex gap-3 scrollbar-hide">
+        <!-- Stories injetados via JS -->
+      </div>
+
+      <!-- Lista de Posts (estilo Instagram) -->
+      <div id="feed-posts-container" class="flex flex-col gap-0 pb-20">
+        <!-- Posts injetados via JS -->
+      </div>
+
+      <!-- Loading Skeleton -->
+      <div id="feed-loading" class="hidden px-4 py-8 text-center text-gray-400">
+        <i class="fas fa-spinner fa-spin text-2xl"></i>
+        <p class="mt-2 text-sm">Carregando feed...</p>
       </div>
     </div>
+  </div>
+
+  <!-- Formulário de Novo Post (Bottom Sheet) -->
+  <div id="new-post-sheet" class="fixed inset-0 z-[2001] hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="closeNewPostForm()"></div>
+    <div
+      class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
+      <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+      <h3 class="font-bold text-lg mb-4 text-center">Compartilhar no Feed 📸</h3>
+
+      <!-- Preview da Imagem -->
+      <div id="post-image-preview"
+        class="w-full h-48 bg-gray-100 rounded-xl mb-4 flex items-center justify-center cursor-pointer border-2 border-dashed border-gray-300"
+        onclick="document.getElementById('post-image-input').click()">
+        <div class="text-center text-gray-400">
+          <i class="fas fa-camera text-3xl mb-2"></i>
+          <p class="text-sm">Toque para adicionar foto</p>
+        </div>
+      </div>
+      <input type="file" id="post-image-input" accept="image/*" class="hidden">
+
+      <!-- Campo Descrição -->
+      <textarea id="post-descricao" placeholder="Conte sua experiência... 😋" rows="3"
+        class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
+
+      <!-- Avaliação em Estrelas -->
+      <div class="flex items-center gap-1 mb-4" id="star-rating-container">
+        <span class="text-sm text-gray-500 mr-2">Avaliação:</span>
+        <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="1"></i>
+        <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="2"></i>
+        <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="3"></i>
+        <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="4"></i>
+        <i class="fas fa-star text-2xl text-gray-300 cursor-pointer star-input" data-value="5"></i>
+      </div>
+
+      <!-- Vincular produto (opcional) -->
+      <select id="post-produto-select"
+        class="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-500 mb-4 bg-white outline-none focus:border-primary">
+        <option value="">Vincular a um produto (opcional)</option>
+        <!-- Options injetadas via JS com produtos do cardápio -->
+      </select>
+
+      <button onclick="submitPost()" class="w-full bg-primary text-white font-bold py-3 rounded-xl text-base">
+        Publicar no Feed
+      </button>
+    </div>
+  </div>
+
+  <!-- Comentários (Bottom Sheet) -->
+  <div id="comments-sheet" class="fixed inset-0 z-[2001] hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="closeComments()"></div>
+    <div
+      class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto lg:rounded-xl lg:mx-auto lg:max-w-md">
+      <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+      <h3 class="font-bold text-lg mb-4 text-center">Comentários</h3>
+      <div id="comments-list" class="space-y-3 mb-4"></div>
+      <textarea id="comment-input" rows="2" placeholder="Escreva um comentário..."
+        class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-3"></textarea>
+      <button onclick="submitComment(currentCommentPostId)"
+        class="w-full bg-primary text-white font-bold py-3 rounded-xl">Enviar</button>
+    </div>
+  </div>
 
   <!-- ========== SEÇÃO/MODAL: PERFIL ========== -->
-  <div id="profile-modal" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-md hidden overflow-y-auto transition-all duration-300">
+  <div id="profile-modal"
+    class="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-md hidden overflow-y-auto transition-all duration-300">
     <div class="min-h-full flex items-center justify-center p-4 sm:p-6 mb-16 lg:mb-0">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-300">
-        
+      <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-300">
+
         <!-- Header do Modal -->
         <div class="bg-gradient-to-r from-primary to-[#059669] p-6 text-white relative">
           <button onclick="closeAllModals()"
             class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-all backdrop-blur-sm">
             <i class="fas fa-times text-lg"></i>
           </button>
-          
+
           <div class="flex items-center gap-4">
-            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-inner">
+            <div
+              class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-inner">
               <i class="fas fa-user-circle text-3xl"></i>
             </div>
             <div>
               <h2 id="profile-title" class="text-xl font-black uppercase tracking-tight m-0">Meu Perfil</h2>
-              <p id="profile-subtitle" class="text-white/80 text-xs font-medium m-0 mt-1 uppercase tracking-widest">Ignite Experience</p>
+              <p id="profile-subtitle" class="text-white/80 text-xs font-medium m-0 mt-1 uppercase tracking-widest">
+                Ignite Experience</p>
             </div>
           </div>
         </div>
@@ -933,7 +944,8 @@
               <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Telefone</label>
                 <div class="relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                  <span
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                     <i class="fas fa-phone-alt"></i>
                   </span>
                   <input type="tel" id="prof-login-phone" placeholder="(92) 99999-9999" required
@@ -944,7 +956,8 @@
               <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Senha</label>
                 <div class="relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                  <span
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                     <i class="fas fa-lock"></i>
                   </span>
                   <input type="password" id="prof-login-pass" placeholder="••••••••" required
@@ -959,8 +972,9 @@
             </form>
 
             <div class="pt-4 text-center border-t border-slate-100">
-              <p class="text-sm text-slate-500">Não tem uma conta? 
-                <button onclick="toggleAuthView('register')" class="text-primary font-bold hover:underline">Cadastre-se</button>
+              <p class="text-sm text-slate-500">Não tem uma conta?
+                <button onclick="toggleAuthView('register')"
+                  class="text-primary font-bold hover:underline">Cadastre-se</button>
               </p>
             </div>
           </div>
@@ -987,7 +1001,8 @@
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço de Entrega *</label>
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço de Entrega
+                    *</label>
                   <textarea id="prof-reg-address" placeholder="Rua, Número, Bairro..." required rows="2"
                     class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold resize-none transition-all"></textarea>
                 </div>
@@ -1013,8 +1028,9 @@
             </form>
 
             <div class="pt-4 text-center border-t border-slate-100">
-              <p class="text-sm text-slate-500">Já tem conta? 
-                <button onclick="toggleAuthView('login')" class="text-primary font-bold hover:underline">Fazer Login</button>
+              <p class="text-sm text-slate-500">Já tem conta?
+                <button onclick="toggleAuthView('login')" class="text-primary font-bold hover:underline">Fazer
+                  Login</button>
               </p>
             </div>
           </div>
@@ -1022,29 +1038,34 @@
           <!-- VIEW 2: Editar (Logado) -->
           <div id="profile-view-edit" class="hidden space-y-6">
             <div class="flex items-center justify-between mb-4">
-               <div>
-                  <h3 id="user-display-name" class="text-2xl font-black text-slate-800 m-0 uppercase line-clamp-1">CARLOS</h3>
-                  <p class="text-xs font-bold text-primary uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                    <i class="fas fa-crown text-[10px]"></i> Cliente VIP Ignite
-                  </p>
-               </div>
-               <div class="w-12 h-12 rounded-full border-2 border-primary/20 p-0.5">
-                  <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-primary font-black uppercase overflow-hidden" id="user-initials">
-                    C
-                  </div>
-               </div>
+              <div>
+                <h3 id="user-display-name" class="text-2xl font-black text-slate-800 m-0 uppercase line-clamp-1">CARLOS
+                </h3>
+                <p class="text-xs font-bold text-primary uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                  <i class="fas fa-crown text-[10px]"></i> Cliente VIP Ignite
+                </p>
+              </div>
+              <div class="w-12 h-12 rounded-full border-2 border-primary/20 p-0.5">
+                <div
+                  class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-primary font-black uppercase overflow-hidden"
+                  id="user-initials">
+                  C
+                </div>
+              </div>
             </div>
 
             <!-- Stats Rápidos -->
             <div class="grid grid-cols-2 gap-3 mb-6">
-               <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pedidos Feitos</span>
-                  <span class="text-lg font-black text-slate-800" id="user-stats-orders">0</span>
-               </div>
-               <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pontos Ignite</span>
-                  <span class="text-lg font-black text-primary" id="user-stats-points">0</span>
-               </div>
+              <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pedidos
+                  Feitos</span>
+                <span class="text-lg font-black text-slate-800" id="user-stats-orders">0</span>
+              </div>
+              <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pontos
+                  Ignite</span>
+                <span class="text-lg font-black text-primary" id="user-stats-points">0</span>
+              </div>
             </div>
 
             <form id="profile-form-edit" class="space-y-4" onsubmit="saveProfileEdit(event)">
@@ -1067,11 +1088,12 @@
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço Principal</label>
+                  <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço
+                    Principal</label>
                   <textarea id="prof-edit-address" required rows="2"
                     class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-3.5 text-sm focus:border-primary focus:bg-white outline-none text-slate-800 font-bold resize-none transition-all"></textarea>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-3">
                   <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
@@ -1104,8 +1126,8 @@
   </div>
 
 
-      </div>
-    </div>
+  </div>
+  </div>
   </div>
 
   <!-- ========== SUPABASE CONFIG ========== -->
@@ -1148,75 +1170,35 @@
 
   <!-- ========== ATUALIZAR STATUS DESKTOP ========== -->
   <script>
-    // Atualizar status do restaurante no desktop também
-    function updateScheduleStatusDesktop() {
-      const statusElement = document.getElementById('schedule-status-desktop');
-      if (!statusElement) return;
-
-      const now = new Date();
-      const hour = now.getHours();
-      const isOpen = hour >= 9 && hour < 22;
-
-      if (isOpen) {
-        statusElement.innerHTML = `
-          <div class="status-text aberto">
-            <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
-            <span>Aberto • Fechamos às 22:00h</span>
-          </div>
-        `;
-      } else {
-        statusElement.innerHTML = `
-          <div class="status-text fechado">
-            <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
-            <span>Fechado • Abrimos às 09:00h</span>
-          </div>
-        `;
-      }
+    // Premium Header Logic
+    function initPremiumHeader() {
+      // Logic removed since we reverted to the original header design
     }
 
-    // Sincronizar contador do carrinho
     function syncCartCount() {
-      const mobileCount = document.getElementById('cart-count');
-      const desktopCount = document.getElementById('cart-count-desktop');
-      const count = parseInt(mobileCount?.textContent || '0');
+      const counts = [
+        document.getElementById('cart-count'),
+        document.getElementById('cart-count-desktop'),
+        document.getElementById('cart-count-header')
+      ];
+      
+      // Get count from manager or local storage
+      const count = window.unifiedCartManager?.cart?.reduce((s, i) => s + i.quantity, 0) || 0;
 
-      if (desktopCount) {
-        desktopCount.textContent = count;
-        desktopCount.style.display = count > 0 ? 'flex' : 'none';
-      }
+      counts.forEach(el => {
+        if (el) {
+          el.textContent = count;
+          el.style.display = count > 0 ? 'flex' : 'none';
+        }
+      });
     }
 
-    // Observar mudanças no carrinho
-    const cartObserver = new MutationObserver(syncCartCount);
-    const cartCountElement = document.getElementById('cart-count');
-    if (cartCountElement) {
-      cartObserver.observe(cartCountElement, { childList: true, characterData: true });
-    }
-
-    // Atualizar status quando carregar
     document.addEventListener('DOMContentLoaded', () => {
-      updateScheduleStatusDesktop();
+      initPremiumHeader();
       syncCartCount();
-      setInterval(updateScheduleStatusDesktop, 60000); // Atualizar a cada minuto
-
-      // Controlar sticky menu
-      const bottomMenu = document.getElementById('bottom-menu');
-      const miniLogo = document.getElementById('mini-logo');
-      const headerMobile = document.querySelector('.mobile-header');
-      const searchBarMobile = document.getElementById('search-bar-mobile');
-
-      if (bottomMenu && headerMobile) {
-        window.addEventListener('scroll', () => {
-          if (window.scrollY > 150) {
-            bottomMenu.classList.add('is-sticky');
-            miniLogo.classList.remove('hidden');
-            // search bar remains fixed at top regardless of scroll
-          } else {
-            bottomMenu.classList.remove('is-sticky');
-            miniLogo.classList.add('hidden');
-          }
-        });
-      }
+      
+      // Global redirect for main logo (mini-logo not used anymore in new header)
+      // window.location.href logic is handled in HTML onclick
     });
   </script>
 
@@ -1251,4 +1233,5 @@
     };
   </script>
 </body>
+
 </html>

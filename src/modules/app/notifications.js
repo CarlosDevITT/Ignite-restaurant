@@ -16,7 +16,7 @@ class NotificationManager {
 
     createUI() {
         const modalHTML = `
-            <div id="notifications-modal" class="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm hidden flex-col items-center justify-center p-4 transition-all duration-300">
+            <div id="notifications-modal" class="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-sm hidden flex-col items-center justify-center p-4 transition-all duration-300">
                 <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-300">
                     <div class="bg-primary p-5 text-white flex items-center justify-between">
                         <div class="flex items-center gap-3">

@@ -47,7 +47,9 @@ function openNewPostForm() {
       });
     }
 
-    document.getElementById('new-post-sheet').classList.remove('hidden');
+    const sheet = document.getElementById('new-post-sheet');
+    sheet.classList.remove('hidden');
+    sheet.removeAttribute('aria-hidden');
   });
 }
 
@@ -122,25 +124,26 @@ async function uploadImageToSupabase(file) {
 async function submitPost() {
   const descricao = document.getElementById('post-descricao').value.trim();
   const produtoId = document.getElementById('post-produto-select').value || null;
-  const telefone = getUserPhone();
-  if (!telefone) {
+  const rawPhone = getUserPhone();
+  const cleanPhone = rawPhone ? rawPhone.replace(/\D/g, '') : null;
+  if (!cleanPhone) {
     Swal.fire({ icon: 'warning', title: 'Faça login para postar' });
     return;
   }
-
+ 
   if (!_selectedImageFile && !descricao) {
     Swal.fire({ icon: 'warning', title: 'Insira uma imagem ou descrição' });
     return;
   }
-
+ 
   if (descricao.length > 300) {
     Swal.fire({ icon: 'warning', title: 'Descrição limitada a 300 caracteres' });
     return;
   }
-
+ 
   const profile = JSON.parse(localStorage.getItem('igniteProfile') || '{}');
-  const nomeUsuario = profile.name || profile.nome || telefone;
-  const tipo = telefone === '92999999999' ? 'restaurante' : 'cliente';
+  const nomeUsuario = profile.name || profile.nome || rawPhone;
+  const tipo = cleanPhone === '92999999999' ? 'restaurante' : 'cliente';
 
   // mostrar loading
   const btn = document.querySelector('#new-post-sheet button[onclick="submitPost()"]');
@@ -156,12 +159,12 @@ async function submitPost() {
       .from('feed_posts')
       .insert([{
         usuario_id: profile.id || null,
-        telefone,
+        telefone: cleanPhone,
         nome_usuario: nomeUsuario,
         tipo,
         imagem_url: imagemUrl,
         descricao: descricao || null,
-        produto_id: produtoId,
+        produto_id: (produtoId && !isNaN(produtoId)) ? parseInt(produtoId) : produtoId,
         pedido_id: null,
         avaliacao: _starRating || null,
         likes: 0,

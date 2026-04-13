@@ -598,6 +598,7 @@
   }
 
   .profile-btn-desktop,
+  .notifications-btn-desktop,
   .chat-btn-desktop,
   .cart-btn-desktop {
     position: relative;

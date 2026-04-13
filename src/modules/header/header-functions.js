@@ -104,33 +104,37 @@ class CategoriesManager {
   renderCategories() {
     const mobileList = document.getElementById('categories-list');
     const desktopList = document.getElementById('categories-list-desktop');
+    const toolbar = document.getElementById('mobile-categories-toolbar');
 
-    const allCategory = { id: 'all', nome: 'Todas as Categorias' };
+    const allCategory = { id: 'all', nome: 'Todas', icon: 'fa-utensils' };
 
+    // Mobile Dropdown (deprecated but kept for fallback)
     if (mobileList) {
       mobileList.innerHTML = '';
-      if (this.categories.length === 0) {
-        mobileList.innerHTML = '<div class="category-item-empty">Nenhuma categoria encontrada</div>';
-      } else {
-        mobileList.appendChild(this.createCategoryItem(allCategory));
-        this.categories.forEach(category => {
-          const item = this.createCategoryItem(category);
-          mobileList.appendChild(item);
-        });
-      }
+      this.categories.forEach(category => {
+        mobileList.appendChild(this.createCategoryItem(category));
+      });
     }
 
+    // New Mobile Toolbar (Horizontal)
+    if (toolbar) {
+      toolbar.innerHTML = '';
+      // Add 'All' first
+      toolbar.appendChild(this.createToolbarItem(allCategory));
+      this.categories.forEach(category => {
+        toolbar.appendChild(this.createToolbarItem(category));
+      });
+    }
+
+    // Desktop Dropdown
     if (desktopList) {
       desktopList.innerHTML = '';
-      if (this.categories.length === 0) {
-        desktopList.innerHTML = '<div class="category-item-empty">Nenhuma categoria encontrada</div>';
-      } else {
-        desktopList.appendChild(this.createCategoryItem(allCategory, true));
-        this.categories.forEach(category => {
-          const item = this.createCategoryItem(category, true);
-          desktopList.appendChild(item);
-        });
-      }
+      // Add 'All' first
+      desktopList.appendChild(this.createCategoryItem(allCategory, true));
+      this.categories.forEach(category => {
+        const item = this.createCategoryItem(category, true);
+        desktopList.appendChild(item);
+      });
     }
 
     // Remover loading
@@ -139,20 +143,53 @@ class CategoriesManager {
     });
   }
 
-  createCategoryItem(category, isDesktop = false) {
-    const item = document.createElement('div');
-    item.className = 'category-item';
+  createToolbarItem(category) {
+    const btn = document.createElement('button');
+    btn.className = 'flex-shrink-0 flex items-center gap-2 px-1 py-1 text-[13px] font-black text-slate-500 hover:text-primary transition-all uppercase tracking-tight group whitespace-nowrap border-b-2 border-transparent hover:border-primary pb-2';
+    
     const categoryName = category.nome || category.name || category;
     const categoryId = category.id || category.nome || category.name || category;
+    const iconClass = category.icon || 'fa-utensils';
+
+    btn.innerHTML = `
+      <i class="fas ${iconClass} text-slate-300 group-hover:text-primary transition-colors"></i>
+      <span>${categoryName}</span>
+    `;
+
+    btn.addEventListener('click', () => {
+      this.selectCategory(categoryId, categoryName);
+      // Highlight active
+      document.querySelectorAll('#mobile-categories-toolbar button').forEach(b => {
+        b.classList.remove('text-primary', 'border-primary');
+        b.classList.add('text-slate-500', 'border-transparent');
+      });
+      btn.classList.add('text-primary', 'border-primary');
+      btn.classList.remove('text-slate-500', 'border-transparent');
+    });
+
+    return btn;
+  }
+
+  createCategoryItem(category, isDesktop = false) {
+    const item = document.createElement('div');
+    item.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all text-left cursor-pointer group';
+    
+    const categoryName = category.nome || category.name || category;
+    const categoryId = category.id || category.nome || category.name || category;
+    const iconClass = category.icon || 'fa-utensils';
 
     item.innerHTML = `
-      <i class="fas fa-utensils"></i>
+      <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-primary group-hover:bg-white transition-colors">
+        <i class="fas ${iconClass}"></i>
+      </div>
       <span>${categoryName}</span>
     `;
 
     item.addEventListener('click', () => {
       this.selectCategory(categoryId, categoryName);
-      this.toggleMenu(isDesktop);
+      if (isDesktop) {
+        document.getElementById('categories-menu-desktop')?.classList.add('hidden');
+      }
     });
 
     return item;
@@ -363,6 +400,10 @@ function toggleSearch() {
 function performSearch() {
   window.searchManager.performSearch();
 }
+
+window.filterByCategory = function(id) {
+  window.categoriesManager.selectCategory(id, id);
+};
 
 /**
  * Utilitários de Entrega

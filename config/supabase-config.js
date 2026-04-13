@@ -281,12 +281,16 @@ class SupabaseManager {
         calculatedTotal += subtotal;
         totalQuantity += qty;
         
+        // Garantir ID numérico se possível
+        const pid = isNaN(item.id) ? item.id : parseInt(item.id, 10);
+        
         return {
-          product_id: item.id,
+          product_id: pid,
           product_name: String(item.nome || item.name),
           quantity: qty,
           unit_price: price,
-          total_price: subtotal
+          total_price: subtotal,
+          subtotal: subtotal // redundância para compatibilidade
         };
       });
 
@@ -296,7 +300,7 @@ class SupabaseManager {
         .from('customers')
         .select('id, name')
         .eq('phone', cleanPhone)
-        .maybeSingle(); // evita erro se não achar
+        .maybeSingle();
 
       if (!customer) {
          const { data: newCustomer, error: createError } = await this.client
@@ -324,18 +328,18 @@ class SupabaseManager {
         .select('id')
         .single();
 
-      if (orderError) throw new Error('Erro ao registrar pedido');
+      if (orderError) throw new Error('Erro ao registrar pedido: ' + orderError.message);
 
       // 4. Inserir itens em "order_items"
-      orderItems.forEach(item => item.order_id = order.id);
+      const itemsWithOrderId = orderItems.map(item => ({...item, order_id: order.id}));
       const { error: itemsError } = await this.client
         .from('order_items')
-        .insert(orderItems);
+        .insert(itemsWithOrderId);
 
       if (itemsError) {
         // Fallback: se os itens falharem, tentar deletar a order (atomicidade básica simulada se não houver trigger)
         await this.client.from('orders').delete().eq('id', order.id);
-        throw new Error('Erro ao inserir itens');
+        throw new Error('Erro ao inserir itens: ' + itemsError.message);
       }
 
       console.log('✅ Pedido finalizado com sucesso no Supabase');

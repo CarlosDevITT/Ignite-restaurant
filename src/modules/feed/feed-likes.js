@@ -3,16 +3,17 @@
 let currentCommentPostId = null;
 
 async function toggleLike(postId) {
-  const telefone = getUserPhone();
-  if (!telefone) {
+  const rawPhone = getUserPhone();
+  const cleanPhone = rawPhone ? rawPhone.replace(/\D/g, '') : null;
+  if (!cleanPhone) {
     Swal.fire({ icon: 'warning', title: 'Faça login para curtir' });
     return;
   }
-
+ 
   const btn = document.querySelector(`button.like-btn[data-post-id="${postId}"] i`);
   if (!btn) return;
   const liked = btn.classList.contains('fas');
-
+ 
   try {
     if (liked) {
       // remove like record
@@ -20,16 +21,18 @@ async function toggleLike(postId) {
         .from('feed_likes')
         .delete()
         .eq('post_id', postId)
-        .eq('telefone', telefone);
+        .eq('telefone', cleanPhone);
       btn.classList.remove('fas', 'text-red-500');
       btn.classList.add('far', 'text-gray-700');
+      _updateLikesCount(postId, -1);
     } else {
       // add like
       await window.supabaseManager.client
         .from('feed_likes')
-        .insert([{ post_id: postId, telefone }]);
+        .insert([{ post_id: postId, telefone: cleanPhone }]);
       btn.classList.remove('far', 'text-gray-700');
       btn.classList.add('fas', 'text-red-500');
+      _updateLikesCount(postId, 1);
     }
     // always refresh count from backend (keeps consistency)
     try {
@@ -114,22 +117,19 @@ async function submitComment(postId) {
   if (!textarea) return;
   const texto = textarea.value.trim();
   if (!texto) return;
-  const telefone = getUserPhone();
-  if (!telefone) {
+  const rawPhone = getUserPhone();
+  const cleanPhone = rawPhone ? rawPhone.replace(/\D/g, '') : null;
+  if (!cleanPhone) {
     Swal.fire({ icon: 'warning', title: 'Faça login para comentar' });
     return;
   }
-  const profile = JSON.parse(
-    localStorage.getItem('ignite_user_profile') ||
-      localStorage.getItem('userProfile') ||
-      '{}'
-  );
-  const nome = profile.name || profile.nome || telefone;
-
+  const profile = JSON.parse(localStorage.getItem('igniteProfile') || '{}');
+  const nome = profile.name || profile.nome || rawPhone;
+ 
   try {
     await window.supabaseManager.client
       .from('feed_comentarios')
-      .insert([{ post_id: postId, telefone, nome_usuario: nome, texto }]);
+      .insert([{ post_id: postId, telefone: cleanPhone, nome_usuario: nome, texto }]);
     textarea.value = '';
     _loadComments(postId);
   } catch (e) {

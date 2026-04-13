@@ -31,26 +31,42 @@ function navOpenPedidos() {
 }
 
 function navOpenChat() {
+    const wasOpen = !document.getElementById('chat-modal').classList.contains('hidden');
     closeAllModals();
     document.getElementById('chat-modal').classList.remove('hidden');
     document.getElementById('chat-modal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
     highlightNav('chat');
+    
+    if (!wasOpen) {
+        history.pushState({ modal: 'chat' }, '');
+    }
 }
 
 function navOpenFeed() {
+    const wasOpen = !document.getElementById('feed-modal').classList.contains('hidden');
     closeAllModals();
     const modal = document.getElementById('feed-modal');
     if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
     highlightNav('feed');
+    
+    if (!wasOpen && modal) {
+        history.pushState({ modal: 'feed' }, '');
+    }
 }
 
 async function navOpenProfile() {
+    const wasOpen = !document.getElementById('profile-modal').classList.contains('hidden');
     closeAllModals();
     const modal = document.getElementById('profile-modal');
-    modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
 
     const userData = localStorage.getItem('igniteProfile');
 
@@ -84,6 +100,10 @@ async function navOpenProfile() {
     }
 
     highlightNav('perfil');
+    
+    if (!wasOpen) {
+        history.pushState({ modal: 'profile' }, '');
+    }
 }
 
 function showProfileView(view) {
@@ -113,6 +133,7 @@ function closeAllModals() {
     const feed = document.getElementById('feed-modal');
     const newPost = document.getElementById('new-post-sheet');
     const comments = document.getElementById('comments-sheet');
+    const notif = document.getElementById('notifications-modal');
 
     if (chat) {
         chat.classList.add('hidden');
@@ -127,6 +148,12 @@ function closeAllModals() {
     }
     if (newPost) newPost.classList.add('hidden');
     if (comments) comments.classList.add('hidden');
+    if (notif) {
+        notif.classList.add('hidden');
+        notif.classList.remove('flex');
+    }
+    
+    document.body.style.overflow = '';
 }
 
 function highlightNav(activeId) {
@@ -134,7 +161,7 @@ function highlightNav(activeId) {
     if (!nav) return;
 
     const buttons = nav.querySelectorAll('button');
-    const mapping = { home: 0, pedidos: 1, chat: 2, feed: 3, perfil: 4 };
+    const mapping = { home: 0, pedidos: 1, avisos: 2, chat: 3, feed: 4, perfil: 5 };
     const activeIndex = mapping[activeId];
 
     buttons.forEach((btn, index) => {
@@ -148,7 +175,17 @@ function highlightNav(activeId) {
     });
 }
 
-// ========== LÓGICA DO PERFIL ==========
+// ========== LÓGICA DE EVENTOS ==========
+
+// Lógica para fechar modais ao clicar no botão 'voltar' do navegador (ou swipe back)
+window.addEventListener('popstate', (event) => {
+    closeAllModals();
+});
+
+// Lógica inicial para capturar o swipe/back behavior e evitar sair do cardápio logo de cara
+if (!history.state || history.state.page !== 'menu-root') {
+    history.pushState({ page: 'menu-root' }, '');
+}
 
 async function loginProfile(e) {
     e.preventDefault();
@@ -283,3 +320,13 @@ window.saveProfileRegister = saveProfileRegister;
 window.saveProfileEdit = saveProfileEdit;
 window.logoutProfile = logoutProfile;
 window.closeAllModals = closeAllModals;
+
+// Lógica para abrir modais via URL (ex: ?open=chat)
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open') === 'chat') {
+        setTimeout(() => window.navOpenChat(), 800);
+    } else if (params.get('open') === 'profile') {
+        setTimeout(() => window.navOpenProfile(), 800);
+    }
+});

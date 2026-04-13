@@ -11,6 +11,7 @@ function navOpenFeed() {
   if (!modal) return;
   modal.classList.remove('hidden');
   modal.classList.add('flex');
+  modal.removeAttribute('aria-hidden');
   highlightNav('feed');
 
   // reset state
@@ -18,7 +19,8 @@ function navOpenFeed() {
   _feedEnd = false;
   document.getElementById('feed-posts-container').innerHTML = '';
 
-  _currentPhone = getUserPhone();
+  const phoneRaw = getUserPhone();
+  _currentPhone = phoneRaw ? phoneRaw.replace(/\D/g, '') : null;
   _renderStories();
   loadFeedPosts();
 
@@ -193,11 +195,14 @@ function loadMorePosts() {
 
 async function checkUserCanPost(telefone) {
   if (!telefone) return false;
+  // Limpar telefone (apenas números) para comparação no BD
+  const phoneClean = telefone.replace(/\D/g, '');
+  
   try {
     const { count, error } = await window.supabaseManager.client
-      .from('pedidos')
+      .from('orders')
       .select('id', { head: true, count: 'exact' })
-      .eq('telefone', telefone)
+      .eq('phone', phoneClean)
       .limit(1);
     if (error) throw error;
     return (count || 0) > 0;
@@ -228,21 +233,11 @@ function timeAgo(dateString) {
   return 'agora';
 }
 
-function getUserPhone() {
-  const profile = JSON.parse(
-    localStorage.getItem('ignite_user_profile') ||
-      localStorage.getItem('userProfile') ||
-      '{}'
-  );
-  return profile.phone || profile.telefone || null;
-}
-
 // tornar acessíveis globalmente
 window.navOpenFeed = navOpenFeed;
 window.loadMorePosts = loadMorePosts;
 window.checkUserCanPost = checkUserCanPost;
 window.timeAgo = timeAgo;
-window.getUserPhone = getUserPhone;
 
 // inicialização de stories (apenas restaurante). chamada ao carregar o feed
 function _renderStories() {

@@ -592,21 +592,47 @@ class UnifiedCartManager {
            }
         }
 
-        // Gerar mensagem WhatsApp
+        // Gerar mensagem WhatsApp (apenas para botão de fallback)
         const message = this.generateWhatsAppMessage(address, cleanPhone, name);
         const phoneNumber = '5592985130951';
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-        window.open(whatsappUrl, '_blank');
-
-        // Limpar carrinho após envio
-        setTimeout(() => {
-          this.cart = [];
-          this.updateCartUI();
-          this.closeCart();
-          this.vibrate('success');
-          this.showMessage('Pedido enviado com sucesso! Acompanhe pelo WhatsApp.', 'success');
-        }, 1000);
+        // Limpar carrinho
+        this.cart = [];
+        this.updateCartUI();
+        this.closeCart();
+        this.vibrate('success');
+        
+        // Exibir confirmação e parar redirecionamento automático
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: 'Pedido Recebido! 🎉',
+            html: '<p>Seu pedido foi enviado diretamente para o nosso sistema.</p><p class="text-sm text-gray-500 mt-2">Você pode acompanhar o status pelo nosso site ou falar conosco no WhatsApp.</p>',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonColor: '#069C54',
+            cancelButtonColor: '#25D366',
+            confirmButtonText: 'Acompanhar Pedido',
+            cancelButtonText: '<i class="fab fa-whatsapp"></i> Enviar no WhatsApp',
+            reverseButtons: true
+          }).then((result) => {
+            if (!result.isConfirmed && result.dismiss === Swal.DismissReason.cancel) {
+              // Usuário clicou em Enviar no WhatsApp
+              window.open(whatsappUrl, '_blank');
+            } else {
+              // Usuário clicou em Acompanhar Pedido (ou fechou)
+              // Aqui chamaremos a função para abrir o painel de histórico de pedidos no futuro.
+              if (typeof window.openOrderHistory === 'function') {
+                window.openOrderHistory();
+              } else {
+                this.showMessage('Acompanhe o status do pedido no seu perfil.', 'info');
+              }
+            }
+          });
+        } else {
+          // Fallback caso não tenha SweetAlert
+          this.showMessage('Pedido enviado com sucesso!', 'success');
+        }
 
       } catch (e) {
         console.error("Erro inesperado ao salvar pedido:", e);
@@ -622,6 +648,18 @@ class UnifiedCartManager {
   generateWhatsAppMessage(address, phone, name) {
     const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Ler forma de pagamento selecionada
+    const payment = typeof window.getSelectedPaymentMethod === 'function'
+      ? window.getSelectedPaymentMethod()
+      : null;
+
+    const paymentLabels = {
+      credit: '💳 Cartão de Crédito',
+      debit:  '💳 Cartão de Débito',
+      pix:    '🔑 PIX',
+      cash:   '💵 Dinheiro'
+    };
 
     let message = `🍽️ *NOVO PEDIDO - IGNITE RESTAURANT*\n\n`;
 
@@ -641,6 +679,21 @@ class UnifiedCartManager {
     message += `\n💰 *RESUMO:*\n`;
     message += `• Total de itens: ${totalItems}\n`;
     message += `• *Total: R$ ${total.toFixed(2)}*\n\n`;
+
+    // Pagamento
+    if (payment) {
+      message += `💳 *FORMA DE PAGAMENTO:*\n`;
+      message += `• ${paymentLabels[payment.method] || payment.method}\n`;
+      if (payment.method === 'cash') {
+        if (payment.needsChange) {
+          message += `• Precisa de troco para: R$ ${(payment.changeAmount || 0).toFixed(2)}\n`;
+        } else {
+          message += `• Não precisa de troco\n`;
+        }
+      }
+      message += `\n`;
+    }
+
     message += `📍 *ENDEREÇO DE ENTREGA:*\n${address}\n\n`;
     message += `📞 *TELEFONE:*\n${phone}\n\n`;
     message += `🕐 Pedido realizado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
@@ -648,6 +701,7 @@ class UnifiedCartManager {
 
     return message;
   }
+
 
   showMessage(text, type = 'info') {
     if (typeof Swal !== 'undefined') {

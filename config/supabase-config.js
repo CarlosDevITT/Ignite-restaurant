@@ -522,6 +522,64 @@ class SupabaseManager {
     }
   }
 
+  // ========== REALTIME (WEB-SOCKETS) ==========
+  subscribeToProducts(callback) {
+    if (!this.isConnected()) return null;
+    
+    console.log('📡 Inscrevendo-se para atualizações de produtos (Realtime)...');
+    const channel = this.client
+      .channel('public:products')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          console.log('🔄 Atualização de produto recebida:', payload);
+          if (callback && typeof callback === 'function') {
+            callback(payload);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Inscrição Realtime em produtos confirmada!');
+        }
+      });
+      
+    return channel;
+  }
+
+  subscribeToOrders(phone, callback) {
+    if (!this.isConnected() || !phone) return null;
+    
+    const cleanPhone = phone.replace(/\D/g, '');
+    console.log(`📡 Inscrevendo-se para atualizações de pedidos do cliente (Phone: ${cleanPhone})...`);
+    
+    const channel = this.client
+      .channel(`public:orders:phone=${cleanPhone}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'orders',
+          filter: `phone=eq.${cleanPhone}` 
+        },
+        (payload) => {
+          console.log('🔄 Atualização de status do pedido recebida:', payload);
+          if (callback && typeof callback === 'function') {
+            callback(payload);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Inscrição Realtime em pedidos confirmada!');
+        }
+      });
+      
+    return channel;
+  }
+
   getConfig() {
     return SUPABASE_CONFIG;
   }

@@ -169,7 +169,18 @@ async function initializeApp() {
   checkBusinessHours();
   await loadProducts();
   setupEventListeners();
-  startAutoUpdates();
+  
+  // Substituir polling por Realtime se disponível
+  if (window.supabaseManager && typeof window.supabaseManager.subscribeToProducts === 'function') {
+    window.supabaseManager.subscribeToProducts((payload) => {
+      // Quando um produto é alterado (ex: estoque zero no POS), recarrega o cardápio
+      Logger.info('Atualização de produto detectada via Realtime! Recarregando...');
+      loadProducts();
+    });
+  } else {
+    // Fallback para polling
+    startAutoUpdates();
+  }
 
   Logger.info('Aplicação inicializada com sucesso');
 }

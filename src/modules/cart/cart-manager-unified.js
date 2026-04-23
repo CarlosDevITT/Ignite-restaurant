@@ -299,7 +299,12 @@ class UnifiedCartManager {
 
     // 2. Atualizar Totais
     const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const finalTotal = subtotal + this.deliveryFee;
+    
+    // Obter tipo de pedido
+    const orderType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+    const effectiveDeliveryFee = orderType === 'delivery' ? this.deliveryFee : 0;
+    
+    const finalTotal = subtotal + effectiveDeliveryFee;
 
     const subtotalEl = document.getElementById('cart-subtotal-val');
     const totalEl = document.getElementById('cart-total-val');
@@ -556,7 +561,9 @@ class UnifiedCartManager {
     const name = profile.name;
 
     // Calcular itens e total
-    const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+    const effectiveDeliveryFee = orderType === 'delivery' ? (this.deliveryFee || 0) : 0;
+    const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + effectiveDeliveryFee;
     const itemsSimplificados = this.cart.map(item => ({
       id: item.id,
       name: item.name,
@@ -576,12 +583,17 @@ class UnifiedCartManager {
       try {
         // Tentar salvar no Supabase primeiro
         if (window.supabaseManager && typeof window.supabaseManager.finalizarPedido === 'function') {
+           const payment = typeof window.getSelectedPaymentMethod === 'function' ? window.getSelectedPaymentMethod() : null;
+
            const payload = {
              items: itemsSimplificados,
              total: total,
              endereco: address,
              telefone: cleanPhone,
-             nome: name
+             nome: name,
+             tipo_pedido: orderType,
+             forma_pagamento: payment ? payment.method : 'não informada',
+             taxa_entrega: orderType === 'delivery' ? this.deliveryFee : 0
            };
            
            const result = await window.supabaseManager.finalizarPedido(payload);
@@ -661,7 +673,16 @@ class UnifiedCartManager {
       cash:   '💵 Dinheiro'
     };
 
+    const typeLabels = {
+      delivery: '🛵 Delivery',
+      takeaway: '🏪 Retirada no Balcão',
+      local:    '🍽️ Comer no Local'
+    };
+
+    const orderType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+
     let message = `🍽️ *NOVO PEDIDO - IGNITE RESTAURANT*\n\n`;
+    message += `📝 *TIPO:* ${typeLabels[orderType] || orderType}\n\n`;
 
     if (name) {
       message += `👤 *Cliente:* ${name.toUpperCase()}\n\n`;
@@ -694,7 +715,14 @@ class UnifiedCartManager {
       message += `\n`;
     }
 
-    message += `📍 *ENDEREÇO DE ENTREGA:*\n${address}\n\n`;
+    if (orderType === 'delivery') {
+      message += `📍 *ENDEREÇO DE ENTREGA:*\n${address}\n\n`;
+    } else if (orderType === 'local') {
+      message += `📍 *LOCAL:* Consumo no estabelecimento\n\n`;
+    } else {
+      message += `📍 *RETIRADA:* Cliente buscará no balcão\n\n`;
+    }
+    
     message += `📞 *TELEFONE:*\n${phone}\n\n`;
     message += `🕐 Pedido realizado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
     message += `💬 *OBSERVAÇÕES:* (adicione aqui)`;

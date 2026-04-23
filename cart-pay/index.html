@@ -631,6 +631,55 @@
         </div>
       </div>
 
+      <!-- ===== TIPO DE PEDIDO ===== -->
+      <div class="cart-type-section mx-4 mt-3 mb-1 rounded-2xl overflow-hidden">
+        <div class="cart-type-header">
+          <span class="cart-type-icon"><i class="fas fa-utensils"></i></span>
+          <span>Tipo de Pedido</span>
+        </div>
+
+        <div class="cart-type-options" id="order-type-options">
+          <!-- Delivery -->
+          <label class="cart-type-option" id="type-delivery">
+            <input type="radio" name="order_type" value="delivery" class="cart-type-radio" checked>
+            <span class="cart-type-option-icon delivery">
+              <i class="fas fa-motorcycle"></i>
+            </span>
+            <div class="cart-type-option-info">
+              <span class="cart-type-option-title">Delivery</span>
+              <span class="cart-type-option-sub">Receba em casa</span>
+            </div>
+            <span class="cart-type-check"><i class="fas fa-check"></i></span>
+          </label>
+
+          <!-- Retirada -->
+          <label class="cart-type-option" id="type-takeaway">
+            <input type="radio" name="order_type" value="takeaway" class="cart-type-radio">
+            <span class="cart-type-option-icon takeaway">
+              <i class="fas fa-store"></i>
+            </span>
+            <div class="cart-type-option-info">
+              <span class="cart-type-option-title">Retirada</span>
+              <span class="cart-type-option-sub">Busque no balcão</span>
+            </div>
+            <span class="cart-type-check"><i class="fas fa-check"></i></span>
+          </label>
+
+          <!-- Comer no Local -->
+          <label class="cart-type-option" id="type-local">
+            <input type="radio" name="order_type" value="local" class="cart-type-radio">
+            <span class="cart-type-option-icon local">
+              <i class="fas fa-chair"></i>
+            </span>
+            <div class="cart-type-option-info">
+              <span class="cart-type-option-title">Comer no Local</span>
+              <span class="cart-type-option-sub">Mesa no restaurante</span>
+            </div>
+            <span class="cart-type-check"><i class="fas fa-check"></i></span>
+          </label>
+        </div>
+      </div>
+
       <!-- ===== FORMA DE PAGAMENTO ===== -->
       <div class="cart-payment-section mx-4 mt-3 mb-1 rounded-2xl overflow-hidden">
         <div class="cart-payment-header">
@@ -1206,7 +1255,7 @@
   </div>
   </div>
 
-  <!-- ========== PAYMENT UI LOGIC ========== -->
+  <!-- ========== PAYMENT & ORDER TYPE UI LOGIC ========== -->
   <script>
     /* ── Troco toggle ─────────────────────────────────────────── */
     function cartToggleChange(needsChange) {
@@ -1219,8 +1268,9 @@
       btnNo.classList.toggle('active',  !needsChange);
     }
 
-    /* ── Show / hide troco block when "Dinheiro" is selected ───── */
+    /* ── Change events for radio groups ───── */
     document.addEventListener('change', function(e) {
+      // Payment Method
       if (e.target && e.target.name === 'payment_method') {
         const changeRow = document.getElementById('change-row');
         if (!changeRow) return;
@@ -1231,9 +1281,37 @@
           changeRow.classList.add('hidden');
         }
       }
+      
+      // Order Type
+      if (e.target && e.target.name === 'order_type') {
+        const type = e.target.value;
+        const deliveryFeeRow = document.getElementById('delivery-fee-val')?.parentElement;
+        const deliveryTimeRow = document.getElementById('delivery-time-row');
+        
+        if (type === 'delivery') {
+          if (deliveryFeeRow) deliveryFeeRow.classList.remove('hidden');
+          if (deliveryTimeRow) deliveryTimeRow.classList.remove('hidden');
+          // Re-calculate or show delivery fee if it was already set
+          if (window.unifiedCartManager) window.unifiedCartManager.updateCartUI();
+        } else {
+          // Hide delivery fee and time for pickup/local
+          if (deliveryFeeRow) deliveryFeeRow.classList.add('hidden');
+          if (deliveryTimeRow) deliveryTimeRow.classList.add('hidden');
+          
+          // Reset delivery fee in manager but keep it stored if they switch back?
+          // Better to just set to 0 in UI for now
+          const feeEl = document.getElementById('delivery-fee-val');
+          if (feeEl) feeEl.textContent = 'R$ 0,00';
+          
+          if (window.unifiedCartManager) {
+             // Forcing UI update to show total without fee
+             window.unifiedCartManager.updateCartUI();
+          }
+        }
+      }
     });
 
-    /* ── Read selected payment method (used by cart-manager) ──── */
+    /* ── Read selected payment method ──── */
     window.getSelectedPaymentMethod = function() {
       const radio = document.querySelector('input[name="payment_method"]:checked');
       if (!radio) return null;
@@ -1244,6 +1322,12 @@
         return { method, needsChange, changeAmount: needsChange ? amount : 0 };
       }
       return { method };
+    };
+
+    /* ── Read selected order type ──── */
+    window.getSelectedOrderType = function() {
+      const radio = document.querySelector('input[name="order_type"]:checked');
+      return radio ? radio.value : 'delivery';
     };
   </script>
 

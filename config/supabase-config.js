@@ -323,7 +323,8 @@ class SupabaseManager {
           total: calculatedTotal,
           status: 'pending',
           items_count: totalQuantity,
-          phone: cleanPhone
+          phone: cleanPhone,
+          order_type: pedido.tipo_pedido || 'delivery'
         }])
         .select('id')
         .single();

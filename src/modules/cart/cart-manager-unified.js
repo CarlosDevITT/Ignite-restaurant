@@ -1,8 +1,29 @@
 // cart-manager-unified.js - Gerenciador Unificado do Carrinho (Mobile e Desktop)
 
-// ✅ NOTA: safeStorage agora é provido globalmente pelo storage-helper.js
+/**
+ * Padroniza o tipo de pedido para os valores aceitos pelo sistema: delivery, retirada, local.
+ * @param {string} type 
+ * @returns {'delivery' | 'retirada' | 'local'}
+ */
+function normalizeOrderType(type) {
+  if (!type) return 'delivery';
+  
+  const map = {
+    'delivery': 'delivery',
+    'takeaway': 'retirada',
+    'pickup': 'retirada',
+    'retirada': 'retirada',
+    'local': 'local',
+    'dinein': 'local',
+    'dine_in': 'local',
+    'mesa': 'local'
+  };
+  
+  return map[type.toLowerCase()] || 'delivery';
+}
 
-
+// Tornar global para ser usado em outros módulos (como o painel administrativo)
+window.normalizeOrderType = normalizeOrderType;
 
 class UnifiedCartManager {
   constructor() {
@@ -63,28 +84,16 @@ class UnifiedCartManager {
 
   attachEventListeners() {
     // Botões de abrir carrinho
-    if (this.cartButtonMobile) {
-      this.cartButtonMobile.addEventListener('click', (e) => {
-        e.stopImmediatePropagation();
-        this.toggleCart();
-      });
-    }
-
-    if (this.cartButtonDesktop) {
-      this.cartButtonDesktop.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        this.toggleCart();
-      });
-    }
-
-    if (this.cartButtonHeader) {
-      this.cartButtonHeader.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        this.toggleCart();
-      });
-    }
+    const openButtons = [this.cartButtonMobile, this.cartButtonDesktop, this.cartButtonHeader];
+    openButtons.forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.toggleCart();
+        });
+      }
+    });
 
     // Botão fechar
     if (this.closeCartBtn) {
@@ -115,6 +124,8 @@ class UnifiedCartManager {
   syncWithGlobalCart() {
     // Sincronizar com carrinho global do script.js se existir
     try {
+      if (typeof safeStorage === 'undefined') return;
+
       const globalCart = JSON.parse(safeStorage.getItem('cart') || '[]');
       const igniteCart = JSON.parse(safeStorage.getItem('igniteCart') || '[]');
 
@@ -130,7 +141,8 @@ class UnifiedCartManager {
           image: item.image || item.image_url || item.imagem_url,
           quantity: item.quantity || item.quantidade || 1,
           is_promo: item.is_promo || false,
-          original_price: item.original_price || null
+          original_price: item.original_price || null,
+          observacao: item.observacao || ''
         }));
         this.saveCartToStorage();
       }
@@ -140,21 +152,13 @@ class UnifiedCartManager {
   }
 
   toggleCart() {
-    if (this.isOpen) {
-      this.closeCart();
-    } else {
-      this.openCart();
-    }
+    this.isOpen ? this.closeCart() : this.openCart();
   }
 
   openCart() {
-    // Garantir que elementos existem
     if (!this.cartSidebar) {
       this.setupElements();
-      if (!this.cartSidebar) {
-        console.error('❌ Elemento cart-sidebar não encontrado');
-        return;
-      }
+      if (!this.cartSidebar) return;
     }
 
     this.isOpen = true;
@@ -165,9 +169,7 @@ class UnifiedCartManager {
       this.cartOverlay.classList.remove('hidden');
       this.cartOverlay.classList.add('visible');
       setTimeout(() => {
-        if (this.cartOverlay) {
-          this.cartOverlay.style.opacity = '1';
-        }
+        if (this.cartOverlay) this.cartOverlay.style.opacity = '1';
       }, 10);
     }
 
@@ -196,7 +198,7 @@ class UnifiedCartManager {
   }
 
   addItem(product) {
-    const existingItem = this.cart.find(item => item.id == product.id);
+    const existingItem = this.cart.find(item => String(item.id) === String(product.id));
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -208,7 +210,8 @@ class UnifiedCartManager {
         image: product.image || product.image_url || product.imagem_url,
         quantity: 1,
         is_promo: product.is_promo || false,
-        original_price: product.original_price || null
+        original_price: product.original_price || null,
+        observacao: product.observacao || ''
       });
     }
 
@@ -218,17 +221,17 @@ class UnifiedCartManager {
   }
 
   removeItem(productId) {
-    this.cart = this.cart.filter(item => item.id != productId);
+    this.cart = this.cart.filter(item => String(item.id) !== String(productId));
     this.saveCartToStorage();
     this.updateCartUI();
     this.vibrate('medium');
   }
 
   updateQuantity(productId, change) {
-    if (this._updating) return; // debounce
+    if (this._updating) return; 
     this._updating = true;
     
-    const item = this.cart.find(i => i.id == productId);
+    const item = this.cart.find(i => String(i.id) === String(productId));
     if (!item) { this._updating = false; return; }
 
     const newQuantity = item.quantity + change;
@@ -254,22 +257,24 @@ class UnifiedCartManager {
   }
 
   setDeliveryExtra(fee, time) {
-    this.deliveryFee = fee;
+    this.deliveryFee = Number(fee) || 0;
     this.deliveryTime = time;
     this.updateCartUI();
   }
 
+  // Método centralizado para obter o tipo de pedido normalizado
+  getCurrentOrderType() {
+    const rawType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+    return normalizeOrderType(rawType);
+  }
+
   updateCartUI() {
-    // Atualizar referências se necessário
-    if (!this.cartItems) {
-      this.setupElements();
-    }
+    if (!this.cartItems) this.setupElements();
 
     // 1. Atualizar Itens do Carrinho
     if (this.cartItems) {
       if (this.cart.length === 0) {
         this.cartItems.innerHTML = this.getEmptyCartHTML();
-        // Esconder botões/blocos que não fazem sentido com carrinho vazio
         if (document.getElementById('cart-clear-btn')) document.getElementById('cart-clear-btn').classList.add('hidden');
         if (this.checkoutButton) {
           this.checkoutButton.className = "w-full bg-gray-300 text-white font-bold text-[17px] py-[14px] rounded-lg cursor-not-allowed border-none flex items-center justify-center";
@@ -280,12 +285,13 @@ class UnifiedCartManager {
         this.cartItems.innerHTML = this.cart.map(item => this.createCartItemHTML(item)).join('');
         this.attachItemEventListeners();
 
-        if (document.getElementById('cart-clear-btn')) {
-          document.getElementById('cart-clear-btn').classList.remove('hidden');
-          document.getElementById('cart-clear-btn').onclick = () => {
-            this.cart = [];
-            this.saveCartToStorage();
-            this.updateCartUI();
+        const clearBtn = document.getElementById('cart-clear-btn');
+        if (clearBtn) {
+          clearBtn.classList.remove('hidden');
+          clearBtn.onclick = () => {
+            if (confirm('Deseja realmente limpar o carrinho?')) {
+              this.clear();
+            }
           };
         }
 
@@ -297,44 +303,44 @@ class UnifiedCartManager {
       }
     }
 
-    // 2. Atualizar Totais
+    // 2. Atualizar Totais com regra de Taxa de Entrega
     const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderType = this.getCurrentOrderType();
     
-    // Obter tipo de pedido
-    const orderType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+    // Taxa de entrega SÓ se for delivery
     const effectiveDeliveryFee = orderType === 'delivery' ? this.deliveryFee : 0;
-    
     const finalTotal = subtotal + effectiveDeliveryFee;
 
     const subtotalEl = document.getElementById('cart-subtotal-val');
     const totalEl = document.getElementById('cart-total-val');
     const deliveryFeeEl = document.getElementById('delivery-fee-val');
     const deliveryTimeEl = document.getElementById('delivery-time-val');
+    const deliveryRowEl = document.getElementById('cart-delivery-row');
 
     if (subtotalEl) subtotalEl.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
     if (totalEl) totalEl.textContent = `R$ ${finalTotal.toFixed(2).replace('.', ',')}`;
 
-    if (this.deliveryFee > 0) {
+    // Mostrar/Esconder linha de entrega baseado no tipo
+    if (orderType === 'delivery') {
+      if (deliveryRowEl) deliveryRowEl.classList.remove('hidden');
       if (deliveryFeeEl) deliveryFeeEl.textContent = `R$ ${this.deliveryFee.toFixed(2).replace('.', ',')}`;
-      if (deliveryTimeEl) deliveryTimeEl.textContent = `${this.deliveryTime}-${this.deliveryTime + 15} min`;
+      if (deliveryTimeEl && this.deliveryTime) {
+        deliveryTimeEl.textContent = `${this.deliveryTime}-${this.deliveryTime + 15} min`;
+      }
+    } else {
+      if (deliveryRowEl) deliveryRowEl.classList.add('hidden');
     }
 
-    // Atualizar "Seu Pedido" fallback antigo se existir
-    if (this.cartTotal && this.cartTotal.id !== 'cart-total-val') {
-      this.cartTotal.innerHTML = this.getTotalHTML(finalTotal);
-    }
-
-    // 3. Atualizar Contadores Header
+    // 3. Atualizar Contadores
     const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
     this.updateCartCount(totalItems);
 
-    // 4. Render Cross-Selling "Peça também"
+    // 4. Render Cross-Selling
     this.renderCrossSelling();
   }
 
   createCartItemHTML(item) {
     const subtotal = (item.price * item.quantity).toFixed(2).replace('.', ',');
-    const unitPrice = item.price.toFixed(2).replace('.', ',');
     const imageUrl = item.image || '../assets/images/logos/logo.png';
     const extrasText = item.observacao ? `<p class="text-xs text-gray-500 m-0 mt-1">${item.observacao}</p>` : '';
 
@@ -372,56 +378,26 @@ class UnifiedCartManager {
   }
 
   attachItemEventListeners() {
-    // Botões de quantidade
     document.querySelectorAll('.quantity-btn.decrease').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        this.updateQuantity(id, -1);
-      });
+      btn.onclick = (e) => { e.stopPropagation(); this.updateQuantity(btn.dataset.id, -1); };
     });
 
     document.querySelectorAll('.quantity-btn.increase').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        this.updateQuantity(id, 1);
-      });
+      btn.onclick = (e) => { e.stopPropagation(); this.updateQuantity(btn.dataset.id, 1); };
     });
 
-    // Input de quantidade
-    document.querySelectorAll('.quantity-input').forEach(input => {
-      input.addEventListener('change', (e) => {
-        const id = input.dataset.id;
-        const newQuantity = parseInt(input.value) || 1;
-        const item = this.cart.find(i => i.id == id);
-        if (item) {
-          item.quantity = Math.max(1, Math.min(99, newQuantity));
-          this.saveCartToStorage();
-          this.updateCartUI();
-        }
-      });
-    });
-
-    // Botão remover
     document.querySelectorAll('.cart-item__delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        this.removeItem(id);
-      });
+      btn.onclick = (e) => { e.stopPropagation(); this.removeItem(btn.dataset.id); };
     });
 
-    // Botão Editar (Abre o modal usando a função global abrirModalProduto se existir)
     document.querySelectorAll('.cart-item__edit').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.onclick = (e) => {
         e.stopPropagation();
-        const id = btn.dataset.id;
         if (typeof window.abrirModalProduto === 'function') {
           this.closeCart();
-          window.abrirModalProduto(id);
+          window.abrirModalProduto(btn.dataset.id);
         }
-      });
+      };
     });
   }
 
@@ -437,40 +413,32 @@ class UnifiedCartManager {
     `;
   }
 
-  getTotalHTML(total) {
-    // Apenas por segurança caso algo chame o getTotalHTML antigo
-    return ``;
-  }
-
   renderCrossSelling() {
     const container = document.getElementById('cross-selling-container');
     if (!container) return;
 
-    // Se o array de produtos globais ($produtos ou window.produtos) estiver disponivel
     const allProducts = window.$produtos || window.produtos || [];
     if (allProducts.length === 0) {
-      container.parentElement.classList.add('hidden');
+      if (container.parentElement) container.parentElement.classList.add('hidden');
       return;
     }
 
-    // Filtrar itens que não estão no carrinho
     const cartIds = this.cart.map(item => String(item.id));
     const available = allProducts.filter(p => !cartIds.includes(String(p.id)));
 
     if (available.length === 0) {
-      container.parentElement.classList.add('hidden');
+      if (container.parentElement) container.parentElement.classList.add('hidden');
       return;
     }
 
-    container.parentElement.classList.remove('hidden');
+    if (container.parentElement) container.parentElement.classList.remove('hidden');
 
-    // Pegar 4 aleatórios
     const shuffled = available.sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 4);
 
     container.innerHTML = selected.map(product => {
       const image = product.image_url || product.imagem_url || '../assets/images/logos/logo.png';
-      const price = (product.price || product.preco || 0).toFixed(2).replace('.', ',');
+      const priceFormatted = (product.price || product.preco || 0).toFixed(2).replace('.', ',');
       const name = product.name || product.nome;
 
       return `
@@ -480,7 +448,7 @@ class UnifiedCartManager {
            </div>
            <h4 class="text-sm font-medium text-slate-800 m-0 leading-tight mb-2 truncate">${name}</h4>
            <div class="mt-auto">
-             <span class="text-[15px] font-bold text-[#069C54]">R$ ${price}</span>
+             <span class="text-[15px] font-bold text-[#069C54]">R$ ${priceFormatted}</span>
            </div>
          </div>
        `;
@@ -489,7 +457,6 @@ class UnifiedCartManager {
 
   updateCartCount(count) {
     const counts = [this.cartCountMobile, this.cartCountDesktop, this.cartCountHeader];
-
     counts.forEach(el => {
       if (el) {
         el.textContent = count;
@@ -504,66 +471,50 @@ class UnifiedCartManager {
       return;
     }
 
-    // Verificar se o restaurante está aberto
+    // Horário de funcionamento centralizado
     const now = new Date();
     const hour = now.getHours();
-    if (hour < 9 || hour >= 22) {
-      this.showMessage('Estamos fechados no momento. Horário: 9h às 22h', 'warning');
+    if (hour < 9 || hour >= 23) {
+      this.showMessage('Estamos fechados no momento. Horário: 09h às 23h', 'warning');
       return;
     }
 
-    // Obter dados do Perfil
+    // Perfil do Usuário
     let profile = null;
     try {
       profile = JSON.parse(localStorage.getItem('igniteProfile'));
     } catch (e) { }
 
-    // Validar se usuário tem conta
     if (!profile || !profile.phone || !profile.name) {
       this.showMessage('Crie seu perfil para continuar.', 'info');
       this.closeCart();
       setTimeout(() => {
-        const modal = document.getElementById('profile-modal');
-        if (modal) modal.classList.remove('hidden');
-        if (typeof window.navOpenProfile === 'function') {
-          window.navOpenProfile();
-        }
+        if (typeof window.navOpenProfile === 'function') window.navOpenProfile();
       }, 400);
       return;
     }
 
-    // Validar se usuário tem endereço e telefone limpo
     const cleanPhone = profile.phone ? profile.phone.replace(/\D/g, '') : '';
-    if (!cleanPhone || cleanPhone.length < 10 || !profile.address || profile.address.length < 5) {
-      this.showMessage('Corrija seu telefone e endereço no perfil.', 'warning');
+    const orderType = this.getCurrentOrderType();
+
+    // Validação de endereço apenas para delivery
+    if (orderType === 'delivery' && (!profile.address || profile.address.length < 10)) {
+      this.showMessage('Informe seu endereço completo para entrega.', 'warning');
       this.closeCart();
       setTimeout(() => {
-        const modal = document.getElementById('profile-modal');
-        if (modal) modal.classList.remove('hidden');
-        if (typeof window.navOpenProfile === 'function') {
-          window.navOpenProfile();
-        }
-
-        // Focar no campo de telefone
-        setTimeout(() => {
-          const phoneInput = document.getElementById('prof-edit-phone');
-          if (phoneInput) {
-            phoneInput.focus();
-            phoneInput.style.border = '2px solid #069C54';
-          }
-        }, 300);
+        if (typeof window.navOpenProfile === 'function') window.navOpenProfile();
       }, 400);
       return;
     }
 
-    const address = profile.address;
-    const phone = profile.phone;
+    const address = profile.address || 'Não informado';
     const name = profile.name;
 
-    // Calcular itens e total
-    const orderType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+    // Calcular itens e total final (Taxa de entrega só se for delivery)
+    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const effectiveDeliveryFee = orderType === 'delivery' ? (this.deliveryFee || 0) : 0;
-    const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + effectiveDeliveryFee;
+    const total = subtotal + effectiveDeliveryFee;
+
     const itemsSimplificados = this.cart.map(item => ({
       id: item.id,
       name: item.name,
@@ -573,98 +524,82 @@ class UnifiedCartManager {
       observacao: item.observacao || ''
     }));
 
-    // Start loading UX
+    // Iniciar carregamento
     if (this.checkoutButton) {
       const originalText = this.checkoutButton.innerHTML;
       this.checkoutButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
       this.checkoutButton.disabled = true;
-      this.checkoutButton.classList.add('opacity-75', 'cursor-not-allowed');
       
       try {
-        // Tentar salvar no Supabase primeiro
+        const payment = typeof window.getSelectedPaymentMethod === 'function' ? window.getSelectedPaymentMethod() : { method: 'não informada' };
+
+        const payload = {
+          items: itemsSimplificados,
+          total: total,
+          subtotal: subtotal,
+          endereco: address,
+          telefone: cleanPhone,
+          nome: name,
+          tipo_pedido: orderType, // NORMALIZADO: delivery, retirada ou local
+          forma_pagamento: payment.method || 'não informada',
+          taxa_entrega: effectiveDeliveryFee,
+          status: 'pendente'
+        };
+
+        // 1. Enviar para Supabase
         if (window.supabaseManager && typeof window.supabaseManager.finalizarPedido === 'function') {
-           const payment = typeof window.getSelectedPaymentMethod === 'function' ? window.getSelectedPaymentMethod() : null;
-
-           const payload = {
-             items: itemsSimplificados,
-             total: total,
-             endereco: address,
-             telefone: cleanPhone,
-             nome: name,
-             tipo_pedido: orderType,
-             forma_pagamento: payment ? payment.method : 'não informada',
-             taxa_entrega: orderType === 'delivery' ? this.deliveryFee : 0
-           };
-           
            const result = await window.supabaseManager.finalizarPedido(payload);
-
            if (!result || !result.success) {
-             console.warn("Aviso: Falha ao salvar no Supabase, erro:", result?.error);
-             this.showMessage('Houve uma falha transacional. Tentando fallback pelo WhatsApp', 'warning');
+             console.warn("Aviso: Falha ao salvar no Supabase:", result?.error);
            }
         }
 
-        // Gerar mensagem WhatsApp (apenas para botão de fallback)
-        const message = this.generateWhatsAppMessage(address, cleanPhone, name);
-        const phoneNumber = '5592985130951';
-        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+        // 2. Gerar URL WhatsApp como fallback/confirmação
+        const message = this.generateWhatsAppMessage(address, cleanPhone, name, payment);
+        const storePhone = '5592985130951'; // Telefone do restaurante
+        const whatsappUrl = `https://wa.me/${storePhone}?text=${encodeURIComponent(message)}`;
 
-        // Limpar carrinho
-        this.cart = [];
-        this.updateCartUI();
+        // 3. Sucesso! Limpar e Notificar
+        this.clear();
         this.closeCart();
         this.vibrate('success');
         
-        // Exibir confirmação e parar redirecionamento automático
         if (typeof Swal !== 'undefined') {
           Swal.fire({
             title: 'Pedido Recebido! 🎉',
-            html: '<p>Seu pedido foi enviado diretamente para o nosso sistema.</p><p class="text-sm text-gray-500 mt-2">Você pode acompanhar o status pelo nosso site ou falar conosco no WhatsApp.</p>',
+            html: `<p>Seu pedido de <b>${orderType}</b> foi enviado com sucesso.</p>`,
             icon: 'success',
             showCancelButton: true,
             confirmButtonColor: '#069C54',
             cancelButtonColor: '#25D366',
-            confirmButtonText: 'Acompanhar Pedido',
-            cancelButtonText: '<i class="fab fa-whatsapp"></i> Enviar no WhatsApp',
+            confirmButtonText: 'Ver Meus Pedidos',
+            cancelButtonText: '<i class="fab fa-whatsapp"></i> Confirmar no WhatsApp',
             reverseButtons: true
           }).then((result) => {
             if (!result.isConfirmed && result.dismiss === Swal.DismissReason.cancel) {
-              // Usuário clicou em Enviar no WhatsApp
               window.open(whatsappUrl, '_blank');
-            } else {
-              // Usuário clicou em Acompanhar Pedido (ou fechou)
-              // Aqui chamaremos a função para abrir o painel de histórico de pedidos no futuro.
-              if (typeof window.openOrderHistory === 'function') {
-                window.openOrderHistory();
-              } else {
-                this.showMessage('Acompanhe o status do pedido no seu perfil.', 'info');
-              }
+            } else if (result.isConfirmed) {
+              if (typeof window.openOrderHistory === 'function') window.openOrderHistory();
             }
           });
-        } else {
-          // Fallback caso não tenha SweetAlert
-          this.showMessage('Pedido enviado com sucesso!', 'success');
         }
 
       } catch (e) {
-        console.error("Erro inesperado ao salvar pedido:", e);
-        this.showMessage('Erro ao processar. Tente novamente.', 'error');
+        console.error("Erro no checkout:", e);
+        this.showMessage('Erro ao processar pedido.', 'error');
       } finally {
         this.checkoutButton.innerHTML = originalText;
         this.checkoutButton.disabled = false;
-        this.checkoutButton.classList.remove('opacity-75', 'cursor-not-allowed');
       }
     }
   }
 
-  generateWhatsAppMessage(address, phone, name) {
-    const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  generateWhatsAppMessage(address, phone, name, payment = null) {
+    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    // Ler forma de pagamento selecionada
-    const payment = typeof window.getSelectedPaymentMethod === 'function'
-      ? window.getSelectedPaymentMethod()
-      : null;
+    const orderType = this.getCurrentOrderType();
+    const fee = orderType === 'delivery' ? this.deliveryFee : 0;
+    const total = subtotal + fee;
 
     const paymentLabels = {
       credit: '💳 Cartão de Crédito',
@@ -675,61 +610,48 @@ class UnifiedCartManager {
 
     const typeLabels = {
       delivery: '🛵 Delivery',
-      takeaway: '🏪 Retirada no Balcão',
+      retirada: '🏪 Retirada no Balcão',
       local:    '🍽️ Comer no Local'
     };
 
-    const orderType = typeof window.getSelectedOrderType === 'function' ? window.getSelectedOrderType() : 'delivery';
+    let message = `*🍽️ NOVO PEDIDO - IGNITE RESTAURANT*\n`;
+    message += `--------------------------------\n`;
+    message += `📝 *TIPO:* ${typeLabels[orderType]}\n`;
+    message += `👤 *CLIENTE:* ${name}\n`;
+    message += `📞 *CONTATO:* ${phone}\n`;
+    message += `--------------------------------\n\n`;
 
-    let message = `🍽️ *NOVO PEDIDO - IGNITE RESTAURANT*\n\n`;
-    message += `📝 *TIPO:* ${typeLabels[orderType] || orderType}\n\n`;
-
-    if (name) {
-      message += `👤 *Cliente:* ${name.toUpperCase()}\n\n`;
-    }
-
-    message += `📋 *ITENS DO PEDIDO:*\n`;
-
-    this.cart.forEach((item, index) => {
-      message += `${index + 1}. ${item.quantity}x ${item.name}`;
-      message += ` - R$ ${(item.price * item.quantity).toFixed(2)}`;
-      if (item.is_promo) message += ` 🔥`;
-      message += `\n`;
+    message += `📋 *ITENS:*\n`;
+    this.cart.forEach((item) => {
+      message += `• ${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+      if (item.observacao) message += `   _Obs: ${item.observacao}_\n`;
     });
 
-    message += `\n💰 *RESUMO:*\n`;
-    message += `• Total de itens: ${totalItems}\n`;
-    message += `• *Total: R$ ${total.toFixed(2)}*\n\n`;
+    message += `\n💰 *VALORES:*\n`;
+    message += `• Subtotal: R$ ${subtotal.toFixed(2)}\n`;
+    if (orderType === 'delivery') message += `• Taxa de Entrega: R$ ${fee.toFixed(2)}\n`;
+    message += `• *TOTAL: R$ ${total.toFixed(2)}*\n\n`;
 
-    // Pagamento
     if (payment) {
-      message += `💳 *FORMA DE PAGAMENTO:*\n`;
-      message += `• ${paymentLabels[payment.method] || payment.method}\n`;
-      if (payment.method === 'cash') {
-        if (payment.needsChange) {
-          message += `• Precisa de troco para: R$ ${(payment.changeAmount || 0).toFixed(2)}\n`;
-        } else {
-          message += `• Não precisa de troco\n`;
-        }
+      message += `💳 *PAGAMENTO:* ${paymentLabels[payment.method] || payment.method}\n`;
+      if (payment.method === 'cash' && payment.needsChange) {
+        message += `💵 *TROCO PARA:* R$ ${(payment.changeAmount || 0).toFixed(2)}\n`;
       }
-      message += `\n`;
     }
 
+    message += `\n📍 *LOCALIZAÇÃO:*\n`;
     if (orderType === 'delivery') {
-      message += `📍 *ENDEREÇO DE ENTREGA:*\n${address}\n\n`;
+      message += `${address}\n`;
     } else if (orderType === 'local') {
-      message += `📍 *LOCAL:* Consumo no estabelecimento\n\n`;
+      message += `Consumo no Local\n`;
     } else {
-      message += `📍 *RETIRADA:* Cliente buscará no balcão\n\n`;
+      message += `Retirada no Balcão\n`;
     }
     
-    message += `📞 *TELEFONE:*\n${phone}\n\n`;
-    message += `🕐 Pedido realizado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
-    message += `💬 *OBSERVAÇÕES:* (adicione aqui)`;
+    message += `\n🕐 _Pedido realizado às ${new Date().toLocaleTimeString('pt-BR')}_`;
 
     return message;
   }
-
 
   showMessage(text, type = 'info') {
     if (typeof Swal !== 'undefined') {
@@ -749,32 +671,22 @@ class UnifiedCartManager {
 
   saveCartToStorage() {
     try {
-      safeStorage.setItem('igniteCart', JSON.stringify(this.cart));
-      safeStorage.setItem('cart', JSON.stringify(this.cart));
-    } catch (e) {
-      // Silenciado - safeStorage já trata internamente
-    }
+      if (typeof safeStorage !== 'undefined') {
+        safeStorage.setItem('igniteCart', JSON.stringify(this.cart));
+        safeStorage.setItem('cart', JSON.stringify(this.cart));
+      }
+    } catch (e) { }
   }
 
   loadCartFromStorage() {
     try {
-      const igniteCart = safeStorage.getItem('igniteCart');
-      const cartStorage = safeStorage.getItem('cart');
-
-      let saved = igniteCart || cartStorage;
-
+      if (typeof safeStorage === 'undefined') return;
+      const saved = safeStorage.getItem('igniteCart') || safeStorage.getItem('cart');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          this.cart = parsed;
-          return;
-        }
+        if (Array.isArray(parsed)) this.cart = parsed;
       }
-    } catch (error) {
-      // Silenciado - safeStorage já trata internamente
-    }
-
-    // Fallback ou se estiver vazio
+    } catch (e) { }
     if (!this.cart) this.cart = [];
   }
 
@@ -789,7 +701,10 @@ class UnifiedCartManager {
   }
 
   getTotal() {
-    return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderType = this.getCurrentOrderType();
+    const fee = orderType === 'delivery' ? this.deliveryFee : 0;
+    return subtotal + fee;
   }
 }
 
@@ -801,29 +716,22 @@ function initUnifiedCartManager() {
     unifiedCartManagerInstance = new UnifiedCartManager();
     window.unifiedCartManager = unifiedCartManagerInstance;
 
-    // Compatibilidade com código antigo
+    // Compatibilidade com código legado
     if (typeof window.cartManager === 'undefined') {
       window.cartManager = unifiedCartManagerInstance;
     }
 
-    console.log('✅ UnifiedCartManager inicializado');
+    console.log('✅ UnifiedCartManager inicializado e padronizado');
   }
   return unifiedCartManagerInstance;
 }
 
-// Inicializar quando DOM estiver pronto
+// Inicialização segura
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initUnifiedCartManager, 200);
-  });
+  document.addEventListener('DOMContentLoaded', () => setTimeout(initUnifiedCartManager, 200));
 } else {
   setTimeout(initUnifiedCartManager, 200);
 }
 
-// Exportar para uso global
-window.toggleCart = function () {
-  if (window.unifiedCartManager) {
-    window.unifiedCartManager.toggleCart();
-  }
-};
-
+// Global toggle
+window.toggleCart = () => window.unifiedCartManager?.toggleCart();

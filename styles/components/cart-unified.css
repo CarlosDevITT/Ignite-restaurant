@@ -295,7 +295,7 @@
   flex-shrink: 0;
 }
 .cart-type-option-icon.delivery  { background: #eff6ff; color: #2563eb; }
-.cart-type-option-icon.takeaway  { background: #faf5ff; color: #7c3aed; }
+.cart-type-option-icon.retirada  { background: #faf5ff; color: #7c3aed; }
 .cart-type-option-icon.local     { background: #fefce8; color: #ca8a04; }
 
 .cart-type-option-info {

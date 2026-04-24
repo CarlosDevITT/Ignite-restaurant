@@ -653,9 +653,9 @@
           </label>
 
           <!-- Retirada -->
-          <label class="cart-type-option" id="type-takeaway">
-            <input type="radio" name="order_type" value="takeaway" class="cart-type-radio">
-            <span class="cart-type-option-icon takeaway">
+          <label class="cart-type-option" id="type-retirada">
+            <input type="radio" name="order_type" value="retirada" class="cart-type-radio">
+            <span class="cart-type-option-icon retirada">
               <i class="fas fa-store"></i>
             </span>
             <div class="cart-type-option-info">
@@ -1327,7 +1327,8 @@
     /* ── Read selected order type ──── */
     window.getSelectedOrderType = function() {
       const radio = document.querySelector('input[name="order_type"]:checked');
-      return radio ? radio.value : 'delivery';
+      const val = radio ? radio.value : 'delivery';
+      return typeof normalizeOrderType === 'function' ? normalizeOrderType(val) : val;
     };
   </script>
 

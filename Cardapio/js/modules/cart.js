@@ -48,6 +48,8 @@ const whatsappUrl = ({ order, payload, items, subtotal, fee, total }) => {
 };
 
 export function initCart({ onViewOrders }) {
+  let returnFocus;
+  const floatingCart = document.querySelector('#floating-cart');
   const drawer = document.querySelector('#cart-drawer');
   const backdrop = document.querySelector('#backdrop');
   const cartStep = document.querySelector('#cart-step');
@@ -110,7 +112,8 @@ export function initCart({ onViewOrders }) {
   };
 
   const close = () => {
-    if (drawer.contains(document.activeElement)) document.querySelector('#open-cart').focus();
+    floatingCart.setAttribute('aria-expanded', 'false');
+    if (drawer.contains(document.activeElement)) (returnFocus || floatingCart).focus();
     drawer.inert = true;
     drawer.classList.remove('is-open');
     drawer.setAttribute('aria-hidden', 'true');
@@ -120,6 +123,8 @@ export function initCart({ onViewOrders }) {
   };
 
   const open = () => {
+    returnFocus = document.activeElement;
+    floatingCart.setAttribute('aria-expanded', 'true');
     showCart();
     drawer.classList.add('is-open');
     drawer.setAttribute('aria-hidden', 'false');
@@ -132,6 +137,10 @@ export function initCart({ onViewOrders }) {
   const render = () => {
     const { items, count, subtotal } = cartStore.snapshot();
     document.querySelector('#cart-count').textContent = count;
+    document.querySelector('#floating-cart-count').textContent = count;
+    document.querySelector('#floating-cart-total').textContent = money(subtotal);
+    document.querySelector('#floating-cart-caption').textContent = count ? `${count} ${count === 1 ? 'item' : 'itens'} · subtotal` : 'Seu pedido começa aqui';
+    floatingCart.setAttribute('aria-label', `Abrir carrinho, ${count} itens, subtotal ${money(subtotal)}`);
     document.querySelector('#cart-subtotal').textContent = money(subtotal);
     checkoutButton.disabled = !items.length;
     itemsRoot.innerHTML = items.length ? items.map((item) => `
@@ -166,12 +175,21 @@ export function initCart({ onViewOrders }) {
   });
 
   document.querySelector('#open-cart').addEventListener('click', open);
+  floatingCart.addEventListener('click', open);
   document.querySelector('#close-cart').addEventListener('click', close);
   checkoutButton.addEventListener('click', showCheckout);
   checkoutBack.addEventListener('click', () => { showCart(); checkoutButton.focus(); });
   backdrop.addEventListener('click', close);
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && drawer.classList.contains('is-open')) close();
+    if (event.key === 'Tab' && drawer.classList.contains('is-open')) {
+      const focusable = [...drawer.querySelectorAll('button, input, textarea, select, a[href], [tabindex="0"]')]
+        .filter((element) => !element.disabled && element.getClientRects().length);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
   });
   [...form.elements.order_type].forEach((input) => input.addEventListener('change', updateCheckoutSummary));
   cartStore.addEventListener('change', render);

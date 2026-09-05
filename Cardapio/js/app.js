@@ -1,3 +1,4 @@
+import { initCarousel } from './modules/carousel.js';
 import { initCart } from './modules/cart.js';
 import { initCatalog } from './modules/catalog.js';
 import { initChat } from './modules/chat.js';
@@ -9,6 +10,7 @@ import { initPWA } from './modules/pwa.js';
 import { getCatalog } from './services/product-service.js';
 
 async function bootstrap() {
+  document.querySelectorAll('[data-carousel]').forEach(initCarousel);
   const grid = document.querySelector('#product-grid');
   const skeleton = document.querySelector('#product-skeleton');
   grid.replaceChildren(...Array.from({ length: 6 }, () => skeleton.content.cloneNode(true)));

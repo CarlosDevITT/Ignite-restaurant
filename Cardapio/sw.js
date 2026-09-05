@@ -1,12 +1,13 @@
-const CACHE = 'ignite-cardapio-v13';
+const CACHE = 'ignite-cardapio-v18';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/cardapio.css',
+  './assets/bebidas.png', './assets/combos.png', './assets/pratos.png', './assets/promo%C3%A7%C3%A3o.png',
   './js/app.js', './js/config.js', './js/data/mock-products.js',
   './js/supabase-config.js',
   './js/utils/format.js', './js/store/cart-store.js',
   './js/services/supabase-client.js', './js/services/product-service.js',
   './js/services/order-service.js', './js/services/profile-service.js',
-  './js/modules/navigation.js', './js/modules/catalog.js', './js/modules/cart.js',
+  './js/modules/carousel.js', './js/modules/navigation.js', './js/modules/catalog.js', './js/modules/cart.js',
   './js/modules/orders.js', './js/modules/profile.js', './js/modules/feed.js',
   './js/modules/chat.js', './js/modules/pwa.js',
   './assets/uicons/css/uicons-regular-rounded.css',

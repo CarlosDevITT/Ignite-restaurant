@@ -63,7 +63,7 @@ export function initNavigation({ onRoute }) {
     if (mobileNav.classList.contains('is-fan-open') && !mobileNav.contains(event.target)) closeQuick();
   });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeQuick(); });
-  document.querySelector('[data-scroll-products]')?.addEventListener('click', () => document.querySelector('#products-start')?.scrollIntoView({ behavior: 'smooth' }));
+  document.querySelectorAll('[data-scroll-products]').forEach((button) => button.addEventListener('click', () => document.querySelector('#products-start')?.scrollIntoView({ behavior: 'smooth' })) );
 
   const initialRoute = location.hash.slice(1);
   if (TITLES[initialRoute]) navigate(initialRoute);

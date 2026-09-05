@@ -11,12 +11,9 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="../assets/images/logos/ignite.jpg">
   <link rel="apple-touch-icon" href="../assets/images/logos/ignite.jpg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <script>
     (() => {
-      const build = 'ignite-cardapio-2026-09-04-13';
+      const build = 'ignite-cardapio-2026-09-05-18';
       if (!navigator.onLine || localStorage.getItem('ignite-build') === build) return;
       Promise.all([
         'serviceWorker' in navigator
@@ -34,9 +31,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="js/supabase-config.js" defer></script>
   <link href="assets/uicons/css/uicons-regular-rounded.css?v=4" rel="stylesheet">
-  <link rel="stylesheet" href="styles/cardapio.css?v=5">
+  <link rel="stylesheet" href="styles/cardapio.css?v=10">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
   <title>Cardápio | Ignite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <a class="skip-link" href="#app-content">Ir para o conteúdo</a>
@@ -68,17 +68,34 @@
 
     <main id="app-content" tabindex="-1">
       <section class="view is-active" id="view-home" data-view="home">
-        <article class="hero-card">
-          <div class="hero-card__content"><span class="hero-card__badge">🔥 Oferta da casa</span><h2>Sabor que acende o seu dia.</h2><p>Combos preparados na hora, porções generosas e entrega rápida.</p><button class="button button--light" type="button" data-scroll-products>Ver produtos</button></div>
-          <div class="hero-card__art" aria-hidden="true"><span>🍔</span><span>🍟</span></div>
-        </article>
+        <div class="hero-carousel" data-carousel-autoplay data-carousel role="region" aria-roledescription="carrossel" aria-label="Categorias em destaque">
+          <div class="hero-track" id="hero-track" data-carousel-track tabindex="0" aria-label="Categorias; use as setas ou deslize">
+            <article class="hero-card hero-card--image" role="group" aria-roledescription="slide" aria-label="1 de 4: Promoções">
+              <div class="hero-card__media"><img class="hero-card__banner" src="assets/promo%C3%A7%C3%A3o.png" width="1536" height="1024" alt="Promoções Ignite — Sabor, qualidade e preços que surpreendem." fetchpriority="high" decoding="async"></div>
+              <div class="hero-card__footer"><div><h2>Promoções</h2><p>Sabor, qualidade e preços que surpreendem.</p></div><button class="button button--light" type="button" data-hero-category="promocoes" data-category-label="Promoções" aria-controls="product-grid">Ver promoções<span aria-hidden="true">&rarr;</span></button></div>
+            </article>
+            <article class="hero-card hero-card--image" role="group" aria-roledescription="slide" aria-label="2 de 4: Combos">
+              <div class="hero-card__media"><img class="hero-card__banner" src="assets/combos.png" width="1717" height="916" alt="Combos Ignite — Mais sabor para compartilhar e aproveitar." loading="lazy" decoding="async"></div>
+              <div class="hero-card__footer"><div><h2>Combos</h2><p>Mais sabor para compartilhar e aproveitar.</p></div><button class="button button--light" type="button" data-hero-category="combos" data-category-label="Combos" aria-controls="product-grid">Ver combos<span aria-hidden="true">&rarr;</span></button></div>
+            </article>
+            <article class="hero-card hero-card--image" role="group" aria-roledescription="slide" aria-label="3 de 4: Pratos principais">
+              <div class="hero-card__media"><img class="hero-card__banner" src="assets/pratos.png" width="1536" height="1024" alt="Pratos principais Ignite — Sua próxima refeição começa aqui." loading="lazy" decoding="async"></div>
+              <div class="hero-card__footer"><div><h2>Pratos principais</h2><p>Sua próxima refeição começa aqui.</p></div><button class="button button--light" type="button" data-hero-category="pratos-principais" data-category-label="Pratos principais" aria-controls="product-grid">Ver pratos<span aria-hidden="true">&rarr;</span></button></div>
+            </article>
+            <article class="hero-card hero-card--image" role="group" aria-roledescription="slide" aria-label="4 de 4: Bebidas">
+              <div class="hero-card__media"><img class="hero-card__banner" src="assets/bebidas.png" width="1717" height="916" alt="Bebidas Ignite — Encontre a bebida para acompanhar seu pedido." loading="lazy" decoding="async"></div>
+              <div class="hero-card__footer"><div><h2>Bebidas</h2><p>Encontre a bebida para acompanhar seu pedido.</p></div><button class="button button--light" type="button" data-hero-category="bebidas" data-category-label="Bebidas" aria-controls="product-grid">Ver bebidas<span aria-hidden="true">&rarr;</span></button></div>
+            </article>
+          </div>
+          <div class="carousel-controls"><button class="carousel-autoplay" type="button" data-carousel-toggle aria-controls="hero-track" aria-label="Pausar carrossel automático">Pausar</button><button class="icon-button" type="button" data-carousel-prev aria-label="Categoria anterior" aria-controls="hero-track">&larr;</button><span data-carousel-status aria-live="polite">1 / 4</span><button class="icon-button" type="button" data-carousel-next aria-label="Próxima categoria" aria-controls="hero-track">&rarr;</button></div>
+        </div>
         <div class="search-wrap" id="products-start">
           <label class="search-box" for="product-search"><i class="fi fi-rr-search" aria-hidden="true"></i><input id="product-search" type="search" placeholder="Buscar no cardápio" autocomplete="off"></label>
           <button class="filter-button" id="filter-products" type="button" aria-label="Filtrar produtos"><i class="fi fi-rr-settings-sliders" aria-hidden="true"></i></button>
         </div>
         <div class="category-list" id="category-list" aria-label="Categorias"></div>
-        <div class="section-heading"><div><span class="section-kicker">Feito para você</span><h2>Produtos</h2></div><span class="result-count" id="result-count"></span></div>
-        <div class="product-grid" id="product-grid" aria-live="polite"></div>
+        <div class="products-carousel" data-carousel role="region" aria-roledescription="carrossel" aria-label="Produtos do cardápio"><div class="section-heading"><div><span class="section-kicker">Feito para você</span><h2>Produtos</h2></div><span class="result-count" id="result-count"></span></div>
+        <div class="carousel-controls"><button class="icon-button" type="button" data-carousel-prev aria-label="Anterior" aria-controls="product-grid">&larr;</button><span>Deslize para explorar</span><button class="icon-button" type="button" data-carousel-next aria-label="Próximo" aria-controls="product-grid">&rarr;</button></div><div class="product-grid" id="product-grid" data-carousel-track tabindex="0" aria-label="Produtos; use as setas ou deslize" aria-live="polite"></div></div>
       </section>
 
       <section class="view" id="view-orders" data-view="orders" hidden>
@@ -112,6 +129,7 @@
     </main>
   </div>
 
+  <button class="floating-cart" id="floating-cart" type="button" aria-controls="cart-drawer" aria-expanded="false"><span class="floating-cart__icon"><i class="fi fi-rr-shopping-bag" aria-hidden="true"></i><span id="floating-cart-count">0</span></span><span class="floating-cart__copy"><strong>Ver carrinho</strong><small id="floating-cart-caption">Seu pedido começa aqui</small></span><strong id="floating-cart-total">R$ 0,00</strong><span aria-hidden="true">&rarr;</span></button>
   <aside class="cart-drawer" id="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title" aria-hidden="true" inert>
     <div class="drawer-header">
       <button class="icon-button checkout-back" id="checkout-back" type="button" aria-label="Voltar ao carrinho" hidden><i class="fi fi-rr-arrow-small-left" aria-hidden="true"></i></button>
@@ -195,6 +213,6 @@
   
   <div class="connection-badge" id="connection-badge" role="status" hidden></div>
   <template id="product-skeleton"><article class="product-card product-card--skeleton"><div></div><span></span><span></span><span></span></article></template>
-  <script type="module" src="js/app.js?v=8"></script>
+  <script type="module" src="js/app.js?v=11"></script>
 </body>
 </html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1712">
+  <meta name="description" content="Cardápio digital do Ignite Restaurante Pub. Escolha seus pratos e acompanhe seu pedido.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="../assets/images/logos/ignite.jpg">
+  <link rel="apple-touch-icon" href="../assets/images/logos/ignite.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (() => {
+      const build = 'ignite-cardapio-2026-09-04-13';
+      if (!navigator.onLine || localStorage.getItem('ignite-build') === build) return;
+      Promise.all([
+        'serviceWorker' in navigator
+          ? navigator.serviceWorker.getRegistrations().then((items) => Promise.all(items.map((item) => item.unregister())))
+          : Promise.resolve(),
+        'caches' in window
+          ? caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('ignite-')).map((key) => caches.delete(key))))
+          : Promise.resolve(),
+      ]).then(() => {
+        localStorage.setItem('ignite-build', build);
+        if (navigator.serviceWorker?.controller) location.reload();
+      });
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="js/supabase-config.js" defer></script>
+  <link href="assets/uicons/css/uicons-regular-rounded.css?v=4" rel="stylesheet">
+  <link rel="stylesheet" href="styles/cardapio.css?v=5">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <title>Cardápio | Ignite</title>
+</head>
+<body>
+  <a class="skip-link" href="#app-content">Ir para o conteúdo</a>
+
+  <aside class="desktop-sidebar" aria-label="Navegação principal">
+    <a class="brand" href="../index.html" aria-label="Voltar ao site Ignite">
+      <span class="brand__mark"><img src="../assets/images/logos/ignite2.png" alt=""></span>
+      <span><strong>Ignite<span>.</span></strong><small>Restaurante Pub</small></span>
+    </a>
+    <nav class="desktop-nav">
+      <button class="nav-item is-active" type="button" data-route="home" aria-current="page"><i class="fi fi-rr-home nav-icon" aria-hidden="true"></i><span>Início</span></button>
+      <button class="nav-item" type="button" data-route="orders"><i class="fi fi-rr-receipt nav-icon" aria-hidden="true"></i><span>Pedidos</span></button>
+      <button class="nav-item" type="button" data-route="profile"><i class="fi fi-rr-user nav-icon" aria-hidden="true"></i><span>Perfil</span></button>
+    </nav>
+    <div class="desktop-sidebar__bottom">
+      <button class="nav-item nav-item--create" type="button" data-open-quick><i class="fi fi-rr-plus nav-icon nav-icon--plus" aria-hidden="true"></i><span>Explorar</span></button>
+      <div class="store-mini"><span class="status-dot"></span><span><strong>Loja aberta</strong><small>Entrega em 35–50 min</small></span></div>
+    </div>
+  </aside>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div><p class="eyebrow">Manaus · AM</p><h1 id="view-title">O que vai pedir hoje?</h1></div>
+      <div class="header-actions">
+        <button class="icon-button" id="install-app" type="button" aria-label="Instalar aplicativo" title="Instalar app" hidden><i class="fi fi-rr-download" aria-hidden="true"></i></button>
+        <button class="cart-button" id="open-cart" type="button" aria-label="Abrir carrinho"><i class="fi fi-rr-shopping-bag" aria-hidden="true"></i><span class="cart-button__label">Carrinho</span><span class="cart-count" id="cart-count">0</span></button>
+      </div>
+    </header>
+
+    <main id="app-content" tabindex="-1">
+      <section class="view is-active" id="view-home" data-view="home">
+        <article class="hero-card">
+          <div class="hero-card__content"><span class="hero-card__badge">🔥 Oferta da casa</span><h2>Sabor que acende o seu dia.</h2><p>Combos preparados na hora, porções generosas e entrega rápida.</p><button class="button button--light" type="button" data-scroll-products>Ver produtos</button></div>
+          <div class="hero-card__art" aria-hidden="true"><span>🍔</span><span>🍟</span></div>
+        </article>
+        <div class="search-wrap" id="products-start">
+          <label class="search-box" for="product-search"><i class="fi fi-rr-search" aria-hidden="true"></i><input id="product-search" type="search" placeholder="Buscar no cardápio" autocomplete="off"></label>
+          <button class="filter-button" id="filter-products" type="button" aria-label="Filtrar produtos"><i class="fi fi-rr-settings-sliders" aria-hidden="true"></i></button>
+        </div>
+        <div class="category-list" id="category-list" aria-label="Categorias"></div>
+        <div class="section-heading"><div><span class="section-kicker">Feito para você</span><h2>Produtos</h2></div><span class="result-count" id="result-count"></span></div>
+        <div class="product-grid" id="product-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="view" id="view-orders" data-view="orders" hidden>
+        <div class="section-heading section-heading--page"><div><span class="section-kicker">Atualização em tempo real</span><h2>Meus pedidos</h2></div><button class="text-button" id="refresh-orders" type="button">Atualizar</button></div>
+        <div class="order-list" id="order-list"></div>
+      </section>
+
+      <section class="view" id="view-profile" data-view="profile" hidden>
+        <div class="profile-hero"><div class="profile-avatar" aria-hidden="true">IG</div><div><span class="section-kicker">Sua conta</span><h2 id="profile-greeting">Olá, cliente!</h2><p>Seus dados agilizam os próximos pedidos.</p></div></div>
+        <form class="profile-form card-panel" id="profile-form">
+          <div class="field-grid"><label class="field"><span>Nome</span><input name="name" autocomplete="name" placeholder="Como podemos chamar você?" required></label><label class="field"><span>Telefone</span><input name="phone" inputmode="tel" autocomplete="tel" placeholder="(92) 99999-9999" required></label></div>
+          <label class="field"><span>Endereço padrão</span><input name="address" autocomplete="street-address" placeholder="Rua, número e bairro"></label>
+          <button class="button" type="submit">Salvar perfil</button>
+        </form>
+        <div class="settings-list card-panel"><button type="button" id="profile-install"><span>Instalar aplicativo</span><small>Tenha o Ignite na tela inicial</small></button><button type="button" id="clear-local-data"><span>Limpar dados locais</span><small>Remove perfil, carrinho e pedidos deste aparelho</small></button><a class="icon-credit" href="https://www.flaticon.com/uicons" target="_blank" rel="noopener">UIcons por Flaticon</a></div>
+      </section>
+
+      <section class="view" id="view-feed" data-view="feed" hidden>
+        <div class="section-heading section-heading--page"><div><span class="section-kicker">Novidades Ignite</span><h2>Feed</h2></div></div>
+        <div class="feed-grid" id="feed-list"></div>
+      </section>
+
+      <section class="view" id="view-chat" data-view="chat" hidden>
+        <div class="chat-shell card-panel">
+          <div class="chat-intro"><span class="chat-avatar"><i class="fi fi-rr-comments-question" aria-hidden="true"></i></span><div><h2>Assistente Ignite</h2><p>Peça sugestões e tire dúvidas sobre o cardápio.</p></div></div>
+          <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+          <div class="suggestion-chips" id="chat-suggestions"><button type="button">O que está em oferta?</button><button type="button">Sugira algo vegetariano</button><button type="button">Qual é o mais pedido?</button></div>
+          <form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">Mensagem</label><input id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off" required><button type="submit" aria-label="Enviar mensagem"><i class="fi fi-rr-paper-plane" aria-hidden="true"></i></button></form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside class="cart-drawer" id="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title" aria-hidden="true" inert>
+    <div class="drawer-header">
+      <button class="icon-button checkout-back" id="checkout-back" type="button" aria-label="Voltar ao carrinho" hidden><i class="fi fi-rr-arrow-small-left" aria-hidden="true"></i></button>
+      <div class="drawer-header__title"><span class="section-kicker" id="cart-kicker">Seu pedido</span><h2 id="cart-title">Carrinho</h2></div>
+      <button class="icon-button" id="close-cart" type="button" aria-label="Fechar carrinho"><i class="fi fi-rr-cross-small" aria-hidden="true"></i></button>
+    </div>
+
+    <section class="cart-step" id="cart-step" aria-label="Itens do carrinho">
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-summary" id="cart-summary">
+        <div><span>Subtotal</span><strong id="cart-subtotal">R$ 0,00</strong></div>
+        <small>Entrega, retirada ou consumo no local são escolhidos na próxima etapa.</small>
+        <button class="button button--full" id="checkout-button" type="button">Ir para o checkout <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></button>
+      </div>
+    </section>
+
+    <section class="checkout-step" id="checkout-step" aria-label="Finalizar pedido" hidden>
+      <form id="checkout-form" class="checkout-form" novalidate>
+        <div class="checkout-progress" aria-label="Etapa 2 de 2"><span></span><span class="is-active"></span><small>Finalização</small></div>
+
+        <fieldset class="checkout-section service-types">
+          <legend>Como você quer receber?</legend>
+          <div class="service-type-grid">
+            <label class="service-type-card"><input type="radio" name="order_type" value="delivery" checked><span class="service-type-card__icon"><i class="fi fi-rr-motorcycle" aria-hidden="true"></i></span><strong>Delivery</strong><small>Receba no endereço</small></label>
+            <label class="service-type-card"><input type="radio" name="order_type" value="pickup"><span class="service-type-card__icon"><i class="fi fi-rr-shopping-bag" aria-hidden="true"></i></span><strong>Retirada</strong><small>Busque no balcão</small></label>
+            <label class="service-type-card"><input type="radio" name="order_type" value="local"><span class="service-type-card__icon"><i class="fi fi-rr-restaurant" aria-hidden="true"></i></span><strong>No local</strong><small>Servir na mesa</small></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="checkout-section">
+          <legend>Seus dados</legend>
+          <div class="checkout-fields">
+            <label class="field"><span>Nome</span><input name="customer_name" autocomplete="name" placeholder="Como podemos chamar você?" maxlength="120" required></label>
+            <label class="field"><span>WhatsApp</span><input name="phone" inputmode="tel" autocomplete="tel" placeholder="(47) 99999-9999" maxlength="20" required></label>
+            <label class="field checkout-address"><span>Endereço de entrega</span><input name="address" autocomplete="street-address" placeholder="Rua, número, bairro e referência" maxlength="300" required></label>
+            <label class="field checkout-table" hidden><span>Número da mesa</span><input name="table_number" type="number" inputmode="numeric" min="1" max="999" placeholder="Ex.: 12"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="checkout-section payment-section">
+          <legend>Forma de pagamento</legend>
+          <div class="payment-options">
+            <label><input type="radio" name="payment_method" value="pix" checked><span><i class="fi fi-rr-qrcode" aria-hidden="true"></i>PIX</span></label>
+            <label><input type="radio" name="payment_method" value="card"><span><i class="fi fi-rr-credit-card" aria-hidden="true"></i>Cartão</span></label>
+            <label><input type="radio" name="payment_method" value="cash"><span><i class="fi fi-rr-money-bill-wave" aria-hidden="true"></i>Dinheiro</span></label>
+          </div>
+        </fieldset>
+
+        <label class="field checkout-notes"><span>Observações <small>(opcional)</small></span><textarea name="notes" maxlength="500" placeholder="Troco, ponto da carne, referência do endereço..."></textarea></label>
+
+        <div class="checkout-total-card">
+          <div><span>Subtotal</span><strong id="checkout-subtotal">R$ 0,00</strong></div>
+          <div><span id="checkout-fee-label">Taxa de entrega</span><strong id="checkout-fee">R$ 7,00</strong></div>
+          <div class="checkout-total-card__total"><span>Total</span><strong id="checkout-total">R$ 0,00</strong></div>
+        </div>
+
+        <button class="button button--full checkout-submit" id="submit-order" type="submit"><span>Finalizar pedido</span><strong id="submit-order-total">R$ 0,00</strong></button>
+        <p class="checkout-security"><i class="fi fi-rr-shield-check" aria-hidden="true"></i> Pedido protegido e valores confirmados no servidor.</p>
+      </form>
+    </section>
+  </aside>
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <div class="quick-sheet" id="quick-sheet" role="dialog" aria-modal="true" aria-hidden="true" inert>
+    <div class="quick-sheet__handle"></div>
+    <div class="quick-sheet__header"><div><span class="section-kicker">Explore</span><h2>O que deseja abrir?</h2></div><button class="icon-button" type="button" data-close-quick aria-label="Fechar"><i class="fi fi-rr-cross-small" aria-hidden="true"></i></button></div>
+    <div class="quick-options"><button type="button" data-quick-route="orders"><span><i class="fi fi-rr-receipt" aria-hidden="true"></i></span><strong>Pedidos</strong><small>Acompanhe o preparo</small></button><button type="button" data-quick-route="chat"><span><i class="fi fi-rr-comments-question" aria-hidden="true"></i></span><strong>Chat IA</strong><small>Receba sugestões do cardápio</small></button><button type="button" data-quick-route="feed"><span><i class="fi fi-rr-apps" aria-hidden="true"></i></span><strong>Feed</strong><small>Ofertas e novidades do Ignite</small></button></div>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="Navegação do aplicativo">
+    <button class="mobile-nav-item is-active" type="button" data-route="home" aria-current="page"><i class="fi fi-rr-home" aria-hidden="true"></i><small>Início</small></button>
+    <div class="mobile-fan" aria-label="Ações rápidas">
+      <button type="button" data-quick-route="orders"><span><i class="fi fi-rr-receipt" aria-hidden="true"></i></span><small>Pedidos</small></button>
+      <button type="button" data-quick-route="chat"><span><i class="fi fi-rr-comments-question" aria-hidden="true"></i></span><small>Chat IA</small></button>
+      <button type="button" data-quick-route="feed"><span><i class="fi fi-rr-apps" aria-hidden="true"></i></span><small>Feed</small></button>
+    </div>
+    <button class="mobile-nav-plus" type="button" data-open-quick aria-label="Abrir Pedidos, Chat IA ou Feed" aria-expanded="false"><i class="fi fi-rr-plus" aria-hidden="true"></i></button>
+    <button class="mobile-nav-item" type="button" data-route="profile"><i class="fi fi-rr-user" aria-hidden="true"></i><small>Perfil</small></button>
+  </nav>
+
+  
+  <div class="connection-badge" id="connection-badge" role="status" hidden></div>
+  <template id="product-skeleton"><article class="product-card product-card--skeleton"><div></div><span></span><span></span><span></span></article></template>
+  <script type="module" src="js/app.js?v=8"></script>
+</body>
+</html>

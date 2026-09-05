@@ -8,15 +8,14 @@
   <meta name="description" content="Ignite – Restaurante pub com as melhores refeições da cidade. MELHOPUB092">
   <meta name="keywords" content="MELHOPUB092, restaurante, pub, delivery, manaus, itajaí, ignite">
 
-  <!-- Favicons -->
   <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/x-icon">
   <link rel="apple-touch-icon" href="assets/images/logos/ignite.jpg">
   <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ignite">
 
-  <!-- SEO & Social -->
   <meta property="og:title" content="Ignite – Restaurante Pub">
   <meta property="og:description" content="As melhores refeições e delivery da cidade. Confira nosso cardápio online!">
   <meta property="og:image" content="https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg">
@@ -24,21 +23,15 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
 
-  <!-- Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Icons -->
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles/styles.css">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
-  <!-- JSON-LD -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -49,7 +42,7 @@
     "url": "https://ignite-restaurant.vercel.app",
     "telephone": "+5592985130951",
     "priceRange": "$$",
-    "menu": "https://ignite-restaurant.vercel.app/cart-pay/index.html",
+    "menu": "https://ignite-restaurant.vercel.app/Cardapio/index.html",
     "servesCuisine": "Brasileira, Pub",
     "address": {
       "@type": "PostalAddress",
@@ -76,6 +69,15 @@
 
 <body>
 
+  <!-- ===== OFFLINE TOAST ===== -->
+  <div id="offline-toast" style="
+    display:none;position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+    background:#1a1a2e;color:#fff;padding:.7rem 1.4rem;border-radius:2rem;
+    font-size:.85rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.35);
+    align-items:center;gap:.5rem;">
+    <i class='bx bx-wifi-off'></i> Você está offline
+  </div>
+
   <!-- ===== SCROLL TOP ===== -->
   <a href="#" class="scrolltop" id="scroll-top" aria-label="Voltar ao topo">
     <i class='bx bx-chevron-up scrolltop__icon'></i>
@@ -85,43 +87,37 @@
   <header class="l-header" id="header">
     <nav class="nav">
 
-      <!-- Logo -->
       <a href="#home" class="nav__logo">
         <span class="nav__logo-flame">🔥</span>
         Ignite<span>.</span>
       </a>
 
-      <!-- Menu -->
       <div class="nav__menu" id="nav-menu">
         <ul class="nav__list">
           <li><a href="#home"     class="nav__link active-link">Home</a></li>
           <li><a href="#about"    class="nav__link">Sobre</a></li>
           <li><a href="#services" class="nav__link">Serviços</a></li>
-          <li><a href="cart-pay/index.html" class="nav__link">Cardápio</a></li>
+          <li><a href="Cardapio/index.html" class="nav__link">Cardápio</a></li>
           <li><a href="#contact"  class="nav__link">Contato</a></li>
 
-          <!-- Share -->
           <li>
             <button id="share-button" class="nav__link" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.3rem;" aria-label="Compartilhar">
               <i class='bx bx-share-alt'></i>
             </button>
           </li>
 
-          <!-- Theme toggle -->
           <li>
             <i class='bx bx-moon change-theme' id="theme-button" role="button" aria-label="Alternar tema"></i>
           </li>
 
-          <!-- CTA desktop -->
           <li class="nav__cta">
-            <a href="cart-pay/index.html" class="button" style="padding:.55rem 1.2rem;font-size:.82rem;">
+            <a href="Cardapio/index.html" class="button" style="padding:.55rem 1.2rem;font-size:.82rem;">
               <i class="fas fa-utensils"></i> Pedir agora
             </a>
           </li>
         </ul>
       </div>
 
-      <!-- Toggle mobile -->
       <div class="nav__toggle" id="nav-toggle" aria-label="Abrir menu">
         <i class='bx bx-menu'></i>
       </div>
@@ -131,11 +127,10 @@
   <!-- ===== MAIN ===== -->
   <main class="l-main">
 
-    <!-- ──── HOME ──────────────────────────────────────── -->
+    <!-- HOME -->
     <section class="home section" id="home">
       <div class="home__container bd-container">
 
-        <!-- Data -->
         <div class="home__data reveal">
           <span class="home__eyebrow">
             <span class="home__eyebrow-dot"></span>
@@ -152,15 +147,14 @@
           </p>
 
           <div class="home__actions">
-            <a href="cart-pay/index.html" class="button">
+            <a href="Cardapio/index.html" class="button">
               <i class="fas fa-fire"></i> Peça agora
             </a>
-            <a href="#about" class="button button--outline">
-              Conheça mais
+            <a href="https://wa.me/5592985130951" class="button button--outline" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
           </div>
 
-          <!-- Stats -->
           <div class="home__stats">
             <div>
               <span class="home__stat-value" data-count="128" data-suffix="+">128+</span>
@@ -177,16 +171,15 @@
           </div>
         </div>
 
-        <!-- Image -->
         <div class="home__img-wrap reveal reveal-delay-2">
           <span class="home__img-ring"></span>
-          <img src="assets/images/logos/ignite2.png" alt="Ignite Restaurante" class="home__img">
+          <img src="assets/images/logos/ignite2.png" alt="Ignite Restaurante" class="home__img" loading="eager">
         </div>
 
       </div>
     </section>
 
-    <!-- ──── ABOUT ─────────────────────────────────────── -->
+    <!-- ABOUT -->
     <section class="about section bd-container" id="about">
       <div class="about__container bd-grid">
 
@@ -200,17 +193,17 @@
             atendimento, as melhores refeições e ao melhor preço. Com duas
             unidades — Manaus e Itajaí — estamos sempre perto de você.
           </p>
-          <a href="cart-pay/index.html" class="button">
+          <a href="Cardapio/index.html" class="button">
             <i class="fas fa-book-open"></i> Ver cardápio completo
           </a>
         </div>
 
-        <img src="assets/l2.jpg" alt="Ignite restaurante ambiente" class="about__img reveal reveal-delay-1">
+        <img src="assets/images/logos/ignite.jpg" alt="Ignite restaurante ambiente" class="about__img reveal reveal-delay-1" loading="lazy">
 
       </div>
     </section>
 
-    <!-- ──── SERVICES ──────────────────────────────────── -->
+    <!-- SERVICES -->
     <section class="services section" id="services">
       <div class="bd-container">
         <span class="section-subtitle">O que oferecemos</span>
@@ -220,7 +213,7 @@
 
           <div class="services__content">
             <div class="services__icon-wrap">
-              <img src="assets/s1.png" alt="" class="services__img">
+              <img src="assets/images/logos/ignite.jpg" alt="" class="services__img" loading="lazy">
             </div>
             <h3 class="services__title">Marmitex Variados</h3>
             <p class="services__description">
@@ -231,7 +224,7 @@
 
           <div class="services__content">
             <div class="services__icon-wrap">
-              <img src="assets/s2.png" alt="" class="services__img">
+              <img src="assets/images/logos/ignite.jpg" alt="" class="services__img" loading="lazy">
             </div>
             <h3 class="services__title">Fast Food Premium</h3>
             <p class="services__description">
@@ -242,7 +235,7 @@
 
           <div class="services__content">
             <div class="services__icon-wrap">
-              <img src="assets/s3.png" alt="" class="services__img">
+              <img src="assets/images/logos/ignite.jpg" alt="" class="services__img" loading="lazy">
             </div>
             <h3 class="services__title">Marmitex Fit</h3>
             <p class="services__description">
@@ -257,7 +250,7 @@
 
   </main>
 
-  <!-- ──── CONTACT ──────────────────────────────────────── -->
+  <!-- CONTACT -->
   <section class="contact section" id="contact">
     <div class="contact__container bd-container bd-grid">
       <div class="contact__data reveal">
@@ -269,14 +262,14 @@
         </p>
       </div>
       <div class="contact__button reveal reveal-delay-1">
-        <a href="https://wa.me/p/9150303315061573/559285130951" class="button" target="_blank" rel="noopener">
+        <a href="https://wa.me/5592985130951" class="button" target="_blank" rel="noopener">
           <i class="fab fa-whatsapp"></i> Falar no WhatsApp
         </a>
       </div>
     </div>
   </section>
 
-  <!-- ──── FOOTER ───────────────────────────────────────── -->
+  <!-- FOOTER -->
   <footer class="footer bd-container">
     <div class="footer__container bd-grid">
 
@@ -299,10 +292,10 @@
       <div class="footer__content">
         <h3 class="footer__title">Serviços</h3>
         <ul>
-          <li><a href="cart-pay/index.html" class="footer__link">Delivery</a></li>
-          <li><a href="cart-pay/index.html" class="footer__link">Cardápio</a></li>
-          <li><a href="cart-pay/index.html" class="footer__link">Fast Food</a></li>
-          <li><a href="cart-pay/index.html" class="footer__link">Reservas</a></li>
+          <li><a href="Cardapio/index.html" class="footer__link">Delivery</a></li>
+          <li><a href="Cardapio/index.html" class="footer__link">Cardápio</a></li>
+          <li><a href="Cardapio/index.html" class="footer__link">Fast Food</a></li>
+          <li><a href="Cardapio/index.html" class="footer__link">Reservas</a></li>
         </ul>
       </div>
 
@@ -335,7 +328,7 @@
     <p class="footer__copy">© 2025 Ignite Restaurante Pub · Todos os direitos reservados</p>
   </footer>
 
-  <!-- ──── PWA INSTALL BANNER ───────────────────────────── -->
+  <!-- PWA INSTALL BANNER -->
   <div id="install-banner" class="install-banner" role="dialog" aria-label="Instalar app">
     <div class="install-banner__header">
       <img src="assets/images/logos/ignite.jpg" alt="Ignite" class="install-banner__icon">
@@ -350,17 +343,8 @@
     </div>
   </div>
 
-  <!-- ──── CORE SCRIPTS ─────────────────────────────────── -->
-  <script src="src/modules/utils/storage-helper.js"></script>
-  <script src="src/state/splash-module.js"></script>
-  <script>
-    if (typeof SplashScreen !== 'undefined') {
-      new SplashScreen({ duration: 2800, autoShow: true, showOnce: true, storageKey: 'igniteSplashShown' });
-    }
-  </script>
-
-  <!-- Main JS — all interactions -->
-  <script src="main.js" defer></script>
+  <script src="js/ui/splash-module.js"></script>
+  <script src="js/main.js" defer></script>
 
 </body>
 </html>

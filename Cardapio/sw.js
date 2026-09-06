@@ -1,4 +1,4 @@
-const CACHE = 'ignite-cardapio-v21';
+const CACHE = 'ignite-cardapio-v22';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/cardapio.css', './styles/ignite-play.css',
   './assets/bebidas.png', './assets/combos.png', './assets/pratos.png', './assets/promo%C3%A7%C3%A3o.png',

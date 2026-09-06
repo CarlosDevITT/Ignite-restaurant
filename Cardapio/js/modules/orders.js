@@ -1,4 +1,4 @@
-import { getOrders, subscribeToOrders } from '../services/order-service.js';
+import { getOrders, subscribeToOrders, subscribeToOrder } from '../services/order-service.js';
 import { escapeHTML, money, shortDate } from '../utils/format.js';
 
 const STATUS = {
@@ -29,6 +29,7 @@ export function initOrders({ onPlayRequested } = {}) {
   let unsubscribe = () => {};
   let lastOrders = [];
   const watchers = new Map();
+  const realtimeChannels = new Map(); // orderId(string) -> { cleanup, refCount, cancelled }
 
   const orderKey = (order) => String(order.id ?? order.order_number ?? order.numero_pedido ?? '');
 
@@ -45,12 +46,47 @@ export function initOrders({ onPlayRequested } = {}) {
 
   // Registra um callback chamado sempre que este pedido aparecer numa atualização
   // da lista (recarregada pelo botão de atualizar, pela navegação até "Pedidos" ou
-  // pela subscription Realtime já existente). Não cria nenhuma nova chamada ao Supabase.
+  // pela subscription Realtime já existente) E abre/reaproveita um canal Realtime
+  // dedicado a este pedido específico (id=eq.orderId), que não depende de sessão.
+  // Vários watchers para o mesmo pedido compartilham um único canal (refCount).
+  const patchOrder = (orderId, patch) => {
+    const id = String(orderId);
+    const index = lastOrders.findIndex((candidate) => orderKey(candidate) === id);
+    if (index === -1) return;
+    const next = lastOrders.slice();
+    next[index] = { ...next[index], ...patch };
+    render(next);
+  };
+
   const watchOrder = (orderId, callback) => {
     const id = String(orderId);
     if (!watchers.has(id)) watchers.set(id, new Set());
     watchers.get(id).add(callback);
-    return () => watchers.get(id)?.delete(callback);
+
+    let entry = realtimeChannels.get(id);
+    if (!entry) {
+      entry = { cleanup: null, refCount: 0, cancelled: false };
+      realtimeChannels.set(id, entry);
+      subscribeToOrder(orderId, {
+        onChange: (payload) => { if (payload?.new) patchOrder(orderId, payload.new); },
+      }).then((cleanup) => {
+        if (entry.cancelled) { cleanup?.(); return; }
+        entry.cleanup = cleanup;
+      }).catch((error) => console.warn('[Realtime] Falha ao observar pedido', id, error));
+    }
+    entry.refCount += 1;
+
+    return () => {
+      watchers.get(id)?.delete(callback);
+      const current = realtimeChannels.get(id);
+      if (!current) return;
+      current.refCount -= 1;
+      if (current.refCount <= 0) {
+        current.cancelled = true;
+        current.cleanup?.();
+        realtimeChannels.delete(id);
+      }
+    };
   };
 
   const render = (orders) => {
@@ -90,5 +126,13 @@ export function initOrders({ onPlayRequested } = {}) {
 
   document.querySelector('#refresh-orders').addEventListener('click', load);
   subscribeToOrders(load).then((cleanup) => { unsubscribe = cleanup; }).catch(console.warn);
-  return { load, destroy: () => unsubscribe(), watchOrder };
+  return {
+    load,
+    watchOrder,
+    destroy: () => {
+      unsubscribe();
+      realtimeChannels.forEach((entry) => { entry.cancelled = true; entry.cleanup?.(); });
+      realtimeChannels.clear();
+    },
+  };
 }

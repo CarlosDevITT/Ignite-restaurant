@@ -4,6 +4,13 @@ import { getSupabase } from './supabase-client.js';
 
 const STORAGE_KEY = 'ignite-orders-v1';
 
+const isDev = () => {
+  try {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) || location.hostname.endsWith('.local');
+  } catch { return false; }
+};
+const devLog = (...args) => { if (isDev()) console.log(...args); };
+
 const readLocal = () => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
   catch { return []; }
@@ -110,13 +117,16 @@ async function placeLegacyOrder(supabase, payload, items) {
 export async function getOrders() {
   const supabase = await getSupabase();
   if (!supabase) return readLocal();
-  // Não solicite login anônimo ao abrir o cardápio: ele pode estar desativado
-  // no projeto e os pedidos deste aparelho continuam disponíveis localmente.
+  // Antes isto exigia uma sessão autenticada para sequer tentar buscar no
+  // Supabase — mas o checkout deste projeto cria pedidos sem exigir login
+  // (RPC liberada para "anon"), então pedidos legítimos ficavam presos no
+  // localStorage e nunca recebiam status atualizado do PDV. Agora sempre
+  // tentamos buscar; a RLS do banco decide o que volta (anônimo sem
+  // permissão simplesmente recebe uma lista vazia, sem erro).
+  let data, error;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.id) return readLocal();
+    ({ data, error } = await supabase.from('orders').select('*, user_id, order_items(*)').order('created_at', { ascending: false }));
   } catch { return readLocal(); }
-  const { data, error } = await supabase.from('orders').select('*, user_id, order_items(*)').order('created_at', { ascending: false });
   if (error) return readLocal();
   if (data.some((order) => !Object.prototype.hasOwnProperty.call(order, 'user_id'))) return readLocal();
   const remoteOrders = data || [];
@@ -136,4 +146,54 @@ export async function subscribeToOrders(onChange) {
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `user_id=eq.${session.user.id}` }, onChange)
     .subscribe();
   return () => supabase.removeChannel(channel);
+}
+
+const RECONNECT_DELAY_MS = 2500;
+
+// Acompanha um único pedido pelo próprio id — não depende de sessão/user_id,
+// então funciona também para pedidos de convidado (checkout sem login).
+// A segurança de "não ver pedido de outro cliente" continua sendo garantida
+// pela RLS configurada no banco (Realtime respeita RLS); este código nunca
+// consulta a tabela sem filtro nem usa chave service_role.
+export async function subscribeToOrder(orderId, { onChange } = {}) {
+  const supabase = await getSupabase();
+  if (!supabase || orderId == null) return () => {};
+
+  let channel = null;
+  let reconnectTimer = null;
+  let stopped = false;
+
+  const teardown = () => {
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (channel) { supabase.removeChannel(channel); channel = null; }
+  };
+
+  const connect = () => {
+    if (stopped) return;
+    teardown();
+    devLog(`[Realtime] Conectando pedido #${orderId}`);
+    channel = supabase
+      .channel(`order-${orderId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, (payload) => {
+        devLog(`[Realtime] Pedido #${orderId} atualizado: ${payload.old?.status} → ${payload.new?.status}`);
+        onChange?.(payload);
+      })
+      .subscribe((status) => {
+        if (stopped) return;
+        if (status === 'SUBSCRIBED') devLog(`[Realtime] Pedido #${orderId} inscrito`);
+        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          devLog(`[Realtime] Pedido #${orderId}: ${status}, reconectando em ${RECONNECT_DELAY_MS}ms...`);
+          if (!reconnectTimer) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+        } else if (status === 'CLOSED') {
+          devLog(`[Realtime] Pedido #${orderId}: subscription encerrada`);
+        }
+      });
+  };
+
+  connect();
+
+  return () => {
+    stopped = true;
+    teardown();
+  };
 }

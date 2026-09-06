@@ -32,6 +32,7 @@ A migração revoga acesso da função `anon` às tabelas com clientes, pedidos,
 ## Estrutura
 
 - `js/modules`: telas e interações da interface.
+- `js/modules/ignite-play`: mini game Snake (visual Game Boy) oferecido como entretenimento opcional em "Meus pedidos". Enquanto um pedido está `received`/`preparing`, um CTA "Jogue enquanto espera" aparece abaixo do card (renderizado em `orders.js`); o Game Boy só abre quando o cliente toca nesse CTA — nunca automaticamente. Modal 100% criado via JS (`IgnitePlay.show/hide/destroy/isOpen/getScore`), sem dependência de Supabase — o fechamento automático (se o status avançar com o jogo aberto) é decidido em `js/app.js`, que observa o pedido pelo `orders.watchOrder(...)` já existente em `js/modules/orders.js`.
 - `js/services`: comunicação com Supabase e persistência.
 - `js/store`: estado do carrinho.
 - `js/data`: catálogo usado no modo demonstração.

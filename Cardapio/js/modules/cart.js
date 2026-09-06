@@ -47,7 +47,7 @@ const whatsappUrl = ({ order, payload, items, subtotal, fee, total }) => {
   return `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
 };
 
-export function initCart({ onViewOrders }) {
+export function initCart({ onViewOrders, onOrderPlaced }) {
   let returnFocus;
   const floatingCart = document.querySelector('#floating-cart');
   const drawer = document.querySelector('#cart-drawer');
@@ -248,6 +248,8 @@ export function initCart({ onViewOrders }) {
       } else if (result.isConfirmed) {
         onViewOrders?.(order);
       }
+
+      onOrderPlaced?.(order);
     } catch (error) {
       await Swal.fire({ icon: 'error', title: 'Não foi possível enviar', text: friendlyOrderError(error), confirmButtonText: 'Entendi' });
     } finally {

@@ -3,8 +3,9 @@ import { initCart } from './modules/cart.js';
 import { initCatalog } from './modules/catalog.js';
 import { initChat } from './modules/chat.js';
 import { initFeed } from './modules/feed.js';
+import { IgnitePlay } from './modules/ignite-play/index.js';
 import { initNavigation } from './modules/navigation.js';
-import { initOrders } from './modules/orders.js';
+import { initOrders, isWaitingStatus } from './modules/orders.js';
 import { initProfile } from './modules/profile.js';
 import { initPWA } from './modules/pwa.js';
 import { getCatalog } from './services/product-service.js';
@@ -29,13 +30,32 @@ async function bootstrap() {
   try {
     const catalog = await getCatalog();
     const pwa = initPWA();
-    const orders = initOrders();
+    const orders = initOrders({
+      onPlayRequested: (order) => {
+        const orderId = order?.id ?? order?.order_number ?? order?.numero_pedido;
+        if (orderId == null) return;
+        const stopWatching = orders.watchOrder(orderId, (status) => {
+          if (isWaitingStatus(status)) return;
+          IgnitePlay.hide();
+          orders.load();
+        });
+        IgnitePlay.show({
+          orderId,
+          orderNumber: order.order_number || order.numero_pedido || orderId,
+          onClose: stopWatching,
+        });
+      },
+    });
     const navigation = initNavigation({ onRoute: (route) => { if (route === 'orders') orders.load(); } });
     initCatalog(catalog);
     initChat(catalog.products);
     initFeed().catch(console.warn);
     initProfile({ requestInstall: pwa.requestInstall });
-    initCart({ onViewOrders: () => { navigation.navigate('orders'); orders.load(); } });
+    initCart({
+      onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
+      // O pedido só cria dados aqui; o Game Boy é aberto pelo cliente via CTA em "Meus pedidos" (orders.js).
+      onOrderPlaced: () => orders.load(),
+    });
 
     if (catalog.source === 'demo') showConnection('Modo demonstração · configure o Supabase', 4000);
   } catch (error) {

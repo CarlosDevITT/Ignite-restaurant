@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="../assets/images/logos/ignite.jpg">
   <script>
     (() => {
-      const build = 'ignite-cardapio-2026-09-05-18';
+      const build = 'ignite-cardapio-2026-09-05-20';
       if (!navigator.onLine || localStorage.getItem('ignite-build') === build) return;
       Promise.all([
         'serviceWorker' in navigator
@@ -213,6 +213,6 @@
   
   <div class="connection-badge" id="connection-badge" role="status" hidden></div>
   <template id="product-skeleton"><article class="product-card product-card--skeleton"><div></div><span></span><span></span><span></span></article></template>
-  <script type="module" src="js/app.js?v=11"></script>
+  <script type="module" src="js/app.js?v=13"></script>
 </body>
 </html>

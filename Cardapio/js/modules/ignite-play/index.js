@@ -1,14 +1,20 @@
-// Ignite Play — mini game exibido enquanto o cliente aguarda o pedido.
-// Não importa Supabase nem o serviço de pedidos: recebe apenas orderId/orderNumber
-// via show() e um callback onClose. Quem decide QUANDO fechar é quem chama show()/hide(),
-// observando o pedido pela infraestrutura já existente (ver js/app.js).
+// Ignite Play 2.0 — mini game em tela cheia exibido quando o cliente toca no
+// CTA "Jogue enquanto espera" em Meus Pedidos (o clique é decidido em
+// js/app.js; este módulo não sabe de Supabase nem do serviço de pedidos).
 //
-// Pedido/Supabase → Order Tracking → IgnitePlay (este módulo) → Snake
+// Pedido/Supabase → Order Tracking (orders.js) → app.js → IgnitePlay (aqui) → games/snake.js
+//
+// Arquitetura pronta para múltiplos jogos: cada jogo é um módulo independente
+// em games/*.js seguindo o mesmo contrato de snake.js (start/pause/resume/
+// restart/setDirection/destroy/getScore/getState). Trocar de jogo no futuro
+// significa importar outro módulo de games/ aqui — nada mais.
 
-import { createSnakeGame, SNAKE_STATE } from './snake.js';
+import { createSnakeGame, SNAKE_STATE } from './games/snake.js';
+import { getHighScore, setHighScoreIfBetter } from './score-store.js';
 
+const GAME_ID = 'snake';
 const STYLE_ID = 'ignite-play-styles';
-const BODY_LOCK_CLASS = 'ignite-play-lock';
+const LOCK_CLASS = 'ignite-play-lock';
 const SWIPE_THRESHOLD = 24;
 
 const KEY_DIRECTIONS = {
@@ -17,46 +23,38 @@ const KEY_DIRECTIONS = {
   W: 'up', S: 'down', A: 'left', D: 'right',
 };
 
-const STATE_COPY = {
-  [SNAKE_STATE.READY]: { hint: 'Aperte START ou A para começar', visible: true },
-  [SNAKE_STATE.PLAYING]: { hint: '', visible: false },
-  [SNAKE_STATE.PAUSED]: { hint: 'PAUSADO — aperte START para continuar', visible: true },
-  [SNAKE_STATE.GAME_OVER]: { hint: 'GAME OVER — aperte A para jogar de novo', visible: true },
-};
-
 const MARKUP = `
 <div class="ignite-play-overlay" role="dialog" aria-modal="true" aria-labelledby="ignite-play-title">
   <div class="ignite-play-console">
-    <button type="button" class="ignite-play-close" aria-label="Fechar Ignite Play">&times;</button>
-    <div class="ignite-play-topband">
-      <span class="ignite-play-topband__mark" aria-hidden="true"></span>
-      <span class="ignite-play-topband__text" id="ignite-play-title">IGNITE PLAY</span>
-    </div>
-    <div class="ignite-play-bezel">
-      <div class="ignite-play-screen" data-role="screen">
+    <header class="ignite-play-header">
+      <button type="button" class="ignite-play-iconbtn" data-action="close" aria-label="Fechar Ignite Play"><span aria-hidden="true">&times;</span></button>
+      <span class="ignite-play-header__title" id="ignite-play-title">IGNITE PLAY</span>
+      <span class="ignite-play-header__dot" aria-hidden="true"></span>
+    </header>
+
+    <div class="ignite-play-stage">
+      <div class="ignite-play-screen">
         <div class="ignite-play-screen__hud">
-          <span class="ignite-play-screen__score">SCORE <strong data-role="score">000</strong></span>
-          <span class="ignite-play-screen__order" data-role="order-number"></span>
+          <div class="ignite-play-hud-block">
+            <span class="ignite-play-hud-block__label">SCORE</span>
+            <strong class="ignite-play-hud-block__value" data-role="score">000</strong>
+          </div>
+          <div class="ignite-play-hud-block ignite-play-hud-block--best">
+            <span class="ignite-play-hud-block__label">HI</span>
+            <strong class="ignite-play-hud-block__value" data-role="best">000</strong>
+          </div>
         </div>
         <div class="ignite-play-screen__canvas-wrap" data-role="canvas-wrap">
           <canvas class="ignite-play-canvas" data-role="canvas" aria-hidden="true"></canvas>
-          <div class="ignite-play-overlaymsg" data-role="message">
-            <p class="ignite-play-overlaymsg__eyebrow">PEDIDO RECEBIDO</p>
-            <p class="ignite-play-overlaymsg__body">Enquanto preparamos seu pedido...</p>
-            <p class="ignite-play-overlaymsg__cta">JOGUE ENQUANTO ESPERA</p>
-            <p class="ignite-play-overlaymsg__hint" data-role="hint"></p>
-          </div>
-        </div>
-        <div class="ignite-play-led">
-          <span></span>
-          POWER
+          <div class="ignite-play-panel" data-role="panel"></div>
         </div>
       </div>
+      <div class="ignite-play-brand">
+        <span class="ignite-play-brand__flame" aria-hidden="true"></span>
+        <span class="ignite-play-brand__word">IGNITE</span>
+      </div>
     </div>
-    <div class="ignite-play-brand">
-      <span class="ignite-play-brand__flame" aria-hidden="true"></span>
-      <span class="ignite-play-brand__word">IGNITE</span>
-    </div>
+
     <div class="ignite-play-controls">
       <div class="ignite-play-dpad" role="group" aria-label="Direcionais">
         <button type="button" class="ignite-play-dpad__btn ignite-play-dpad__btn--up" data-dir="up" aria-label="Cima">▲</button>
@@ -80,10 +78,12 @@ const MARKUP = `
 let overlay = null;
 let snakeGame = null;
 let currentScore = 0;
+let bestScore = 0;
+let currentOrderNumber = '';
 let onCloseCallback = null;
 let previousFocus = null;
 let keydownHandler = null;
-let touchStart = null;
+let pointerStart = null;
 
 const ensureStyles = () => {
   if (document.getElementById(STYLE_ID)) return;
@@ -98,13 +98,51 @@ const query = (role) => overlay?.querySelector(`[data-role="${role}"]`);
 
 const formatScore = (value) => String(Math.max(0, Math.floor(value))).padStart(3, '0');
 
-const applyStateCopy = (state) => {
+const escapeText = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+}[char]));
+
+const buildPanel = (state) => {
+  if (state === SNAKE_STATE.READY) {
+    return `
+      <p class="ignite-play-panel__eyebrow">IGNITE PLAY</p>
+      <p class="ignite-play-panel__game">🐍 SNAKE</p>
+      <p class="ignite-play-panel__tagline">JOGUE ENQUANTO ESPERA</p>
+      ${currentOrderNumber ? `<p class="ignite-play-panel__order">Pedido #${escapeText(currentOrderNumber)}</p>` : ''}
+      <p class="ignite-play-panel__hint">START / A — COMEÇAR</p>`;
+  }
+  if (state === SNAKE_STATE.PAUSED) {
+    return `
+      <p class="ignite-play-panel__eyebrow">PAUSADO</p>
+      <p class="ignite-play-panel__note">Seu pedido continua sendo preparado.</p>
+      <p class="ignite-play-panel__hint">START — continuar</p>
+      <p class="ignite-play-panel__hint">B — sair</p>`;
+  }
+  if (state === SNAKE_STATE.GAME_OVER) {
+    return `
+      <p class="ignite-play-panel__eyebrow">GAME OVER</p>
+      <div class="ignite-play-panel__scores">
+        <div class="ignite-play-panel__score"><span>SCORE</span><strong>${formatScore(currentScore)}</strong></div>
+        <div class="ignite-play-panel__score"><span>🏆 RECORDE</span><strong>${formatScore(bestScore)}</strong></div>
+      </div>
+      <p class="ignite-play-panel__hint">A — jogar novamente</p>
+      <p class="ignite-play-panel__hint">B — voltar ao pedido</p>`;
+  }
+  return '';
+};
+
+const applyState = (state) => {
   if (!overlay) return;
-  const copy = STATE_COPY[state] || STATE_COPY[SNAKE_STATE.READY];
-  const hint = query('hint');
-  const message = query('message');
-  if (hint) hint.textContent = copy.hint;
-  if (message) message.classList.toggle('is-visible', copy.visible);
+  if (state === SNAKE_STATE.GAME_OVER) {
+    bestScore = setHighScoreIfBetter(GAME_ID, currentScore);
+    const bestEl = query('best');
+    if (bestEl) bestEl.textContent = formatScore(bestScore);
+  }
+  const panel = query('panel');
+  if (panel) {
+    panel.innerHTML = buildPanel(state);
+    panel.classList.toggle('is-visible', state !== SNAKE_STATE.PLAYING);
+  }
   overlay.dataset.state = state;
 };
 
@@ -129,28 +167,38 @@ const handleBAction = () => {
   else IgnitePlay.hide();
 };
 
+const setPressed = (button, pressed) => button.classList.toggle('is-pressed', pressed);
+
 const teardownListeners = () => {
   if (keydownHandler) {
     document.removeEventListener('keydown', keydownHandler);
     keydownHandler = null;
   }
-  touchStart = null;
+  pointerStart = null;
 };
 
 const wireControls = () => {
+  const pressableButtons = overlay.querySelectorAll('.ignite-play-dpad__btn, .ignite-play-btn, .ignite-play-pill, .ignite-play-iconbtn');
+  pressableButtons.forEach((button) => {
+    button.addEventListener('pointerdown', () => setPressed(button, true));
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((type) => {
+      button.addEventListener(type, () => setPressed(button, false));
+    });
+  });
+
   overlay.querySelectorAll('[data-dir]').forEach((button) => {
     button.addEventListener('click', () => snakeGame?.setDirection(button.dataset.dir));
   });
+
   overlay.querySelectorAll('[data-action]').forEach((button) => {
     button.addEventListener('click', () => {
       const action = button.dataset.action;
       if (action === 'start') handleStartAction();
-      else if (action === 'select') IgnitePlay.hide();
+      else if (action === 'select' || action === 'close') IgnitePlay.hide();
       else if (action === 'a') handleAAction();
       else if (action === 'b') handleBAction();
     });
   });
-  overlay.querySelector('.ignite-play-close')?.addEventListener('click', () => IgnitePlay.hide());
 
   keydownHandler = (event) => {
     if (!overlay) return;
@@ -163,20 +211,19 @@ const wireControls = () => {
 
   const canvasWrap = query('canvas-wrap');
   if (canvasWrap) {
-    canvasWrap.addEventListener('touchstart', (event) => {
-      const touch = event.changedTouches[0];
-      touchStart = { x: touch.clientX, y: touch.clientY };
-    }, { passive: true });
-    canvasWrap.addEventListener('touchend', (event) => {
-      if (!touchStart) return;
-      const touch = event.changedTouches[0];
-      const dx = touch.clientX - touchStart.x;
-      const dy = touch.clientY - touchStart.y;
-      touchStart = null;
+    canvasWrap.addEventListener('pointerdown', (event) => {
+      pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+    });
+    canvasWrap.addEventListener('pointerup', (event) => {
+      if (!pointerStart || event.pointerId !== pointerStart.id) { pointerStart = null; return; }
+      const dx = event.clientX - pointerStart.x;
+      const dy = event.clientY - pointerStart.y;
+      pointerStart = null;
       if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
       const direction = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
       snakeGame?.setDirection(direction);
-    }, { passive: true });
+    });
+    canvasWrap.addEventListener('pointercancel', () => { pointerStart = null; });
   }
 };
 
@@ -186,37 +233,43 @@ export const IgnitePlay = {
 
     if (overlay) {
       onCloseCallback = typeof onClose === 'function' ? onClose : null;
-      const orderNumberEl = query('order-number');
-      if (orderNumberEl) orderNumberEl.textContent = orderNumber ? `Pedido #${orderNumber}` : '';
+      currentOrderNumber = orderNumber ? String(orderNumber) : '';
       return;
     }
 
     ensureStyles();
     previousFocus = document.activeElement;
     onCloseCallback = typeof onClose === 'function' ? onClose : null;
+    currentOrderNumber = orderNumber ? String(orderNumber) : '';
     currentScore = 0;
+    bestScore = getHighScore(GAME_ID);
 
     const wrapper = document.createElement('div');
     wrapper.innerHTML = MARKUP.trim();
     overlay = wrapper.firstElementChild;
     overlay.dataset.orderId = orderId != null ? String(orderId) : '';
-    document.body.appendChild(overlay);
-    document.body.classList.add(BODY_LOCK_CLASS);
 
-    const orderNumberEl = query('order-number');
-    if (orderNumberEl) orderNumberEl.textContent = orderNumber ? `Pedido #${orderNumber}` : '';
+    document.documentElement.classList.add(LOCK_CLASS);
+    document.body.classList.add(LOCK_CLASS);
+    document.body.appendChild(overlay);
+
     const scoreEl = query('score');
+    const bestEl = query('best');
     if (scoreEl) scoreEl.textContent = formatScore(0);
+    if (bestEl) bestEl.textContent = formatScore(bestScore);
 
     snakeGame = createSnakeGame({
       canvas: query('canvas'),
-      onScoreChange: (score) => { currentScore = score; if (scoreEl) scoreEl.textContent = formatScore(score); },
-      onStateChange: applyStateCopy,
+      onScoreChange: (score) => {
+        currentScore = score;
+        if (scoreEl) scoreEl.textContent = formatScore(score);
+      },
+      onStateChange: applyState,
     });
-    applyStateCopy(SNAKE_STATE.READY);
+    applyState(SNAKE_STATE.READY);
     wireControls();
 
-    requestAnimationFrame(() => overlay?.querySelector('.ignite-play-close')?.focus());
+    requestAnimationFrame(() => overlay?.querySelector('[data-action="close"]')?.focus());
   },
 
   hide() {
@@ -227,10 +280,9 @@ export const IgnitePlay = {
     teardownListeners();
     overlay.remove();
     overlay = null;
-    document.body.classList.remove(BODY_LOCK_CLASS);
+    document.documentElement.classList.remove(LOCK_CLASS);
+    document.body.classList.remove(LOCK_CLASS);
     onCloseCallback = null;
-    // currentScore não é zerado aqui: getScore() continua retornando o último
-    // placar até a próxima chamada de show(), que reinicia a pontuação.
     if (previousFocus instanceof HTMLElement) previousFocus.focus();
     previousFocus = null;
     callback?.();

@@ -1,290 +1,323 @@
-/* Ignite Play — namespace isolado (.ignite-play-*) para não colidir com o cardápio. */
+/* Ignite Play 2.0 — namespace isolado (.ignite-play-*). Mobile-first: fullscreen
+   imersivo (o "console" preenche a viewport inteira). A partir de 640px vira um
+   console centralizado, como um gabinete de arcade, sobre um fundo escurecido. */
+
+html.ignite-play-lock,
+body.ignite-play-lock {
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
+}
 
 .ignite-play-overlay {
   position: fixed;
   inset: 0;
   z-index: 20000;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-  background: rgba(5, 13, 8, .72);
-  backdrop-filter: blur(4px);
   overflow: hidden;
-  animation: ignite-play-fade .2s ease-out;
+  overscroll-behavior: contain;
+  touch-action: none;
+  background: #0b0f0c;
+  animation: ignite-play-fade .18s ease-out;
 }
 
 .ignite-play-console {
-  --ignite-play-shell-1: #4a4d53;
-  --ignite-play-shell-2: #2b2d31;
-  --ignite-play-bezel: #14161a;
-  --ignite-play-lcd: #9bbc0f;
-  --ignite-play-lcd-dark: #8bac0f;
-  --ignite-play-ink: #173216;
-  --ignite-play-accent: var(--accent, #ff6b35);
-  --ignite-play-primary: var(--primary, #069c54);
+  --shell-1: #4a4d53;
+  --shell-2: #26282c;
+  --bezel: #121417;
+  --lcd: #9bbc0f;
+  --lcd-dark: #86a80c;
+  --ink: #14300f;
+  --accent: var(--accent, #ff6b35);
+  --primary: var(--primary, #069c54);
   position: relative;
-  display: grid;
-  gap: .85rem;
-  width: min(92vw, 360px);
-  max-height: min(94dvh, 720px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 1.1rem 1.1rem calc(1.3rem + env(safe-area-inset-bottom));
-  border-radius: 28px;
-  background: linear-gradient(155deg, var(--ignite-play-shell-1), var(--ignite-play-shell-2));
-  box-shadow: 0 30px 70px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  height: 100vh;
+  padding: max(.85rem, env(safe-area-inset-top)) max(.85rem, env(safe-area-inset-right)) max(.85rem, env(safe-area-inset-bottom)) max(.85rem, env(safe-area-inset-left));
+  gap: .6rem;
+  background: linear-gradient(165deg, var(--shell-1), var(--shell-2) 55%, #202226);
   color: #eef1ee;
   font-family: 'DM Sans', system-ui, sans-serif;
-  animation: ignite-play-pop .25s cubic-bezier(.2, .8, .2, 1);
+  animation: ignite-play-rise .28s cubic-bezier(.2, .8, .2, 1);
 }
 
-.ignite-play-close {
-  position: absolute;
-  top: .6rem;
-  right: .6rem;
-  z-index: 2;
+/* ---------- header ---------- */
+.ignite-play-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.ignite-play-header__title {
+  flex: 1;
+  text-align: center;
+  font: 800 .78rem/1 'Syne', 'DM Sans', sans-serif;
+  letter-spacing: .18em;
+  color: #d7dbe0;
+}
+.ignite-play-header__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 7px 1px var(--primary);
+  animation: ignite-play-blink 2.6s ease-in-out infinite;
+}
+.ignite-play-iconbtn {
   width: 34px;
   height: 34px;
+  flex: 0 0 auto;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, .35);
+  background: rgba(255, 255, 255, .08);
   color: #f3f5f3;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   line-height: 1;
   cursor: pointer;
+  touch-action: manipulation;
 }
-.ignite-play-close:focus-visible,
 .ignite-play-console button:focus-visible {
-  outline: 3px solid var(--ignite-play-accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
-.ignite-play-topband {
+/* ---------- stage (screen + brand) ---------- */
+.ignite-play-stage {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: .4rem;
-  color: #c7cbd1;
-  font-size: .62rem;
-  font-weight: 700;
-  letter-spacing: .16em;
-}
-.ignite-play-topband__mark {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 8px solid #c7cbd1;
-}
-
-.ignite-play-bezel {
-  padding: .9rem .9rem 1.1rem;
-  border-radius: 18px;
-  background: var(--ignite-play-bezel);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .04), inset 0 8px 18px rgba(0, 0, 0, .5);
+  gap: .5rem;
+  width: 100%;
 }
 
 .ignite-play-screen {
   position: relative;
-  display: grid;
-  gap: .5rem;
-  padding: .7rem .7rem .5rem;
-  border-radius: 6px;
-  background: linear-gradient(160deg, var(--ignite-play-lcd), var(--ignite-play-lcd-dark));
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, .35);
-  color: var(--ignite-play-ink);
-}
-.ignite-play-screen::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: repeating-linear-gradient(rgba(0, 0, 0, .06) 0, rgba(0, 0, 0, .06) 1px, transparent 1px, transparent 3px);
-  mix-blend-mode: multiply;
+  width: 100%;
+  max-width: 420px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+  padding: .65rem .65rem .5rem;
+  border-radius: 14px;
+  background: var(--bezel);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .05), inset 0 10px 22px rgba(0, 0, 0, .55), 0 18px 34px rgba(0, 0, 0, .35);
 }
 
 .ignite-play-screen__hud {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font: 700 .68rem/1 'DM Sans', system-ui, sans-serif;
-  letter-spacing: .06em;
+  padding: 0 .15rem;
 }
-.ignite-play-screen__score strong { margin-left: .3rem; font-variant-numeric: tabular-nums; }
-.ignite-play-screen__order { max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+.ignite-play-hud-block { display: flex; align-items: baseline; gap: .35rem; color: #c9cdd2; }
+.ignite-play-hud-block__label { font: 800 .58rem/1 'DM Sans', sans-serif; letter-spacing: .14em; opacity: .75; }
+.ignite-play-hud-block__value { font: 800 .92rem/1 'DM Sans', sans-serif; font-variant-numeric: tabular-nums; color: #f4f6f4; }
+.ignite-play-hud-block--best { opacity: .82; }
+.ignite-play-hud-block--best .ignite-play-hud-block__value { color: var(--accent); }
 
 .ignite-play-screen__canvas-wrap {
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
+  max-height: 100%;
   aspect-ratio: 16 / 14;
-  border: 2px solid rgba(23, 50, 22, .35);
-  border-radius: 3px;
+  margin: 0 auto;
+  border-radius: 4px;
   overflow: hidden;
+  border: 2px solid rgba(0, 0, 0, .4);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, .35);
+  touch-action: none;
 }
 
 .ignite-play-canvas {
   display: block;
   width: 100%;
   height: 100%;
+  background: linear-gradient(165deg, var(--lcd), var(--lcd-dark));
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-
-.ignite-play-overlaymsg {
+.ignite-play-screen__canvas-wrap::after {
+  content: '';
   position: absolute;
   inset: 0;
-  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(rgba(0, 0, 0, .07) 0, rgba(0, 0, 0, .07) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode: multiply;
+}
+
+.ignite-play-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: .3rem;
-  padding: .6rem;
+  padding: 1rem;
   text-align: center;
-  background: linear-gradient(160deg, var(--ignite-play-lcd), var(--ignite-play-lcd-dark));
+  color: var(--ink);
+  background: linear-gradient(165deg, var(--lcd), var(--lcd-dark));
 }
-.ignite-play-overlaymsg.is-visible { display: flex; }
-.ignite-play-overlaymsg__eyebrow { margin: 0; font: 800 .62rem/1.2 'DM Sans', system-ui, sans-serif; letter-spacing: .12em; }
-.ignite-play-overlaymsg__body { margin: 0; font-size: .68rem; opacity: .85; }
-.ignite-play-overlaymsg__cta { margin: .2rem 0 0; font: 800 .82rem/1.2 'Syne', 'DM Sans', system-ui, sans-serif; letter-spacing: .04em; }
-.ignite-play-overlaymsg__hint { margin: 0; min-height: 1em; font: 700 .62rem/1.3 'DM Sans', system-ui, sans-serif; letter-spacing: .04em; }
+.ignite-play-panel.is-visible { display: flex; }
+.ignite-play-panel__eyebrow { margin: 0; font: 800 .78rem/1.2 'Syne', 'DM Sans', sans-serif; letter-spacing: .14em; }
+.ignite-play-panel__game { margin: .25rem 0 0; font-size: 1.4rem; }
+.ignite-play-panel__tagline { margin: .35rem 0 0; font: 800 .82rem/1.3 'Syne', 'DM Sans', sans-serif; letter-spacing: .05em; }
+.ignite-play-panel__order { margin: .3rem 0 0; font: 700 .68rem/1.3 'DM Sans', sans-serif; opacity: .8; }
+.ignite-play-panel__note { margin: .3rem 0 0; max-width: 22ch; font-size: .7rem; opacity: .85; }
+.ignite-play-panel__hint { margin: .55rem 0 0; font: 800 .62rem/1.4 'DM Sans', sans-serif; letter-spacing: .06em; }
+.ignite-play-panel__scores { display: flex; gap: 1.4rem; margin-top: .3rem; }
+.ignite-play-panel__score { display: grid; gap: .1rem; }
+.ignite-play-panel__score span { font: 800 .58rem/1 'DM Sans', sans-serif; letter-spacing: .1em; opacity: .8; }
+.ignite-play-panel__score strong { font: 800 1.15rem/1 'DM Sans', sans-serif; font-variant-numeric: tabular-nums; }
 
-.ignite-play-led {
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-  justify-self: end;
-  color: #8f9aa3;
-  font-size: .55rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-}
-.ignite-play-led span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ignite-play-primary);
-  box-shadow: 0 0 6px 1px var(--ignite-play-primary);
-  animation: ignite-play-blink 2.4s ease-in-out infinite;
-}
-
-.ignite-play-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .4rem;
-  color: #f4f5f4;
-}
+.ignite-play-brand { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: .4rem; color: #f4f5f4; }
 .ignite-play-brand__flame {
-  width: 14px;
-  height: 14px;
-  background: var(--ignite-play-accent);
+  width: 13px;
+  height: 13px;
+  background: var(--accent);
   clip-path: polygon(50% 0%, 80% 35%, 65% 40%, 90% 70%, 50% 100%, 10% 70%, 35% 40%, 20% 35%);
 }
-.ignite-play-brand__word { font: 800 1rem/1 'Syne', sans-serif; letter-spacing: .03em; }
+.ignite-play-brand__word { font: 800 .92rem/1 'Syne', sans-serif; letter-spacing: .04em; }
 
+/* ---------- controls ---------- */
 .ignite-play-controls {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
   padding: 0 .2rem;
 }
 
 .ignite-play-dpad {
   position: relative;
-  width: 108px;
-  height: 108px;
+  width: clamp(92px, 26vh, 128px);
+  height: clamp(92px, 26vh, 128px);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
 }
-.ignite-play-dpad__hub {
-  grid-column: 2;
-  grid-row: 2;
-  background: var(--ignite-play-shell-2);
-  border-radius: 4px;
-}
+.ignite-play-dpad__hub { grid-column: 2; grid-row: 2; background: var(--shell-2); border-radius: 4px; }
 .ignite-play-dpad__btn {
   border: 0;
   background: #1c1e22;
   color: #aeb4bb;
-  font-size: .8rem;
+  font-size: .82rem;
   cursor: pointer;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .06), inset 0 -3px 4px rgba(0, 0, 0, .4);
+  touch-action: manipulation;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .07), inset 0 -3px 4px rgba(0, 0, 0, .45);
+  transition: transform .06s ease, background .06s ease;
 }
-.ignite-play-dpad__btn--up { grid-column: 2; grid-row: 1; border-radius: 6px 6px 0 0; }
-.ignite-play-dpad__btn--down { grid-column: 2; grid-row: 3; border-radius: 0 0 6px 6px; }
-.ignite-play-dpad__btn--left { grid-column: 1; grid-row: 2; border-radius: 6px 0 0 6px; }
-.ignite-play-dpad__btn--right { grid-column: 3; grid-row: 2; border-radius: 0 6px 6px 0; }
-.ignite-play-dpad__btn:active { background: #101113; }
+.ignite-play-dpad__btn--up { grid-column: 2; grid-row: 1; border-radius: 8px 8px 0 0; }
+.ignite-play-dpad__btn--down { grid-column: 2; grid-row: 3; border-radius: 0 0 8px 8px; }
+.ignite-play-dpad__btn--left { grid-column: 1; grid-row: 2; border-radius: 8px 0 0 8px; }
+.ignite-play-dpad__btn--right { grid-column: 3; grid-row: 2; border-radius: 0 8px 8px 0; }
+.ignite-play-dpad__btn.is-pressed { background: #101113; color: #fff; transform: scale(.94); }
 
 .ignite-play-ab {
   position: relative;
-  width: 96px;
-  height: 64px;
+  width: clamp(84px, 22vh, 100px);
+  height: clamp(58px, 15vh, 68px);
   justify-self: end;
 }
 .ignite-play-btn {
   position: absolute;
-  width: 46px;
-  height: 46px;
+  width: clamp(42px, 12vh, 48px);
+  height: clamp(42px, 12vh, 48px);
   border: 0;
   border-radius: 50%;
-  background: linear-gradient(155deg, var(--ignite-play-accent), #d9481b);
+  background: linear-gradient(155deg, var(--accent), #d9481b);
   color: #fff9f5;
   font: 800 .95rem/1 'Syne', sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
   box-shadow: 0 4px 0 #a5330c, inset 0 2px 3px rgba(255, 255, 255, .35);
+  transition: transform .06s ease, box-shadow .06s ease;
 }
-.ignite-play-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #a5330c, inset 0 2px 3px rgba(255, 255, 255, .35); }
 .ignite-play-btn--a { top: 0; right: 0; }
 .ignite-play-btn--b { bottom: 0; left: 0; }
+.ignite-play-btn.is-pressed { transform: translateY(3px); box-shadow: 0 1px 0 #a5330c, inset 0 2px 3px rgba(255, 255, 255, .35); }
 
 .ignite-play-meta {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.4rem;
+  gap: 1.6rem;
+  padding-bottom: .1rem;
 }
 .ignite-play-pill {
-  padding: .38rem 1rem;
+  padding: .4rem 1.1rem;
   border: 0;
   border-radius: 999px;
   background: #1c1e22;
   color: #aeb4bb;
-  font: 700 .58rem/1 'DM Sans', system-ui, sans-serif;
+  font: 700 .58rem/1 'DM Sans', sans-serif;
   letter-spacing: .1em;
   cursor: pointer;
+  touch-action: manipulation;
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, .06), inset 0 -3px 4px rgba(0, 0, 0, .4);
 }
-.ignite-play-pill:active { background: #101113; }
+.ignite-play-pill.is-pressed { background: #101113; }
 
-body.ignite-play-lock { overflow: hidden; }
+/* ---------- breakpoints ---------- */
 
-@keyframes ignite-play-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes ignite-play-pop { from { opacity: 0; transform: scale(.92) translateY(10px); } to { opacity: 1; transform: none; } }
-@keyframes ignite-play-blink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
-
-@media (max-width: 380px) {
-  .ignite-play-console { width: 94vw; padding: .9rem .85rem 1.1rem; gap: .65rem; }
-  .ignite-play-dpad { width: 92px; height: 92px; }
-  .ignite-play-ab { width: 84px; height: 56px; }
-  .ignite-play-btn { width: 40px; height: 40px; }
+/* telas bem baixas (celular deitado): controles um pouco mais discretos */
+@media (max-height: 480px) {
+  .ignite-play-console { gap: .35rem; padding-top: .5rem; padding-bottom: .5rem; }
+  .ignite-play-header__title { font-size: .68rem; }
+  .ignite-play-panel__game { font-size: 1.1rem; }
 }
 
 @media (min-width: 640px) {
-  .ignite-play-console { width: min(70vw, 400px); }
+  .ignite-play-overlay {
+    align-items: center;
+    background: rgba(5, 13, 8, .72);
+    backdrop-filter: blur(4px);
+    touch-action: auto;
+  }
+  .ignite-play-console {
+    width: min(94vw, 400px);
+    height: min(94dvh, 780px);
+    border-radius: 28px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08);
+    padding: 1.1rem 1.1rem 1.3rem;
+  }
 }
+
+@media (min-width: 900px) {
+  .ignite-play-console { width: min(32vw, 420px); height: min(90vh, 800px); }
+}
+
+@keyframes ignite-play-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ignite-play-rise { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes ignite-play-blink { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
 @media (prefers-reduced-motion: reduce) {
   .ignite-play-overlay,
   .ignite-play-console,
-  .ignite-play-led span {
+  .ignite-play-header__dot,
+  .ignite-play-dpad__btn,
+  .ignite-play-btn {
     animation: none !important;
     transition: none !important;
   }

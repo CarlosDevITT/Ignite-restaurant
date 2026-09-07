@@ -1,5 +1,5 @@
-const SHELL_CACHE='ignite-cardapio-v29-ignite-play-4-'+encodeURIComponent(self.registration.scope);
-const GAME_CACHE='ignite-play-games-v1-'+encodeURIComponent(self.registration.scope);
+const SHELL_CACHE='ignite-cardapio-v30-ignite-play-41-'+encodeURIComponent(self.registration.scope);
+const GAME_CACHE='ignite-play-games-v2-'+encodeURIComponent(self.registration.scope);
 const APP_SHELL=[
   './','./index.html','./manifest.json','./styles/cardapio.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
   './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',

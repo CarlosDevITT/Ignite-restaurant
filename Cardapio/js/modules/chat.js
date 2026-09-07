@@ -5,32 +5,40 @@ import { escapeHTML, money, normalizeText } from '../utils/format.js';
 const STOP_WORDS = new Set([
   'a', 'ao', 'aos', 'as', 'com', 'como', 'da', 'das', 'de', 'do', 'dos', 'e', 'em', 'eu', 'me',
   'o', 'os', 'para', 'por', 'qual', 'quais', 'que', 'tem', 'uma', 'um', 'voce', 'voces', 'meu', 'minha',
+  'ainda', 'agora', 'hoje', 'estao', 'esta', 'está',
 ]);
 
 const SYNONYM_GROUPS = [
-  ['horario', 'funcionamento', 'abre', 'aberto', 'fecha', 'fechado'],
-  ['endereco', 'onde', 'localizacao', 'fica', 'rua'],
-  ['pagamento', 'pagar', 'pix', 'cartao', 'credito', 'debito', 'dinheiro'],
-  ['entrega', 'delivery', 'entregar'],
-  ['tempo', 'demora', 'prazo', 'minutos'],
-  ['taxa', 'frete', 'entrega'],
+  ['horario', 'horarios', 'funcionamento', 'abre', 'abrir', 'aberto', 'abertos', 'fecha', 'fechar', 'fechado', 'fechados'],
+  ['endereco', 'enderecos', 'onde', 'localizacao', 'fica', 'rua'],
+  ['pagamento', 'pagamentos', 'pagar', 'pix', 'cartao', 'cartoes', 'credito', 'debito', 'dinheiro'],
+  ['entrega', 'entregas', 'delivery', 'entregar'],
+  ['tempo', 'demora', 'prazo', 'minuto', 'minutos'],
+  ['taxa', 'taxas', 'frete', 'entrega'],
   ['cancelamento', 'cancelar', 'cancelo'],
-  ['vegetariano', 'vegetariana', 'vegano', 'vegana', 'fit', 'leve'],
-  ['promocao', 'promocoes', 'oferta', 'ofertas', 'desconto'],
-  ['produto', 'produtos', 'cardapio', 'comida', 'prato', 'pratos'],
+  ['vegetariano', 'vegetariana', 'vegetarianos', 'vegetarianas', 'vegano', 'vegana', 'veganos', 'veganas', 'fit', 'leve'],
+  ['promocao', 'promocoes', 'oferta', 'ofertas', 'desconto', 'descontos'],
+  ['produto', 'produtos', 'cardapio', 'comida', 'comidas', 'prato', 'pratos'],
   ['bebida', 'bebidas', 'drink', 'drinks'],
   ['combo', 'combos'],
 ];
 
 const PRODUCT_INTENT = /produto|cardapio|comida|prato|lanche|hamb|burger|pizza|marmitex|marmita|bebida|drink|combo|lasanha|batata|porcao|salada|veget|vegano|fit|promoc|oferta|mais pedido|popular|preco|valor|quanto custa/;
-
 const normalize = (value) => normalizeText(String(value || ''));
 
+function tokenVariants(token) {
+  const variants = new Set([token]);
+  if (token.length > 3 && token.endsWith('s')) variants.add(token.slice(0, -1));
+  if (token.endsWith('oes')) variants.add(`${token.slice(0, -3)}ao`);
+  return variants;
+}
+
 function tokensFor(value) {
-  const base = normalize(value)
+  const raw = normalize(value)
     .split(/[^a-z0-9]+/)
     .filter((token) => token.length > 1 && !STOP_WORDS.has(token));
-  const tokens = new Set(base);
+  const tokens = new Set();
+  raw.forEach((token) => tokenVariants(token).forEach((variant) => tokens.add(variant)));
   SYNONYM_GROUPS.forEach((group) => {
     if (group.some((word) => tokens.has(word))) group.forEach((word) => tokens.add(word));
   });
@@ -56,7 +64,7 @@ function scoreKnowledge(item, question, tokens) {
   let score = 0;
   if (title && question.includes(title)) score += 12;
   tokens.forEach((token) => {
-    if (title.includes(token)) score += 5;
+    if (title.includes(token)) score += 6;
     if (category.includes(token)) score += 3;
     if (content.includes(token)) score += 1;
   });
@@ -97,13 +105,11 @@ function findProducts(products, question) {
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
     .map(({ product }) => product);
-
   if (ranked.length) return ranked.slice(0, 8);
-
-  const promoted = products
+  return products
     .filter((product) => product.available !== false)
-    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || Number(Boolean(b.promo)) - Number(Boolean(a.promo)));
-  return promoted.slice(0, 8);
+    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || Number(Boolean(b.promo)) - Number(Boolean(a.promo)))
+    .slice(0, 8);
 }
 
 function productCard(product) {
@@ -141,6 +147,7 @@ export function initChat(products) {
     .then((items) => {
       knowledge = items;
       knowledgeReady = true;
+      console.info(`[Chat Ignite] Knowledge carregado: ${items.length} registros ativos.`);
       return items;
     })
     .catch((error) => {
@@ -150,7 +157,6 @@ export function initChat(products) {
     });
 
   const scrollToBottom = () => { messages.scrollTop = messages.scrollHeight; };
-
   const addMessage = (text, user = false) => {
     messages.insertAdjacentHTML('beforeend', `<div class="message ${user ? 'message--user' : ''}">${escapeHTML(text)}</div>`);
     scrollToBottom();
@@ -189,7 +195,6 @@ export function initChat(products) {
     } else {
       addMessage('Ainda não encontrei essa informação na base do Ignite. Você pode perguntar sobre produtos, horário, endereço, entrega, pagamento, promoções ou políticas do restaurante.');
     }
-
     if (productMatches.length) addProductCarousel(productMatches);
   };
 
@@ -212,11 +217,7 @@ export function initChat(products) {
     }
   };
 
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    send(input.value);
-  });
-
+  form.addEventListener('submit', (event) => { event.preventDefault(); send(input.value); });
   suggestions?.addEventListener('click', (event) => {
     const button = event.target.closest('button');
     if (button) send(button.textContent);

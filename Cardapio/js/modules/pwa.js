@@ -5,6 +5,27 @@ export function initPWA() {
   let connectionTimer = null;
   let launchShownAt = 0;
 
+  const params = new URLSearchParams(location.search);
+  const isIOSStandalone = () => window.navigator.standalone === true;
+  const isDisplayMode = (mode) => window.matchMedia?.(`(display-mode: ${mode})`).matches === true;
+  const isAppMode = () =>
+    isIOSStandalone() ||
+    isDisplayMode('standalone') ||
+    isDisplayMode('minimal-ui') ||
+    isDisplayMode('fullscreen') ||
+    params.get('source') === 'pwa';
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  // CSS crítico do launch screen: precisa existir antes do CSS externo chegar.
+  if (!document.getElementById('ignite-pwa-critical')) {
+    const style = document.createElement('style');
+    style.id = 'ignite-pwa-critical';
+    style.textContent = `
+      .pwa-launch{position:fixed;z-index:30000;inset:0;display:grid;place-items:center;overflow:hidden;padding:max(22px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));background:radial-gradient(circle at 50% 22%,rgba(7,156,85,.26),transparent 34%),radial-gradient(circle at 80% 88%,rgba(255,99,50,.13),transparent 28%),#07110c;color:#fff;transition:opacity .28s ease,visibility .28s ease}.pwa-launch[hidden]{display:none!important}.pwa-launch.is-leaving{opacity:0;visibility:hidden}.pwa-launch__inner{width:min(86vw,360px);display:grid;justify-items:center;text-align:center}.pwa-launch__logo{width:112px;height:112px;display:grid;place-items:center;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:31px;background:rgba(255,255,255,.06);box-shadow:0 22px 60px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.08)}.pwa-launch__logo img{width:100%;height:100%;object-fit:cover}.pwa-launch__brand{margin:24px 0 0;font:900 clamp(30px,9vw,42px)/1 system-ui,sans-serif;letter-spacing:.14em;color:#fff}.pwa-launch__brand span{color:#ff6332}.pwa-launch__copy{margin:10px 0 0;color:#bac9c0;font-size:.83rem;font-weight:600}.pwa-launch__progress{position:relative;width:min(180px,54vw);height:3px;overflow:hidden;margin-top:28px;border-radius:99px;background:rgba(255,255,255,.1)}.pwa-launch__progress::after{content:'';position:absolute;inset:0 auto 0 0;width:42%;border-radius:inherit;background:linear-gradient(90deg,#079c55,#20d477);animation:pwaLaunchProgress 1s ease-in-out infinite alternate}.pwa-launch__status{margin-top:11px;color:#819289;font-size:.67rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}@keyframes pwaLaunchProgress{from{transform:translateX(-70%)}to{transform:translateX(210%)}}
+    `;
+    document.head.appendChild(style);
+  }
+
   if (!document.getElementById('ignite-pwa-style')) {
     const link = document.createElement('link');
     link.id = 'ignite-pwa-style';
@@ -13,11 +34,8 @@ export function initPWA() {
     document.head.appendChild(link);
   }
 
-  const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
   let launch = document.querySelector('#pwa-launch');
-  if (!launch && isStandalone()) {
+  if (!launch && isAppMode()) {
     launch = document.createElement('div');
     launch.id = 'pwa-launch';
     launch.className = 'pwa-launch';
@@ -38,7 +56,7 @@ export function initPWA() {
   const badge = document.querySelector('#connection-badge');
 
   const setInstallVisibility = () => {
-    const installed = isStandalone();
+    const installed = isAppMode();
     buttons.forEach((button) => {
       if (button.id === 'install-app') button.hidden = installed || !deferredPrompt;
       else button.hidden = installed;
@@ -47,7 +65,7 @@ export function initPWA() {
   };
 
   const showLaunch = () => {
-    if (!launch || !isStandalone()) return;
+    if (!launch || !isAppMode()) return;
     launchShownAt = performance.now();
     launch.hidden = false;
     launch.classList.remove('is-leaving');
@@ -57,10 +75,11 @@ export function initPWA() {
   const markReady = async () => {
     if (!launch || launch.hidden) return;
     const elapsed = performance.now() - launchShownAt;
-    if (elapsed < 520) await new Promise((resolve) => setTimeout(resolve, 520 - elapsed));
+    const minimumVisible = 900;
+    if (elapsed < minimumVisible) await new Promise((resolve) => setTimeout(resolve, minimumVisible - elapsed));
     launch.classList.add('is-leaving');
     launch.setAttribute('aria-hidden', 'true');
-    setTimeout(() => { launch.hidden = true; }, 300);
+    setTimeout(() => { launch.hidden = true; }, 320);
   };
 
   const toast = (icon, title) => {
@@ -78,7 +97,7 @@ export function initPWA() {
   };
 
   const requestInstall = async () => {
-    if (isStandalone()) {
+    if (isAppMode()) {
       toast('success', 'Ignite já está instalado');
       return;
     }

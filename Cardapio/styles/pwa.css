@@ -1,0 +1,10 @@
+/* Ignite PWA UX */
+html.is-pwa body{overscroll-behavior-y:none}
+html.is-pwa .app-shell{padding-top:max(0px,env(safe-area-inset-top))}
+html.is-pwa .mobile-bottom-nav{padding-bottom:max(.45rem,env(safe-area-inset-bottom))}
+html.is-offline .status-dot{background:#f4a62a!important;box-shadow:0 0 0 4px rgba(244,166,42,.12)!important}
+html.is-offline .store-mini strong{color:#8b5b05}
+.connection-badge{position:fixed;z-index:21000;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);max-width:calc(100vw - 28px);display:flex;align-items:center;gap:.5rem;padding:.58rem .85rem;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(15,23,18,.88);color:#fff;font-size:.76rem;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.22);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.connection-badge[hidden]{display:none!important}.connection-badge.is-offline::before,.connection-badge.is-online::before{content:'';width:8px;height:8px;flex:0 0 8px;border-radius:50%}.connection-badge.is-offline::before{background:#f4a62a}.connection-badge.is-online::before{background:#20d477}
+@media(display-mode:standalone){body{user-select:none;-webkit-user-select:none}input,textarea,[contenteditable=true]{user-select:text;-webkit-user-select:text}.app-header{padding-top:max(.2rem,env(safe-area-inset-top))}}
+@media(prefers-reduced-motion:no-preference){.connection-badge{animation:pwaBadgeIn .2s ease-out}@keyframes pwaBadgeIn{from{opacity:0;transform:translate(-50%,-8px)}}}

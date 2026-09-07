@@ -118,6 +118,13 @@ export async function requestPasswordReset(email) {
   if (error) throw error;
 }
 
+export async function updatePassword(password) {
+  const supabase = await getSupabase();
+  const { data, error } = await supabase.auth.updateUser({ password: String(password || '') });
+  if (error) throw error;
+  return data?.user || null;
+}
+
 export async function saveProfile(profile) {
   const local = saveLocalProfile({
     ...profile,

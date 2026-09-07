@@ -1,6 +1,6 @@
-const CACHE = 'ignite-cardapio-v25-chat-cart-' + encodeURIComponent(self.registration.scope);
+const CACHE = 'ignite-cardapio-v26-ignite-play-multigame-' + encodeURIComponent(self.registration.scope);
 const APP_SHELL = [
-  './', './index.html', './manifest.json', './styles/cardapio.css', './styles/ignite-play.css',
+  './', './index.html', './manifest.json', './styles/cardapio.css', './styles/ignite-play.css', './styles/ignite-play-library.css',
   './assets/bebidas.png', './assets/combos.png', './assets/pratos.png', './assets/promo%C3%A7%C3%A3o.png',
   './js/app.js', './js/config.js', './js/data/mock-products.js',
   './js/supabase-config.js',
@@ -10,7 +10,8 @@ const APP_SHELL = [
   './js/modules/carousel.js', './js/modules/navigation.js', './js/modules/catalog.js', './js/modules/cart.js',
   './js/modules/orders.js', './js/modules/profile.js', './js/modules/feed.js',
   './js/modules/chat.js', './js/modules/pwa.js',
-  './js/modules/ignite-play/index.js', './js/modules/ignite-play/score-store.js', './js/modules/ignite-play/games/snake.js',
+  './js/modules/ignite-play/index.js', './js/modules/ignite-play/game-registry.js', './js/modules/ignite-play/score-store.js',
+  './js/modules/ignite-play/games/snake.js', './js/modules/ignite-play/games/pong.js', './js/modules/ignite-play/games/breakout.js', './js/modules/ignite-play/games/tetris.js',
   './assets/uicons/css/uicons-regular-rounded.css',
   './assets/uicons/webfonts/uicons-regular-rounded.woff2',
   './assets/uicons/webfonts/uicons-regular-rounded.woff',

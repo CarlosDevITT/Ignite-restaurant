@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "name": "Ignite — Cardápio e Pedidos",
+  "name": "Ignite Restaurante — Cardápio e Pedidos",
   "short_name": "Ignite",
   "description": "Cardápio digital, pedidos, acompanhamento e novidades do Ignite Restaurante Pub.",
   "lang": "pt-BR",
@@ -8,11 +8,15 @@
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "portrait-primary",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#07110c",
-  "theme_color": "#0f1712",
+  "theme_color": "#07110c",
   "categories": ["food", "shopping", "lifestyle"],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     { "src": "../assets/images/logos/ignite.jpg", "sizes": "480x480", "type": "image/jpeg", "purpose": "any" },
     { "src": "../assets/images/logos/ignite2.png", "sizes": "480x480", "type": "image/png", "purpose": "maskable" }

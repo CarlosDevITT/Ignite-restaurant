@@ -1,4 +1,4 @@
-const CACHE = 'ignite-cardapio-v23-status-final-' + encodeURIComponent(self.registration.scope);
+const CACHE = 'ignite-cardapio-v24-knowledge-chat-' + encodeURIComponent(self.registration.scope);
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/cardapio.css', './styles/ignite-play.css',
   './assets/bebidas.png', './assets/combos.png', './assets/pratos.png', './assets/promo%C3%A7%C3%A3o.png',
@@ -23,7 +23,7 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('ignite-cardapio-') && key !== CACHE && (!key.includes('status-final-') || key.endsWith(encodeURIComponent(self.registration.scope)))).map((key) => caches.delete(key)))));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('ignite-cardapio-') && key !== CACHE && (!key.includes('knowledge-chat-') || key.endsWith(encodeURIComponent(self.registration.scope)))).map((key) => caches.delete(key)))));
   self.clients.claim();
 });
 

@@ -1,6 +1,6 @@
 import { APP_CONFIG } from '../config.js';
 import { createId } from '../utils/format.js';
-import { getSupabase, supabaseRetry } from './supabase-client.js';
+import { getSupabase, ensureCustomerSession, supabaseRetry } from './supabase-client.js';
 
 const STORAGE_KEY = 'ignite-orders-v1';
 
@@ -27,6 +27,7 @@ const saveLocalOrder = (order) => {
 export async function placeOrder(payload, items) {
   const supabase = await getSupabase();
   if (supabase) {
+    await ensureCustomerSession();
     const rpcItems = items.map((item) => ({
       product_id: item.product_id,
       quantity: item.quantity,
@@ -92,11 +93,14 @@ export async function placeOrder(payload, items) {
 }
 
 async function placeLegacyOrder(supabase, payload, items) {
+  const session = await ensureCustomerSession();
+  const userId = session.user.id;
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = payload.orderType === 'delivery' ? APP_CONFIG.deliveryFee : 0;
   const legacyType = payload.orderType === 'pickup' ? 'retirada' : payload.orderType;
   const orderNumber = Number(String(Date.now()).slice(-6));
   const { data: order, error } = await supabaseRetry(() => supabase.from('orders').insert({
+    user_id: userId,
     customer_name: payload.customerName, phone: payload.phone, total: subtotal + deliveryFee,
     status: 'pending', items_count: items.reduce((sum, item) => sum + item.quantity, 0),
     tipo: legacyType, order_type: payload.orderType, table_number: payload.tableNumber,
@@ -114,7 +118,6 @@ async function placeLegacyOrder(supabase, payload, items) {
   return { ...order, order_number: `IG${String(order.numero_pedido || orderNumber).padStart(6, '0')}`, subtotal, delivery_fee: Number(order.taxa_entrega ?? deliveryFee), order_items: items };
 }
 
-
 let cacheVersion = 0;
 let loadVersion = 0;
 export function cacheOrderChange(payload) {
@@ -130,12 +133,14 @@ export function cacheOrderChange(payload) {
 
 export async function getOrders() {
   const supabase = await getSupabase();
+  const session = await ensureCustomerSession();
+  const userId = session.user.id;
   const request = ++loadVersion;
   const version = cacheVersion;
   const { data, error } = await supabaseRetry(() => supabase.from('orders')
-    .select('*, order_items(*)').order('created_at', { ascending: false }));
+    .select('*, order_items(*)').eq('user_id', userId).order('created_at', { ascending: false }));
   if (error) throw error;
-  // Successful server reads replace remote cache, including removed/inaccessible rows.
+  // A successful server read is authoritative for this customer's remote orders.
   const next = [...(data || []), ...readLocal().filter(order => order.offline === true)];
   if (request === loadVersion && version === cacheVersion) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -146,12 +151,13 @@ export async function getOrders() {
 // Session/online changes discover newly visible orders without owning per-order channels.
 export async function subscribeToOrders(onChange) {
   const supabase = await getSupabase();
+  await ensureCustomerSession();
   let stopped = false;
   const refresh = () => { if (!stopped) onChange(); };
   const { data } = supabase.auth.onAuthStateChange(() => queueMicrotask(refresh));
   window.addEventListener('online', refresh);
   window.addEventListener('focus', refresh);
-  const timer = setInterval(refresh, 30000); // Also reconciles administrative DELETE under RLS.
+  const timer = setInterval(refresh, 30000);
   return () => {
     stopped = true;
     clearInterval(timer);
@@ -166,6 +172,7 @@ export async function subscribeToOrder(orderId, { onChange, onError = console.wa
     throw new Error('orders.id ausente ou inválido para acompanhamento.');
   }
   const supabase = await getSupabase();
+  await ensureCustomerSession();
   let channel = null, timer = null, stopped = false, generation = 0, revision = 0, query = 0;
   const emit = payload => { cacheOrderChange(payload); onChange?.(payload); };
   const reconcile = async () => {
@@ -185,7 +192,6 @@ export async function subscribeToOrder(orderId, { onChange, onError = console.wa
     const old = channel;
     channel = null;
     if (old) await supabase.removeChannel(old);
-    // First reconcile, then subscribe; reconcile again on SUBSCRIBED closes the gap.
     try { await reconcile(); } catch (error) { onError(error); }
     if (stopped || token !== generation) return;
     channel = supabase.channel(`order-${orderId}-${token}`)

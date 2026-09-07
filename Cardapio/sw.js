@@ -1,4 +1,4 @@
-const VERSION='v48-email-phone-login';
+const VERSION='v49-pwa-icons';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v2-${SCOPE_KEY}`;
@@ -8,6 +8,7 @@ const MAX_RUNTIME_IMAGES=80;
 const APP_SHELL=[
   './','./index.html','./manifest.json','./styles/cardapio.css','./styles/catalog-premium.css','./styles/catalog-vertical.css','./styles/pwa.css','./styles/profile-auth.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
   './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',
+  './icons/icon-192.png','./icons/icon-512.png','./icons/icon-192-maskable.png','./icons/icon-512-maskable.png','./icons/apple-touch-icon.png',
   './js/app.js','./js/config.js','./js/data/mock-products.js','./js/supabase-config.js',
   './js/utils/format.js','./js/store/cart-store.js','./js/services/supabase-client.js','./js/services/product-service.js',
   './js/services/order-service.js','./js/services/profile-service.js','./js/modules/carousel.js','./js/modules/navigation.js','./js/modules/catalog.js','./js/modules/cart.js',

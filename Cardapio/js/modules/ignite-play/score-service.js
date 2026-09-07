@@ -22,10 +22,16 @@ export function getPlayerToken() {
   }
 }
 
+export function formatPlayerName(value) {
+  const parts = String(value || '').trim().replace(/\s+/g, ' ').split(' ').filter(Boolean);
+  if (!parts.length) return 'Jogador Ignite';
+  // Ranking mobile: primeiro + segundo nome. Evita nomes completos enormes quebrando o layout.
+  return parts.slice(0, 2).join(' ').slice(0, 24);
+}
+
 function displayName() {
   const profile = getLocalProfile?.() || {};
-  const name = String(profile.name || '').trim();
-  return name ? name.slice(0, 40) : 'Jogador Ignite';
+  return formatPlayerName(profile.name);
 }
 
 export async function submitScore(gameId, score) {
@@ -35,10 +41,7 @@ export async function submitScore(gameId, score) {
     const supabase = await getSupabase();
     if (!supabase) return null;
     const { data, error } = await supabase.rpc('submit_ignite_play_score', {
-      p_player_token: getPlayerToken(),
-      p_game_id: gameId,
-      p_score: numericScore,
-      p_display_name: displayName(),
+      p_player_token: getPlayerToken(), p_game_id: gameId, p_score: numericScore, p_display_name: displayName(),
     });
     if (error) throw error;
     return data;
@@ -52,10 +55,7 @@ export async function getLeaderboard(gameId = null, limit = 10) {
   try {
     const supabase = await getSupabase();
     if (!supabase) return [];
-    const { data, error } = await supabase.rpc('get_ignite_play_leaderboard', {
-      p_game_id: gameId || null,
-      p_limit: Math.max(1, Math.min(50, Number(limit) || 10)),
-    });
+    const { data, error } = await supabase.rpc('get_ignite_play_leaderboard', { p_game_id: gameId || null, p_limit: Math.max(1, Math.min(50, Number(limit) || 10)) });
     if (error) throw error;
     return Array.isArray(data) ? data : [];
   } catch (error) {
@@ -68,9 +68,7 @@ export async function getPlayerStats() {
   try {
     const supabase = await getSupabase();
     if (!supabase) return null;
-    const { data, error } = await supabase.rpc('get_ignite_play_player', {
-      p_player_token: getPlayerToken(),
-    });
+    const { data, error } = await supabase.rpc('get_ignite_play_player', { p_player_token: getPlayerToken() });
     if (error) throw error;
     return data || null;
   } catch (error) {

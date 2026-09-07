@@ -1,7 +1,7 @@
-const SHELL_CACHE='ignite-cardapio-v31-ignite-play-42-'+encodeURIComponent(self.registration.scope);
+const SHELL_CACHE='ignite-cardapio-v32-catalog-ux2-'+encodeURIComponent(self.registration.scope);
 const GAME_CACHE='ignite-play-games-v2-'+encodeURIComponent(self.registration.scope);
 const APP_SHELL=[
-  './','./index.html','./manifest.json','./styles/cardapio.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
+  './','./index.html','./manifest.json','./styles/cardapio.css','./styles/catalog-premium.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
   './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',
   './js/app.js','./js/config.js','./js/data/mock-products.js','./js/supabase-config.js',
   './js/utils/format.js','./js/store/cart-store.js','./js/services/supabase-client.js','./js/services/product-service.js',

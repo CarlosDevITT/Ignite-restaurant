@@ -1,4 +1,4 @@
-const CACHE = 'ignite-cardapio-v27-ignite-play-ux-' + encodeURIComponent(self.registration.scope);
+const CACHE = 'ignite-cardapio-v28-ignite-play-31-' + encodeURIComponent(self.registration.scope);
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/cardapio.css', './styles/ignite-play.css',
   './assets/bebidas.png', './assets/combos.png', './assets/pratos.png', './assets/promo%C3%A7%C3%A3o.png',

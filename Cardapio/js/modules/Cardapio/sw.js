@@ -14,7 +14,7 @@ const APP_SHELL = [
   './assets/uicons/css/uicons-regular-rounded.css',
   './assets/uicons/webfonts/uicons-regular-rounded.woff2',
   './assets/uicons/webfonts/uicons-regular-rounded.woff',
-  '../../assets/images/logos/ignite.jpg', '../../assets/images/logos/ignite2.png',
+  '../../../../../assets/images/logos/ignite.jpg', '../../../../../assets/images/logos/ignite2.png',
 ];
 
 self.addEventListener('install', (event) => {

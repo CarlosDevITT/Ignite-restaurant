@@ -2,21 +2,24 @@
   "id": "./",
   "name": "Ignite — Cardápio e Pedidos",
   "short_name": "Ignite",
-  "description": "Cardápio digital, pedidos e novidades do Ignite Restaurante Pub.",
+  "description": "Cardápio digital, pedidos, acompanhamento e novidades do Ignite Restaurante Pub.",
   "lang": "pt-BR",
-  "start_url": "./index.html",
+  "dir": "ltr",
+  "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait-primary",
-  "background_color": "#f5f7f5",
+  "background_color": "#07110c",
   "theme_color": "#0f1712",
-  "categories": ["food", "shopping"],
+  "categories": ["food", "shopping", "lifestyle"],
   "icons": [
     { "src": "../assets/images/logos/ignite.jpg", "sizes": "480x480", "type": "image/jpeg", "purpose": "any" },
     { "src": "../assets/images/logos/ignite2.png", "sizes": "480x480", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Ver produtos", "short_name": "Produtos", "url": "./index.html#home" },
-    { "name": "Meus pedidos", "short_name": "Pedidos", "url": "./index.html#orders" }
+    { "name": "Ver cardápio", "short_name": "Cardápio", "description": "Abrir produtos e categorias", "url": "./index.html?source=shortcut#home" },
+    { "name": "Meus pedidos", "short_name": "Pedidos", "description": "Acompanhar meus pedidos", "url": "./index.html?source=shortcut#orders" },
+    { "name": "Meu perfil", "short_name": "Perfil", "description": "Abrir meu perfil Ignite", "url": "./index.html?source=shortcut#profile" }
   ]
 }

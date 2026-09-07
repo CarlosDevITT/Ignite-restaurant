@@ -44,6 +44,7 @@ async function bootstrap() {
     initProfile({ requestInstall: pwa.requestInstall });
     initCart({
       onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
+      onCreateAccount: () => navigation.navigate('profile'),
       onOrderPlaced: () => orders.load(),
     });
 

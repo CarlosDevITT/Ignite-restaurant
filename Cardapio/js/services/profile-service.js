@@ -157,7 +157,9 @@ export async function saveProfile(profile) {
 export function onAuthStateChange(callback) {
   let subscription;
   getSupabase().then((supabase) => {
-    const result = supabase.auth.onAuthStateChange((event, session) => callback?.(event, session));
+    const result = supabase.auth.onAuthStateChange((event, session) => {
+      setTimeout(() => callback?.(event, session), 0);
+    });
     subscription = result?.data?.subscription;
   }).catch(console.warn);
   return () => subscription?.unsubscribe?.();

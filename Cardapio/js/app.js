@@ -11,25 +11,14 @@ import { initPWA } from './modules/pwa.js';
 import { getCatalog } from './services/product-service.js';
 
 async function bootstrap() {
+  const pwa = initPWA();
   document.querySelectorAll('[data-carousel]').forEach(initCarousel);
   const grid = document.querySelector('#product-grid');
   const skeleton = document.querySelector('#product-skeleton');
   grid.replaceChildren(...Array.from({ length: 6 }, () => skeleton.content.cloneNode(true)));
 
-  const connectionBadge = document.querySelector('#connection-badge');
-  const showConnection = (message, duration = 2500) => {
-    connectionBadge.textContent = message;
-    connectionBadge.hidden = false;
-    if (duration) setTimeout(() => { connectionBadge.hidden = true; }, duration);
-  };
-
-  window.addEventListener('offline', () => showConnection('Você está offline', 0));
-  window.addEventListener('online', () => showConnection('Conexão restaurada'));
-  if (!navigator.onLine) showConnection('Você está offline', 0);
-
   try {
     const catalog = await getCatalog();
-    const pwa = initPWA();
     const orders = initOrders({
       onPlayRequested: (order) => {
         const orderId = order?.id;
@@ -55,15 +44,18 @@ async function bootstrap() {
     initProfile({ requestInstall: pwa.requestInstall });
     initCart({
       onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
-      // O pedido só cria dados aqui; o Game Boy é aberto pelo cliente via CTA em "Meus pedidos" (orders.js).
       onOrderPlaced: () => orders.load(),
     });
 
-    if (catalog.source === 'demo') showConnection('Modo demonstração · configure o Supabase', 4000);
+    if (catalog.source === 'demo' && window.Swal) {
+      Swal.fire({ toast: true, position: 'top', icon: 'info', title: 'Modo demonstração · configure o Supabase', showConfirmButton: false, timer: 4000 });
+    }
   } catch (error) {
     console.error(error);
     grid.innerHTML = '<div class="empty-state"><span>⚠️</span><h3>Não foi possível abrir o cardápio</h3><p>Atualize a página e tente novamente.</p></div>';
-    Swal.fire({ icon: 'error', title: 'Erro ao iniciar', text: error.message });
+    if (window.Swal) Swal.fire({ icon: 'error', title: 'Erro ao iniciar', text: error.message });
+  } finally {
+    pwa.markReady?.();
   }
 }
 

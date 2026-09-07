@@ -1,4 +1,4 @@
-const VERSION='v42-pwa-launch';
+const VERSION='v43-pwa-splash-fix';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v2-${SCOPE_KEY}`;

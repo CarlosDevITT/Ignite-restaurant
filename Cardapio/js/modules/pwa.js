@@ -16,6 +16,23 @@ export function initPWA() {
     params.get('source') === 'pwa';
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
+  const syncInstallIcons = () => {
+    const ensureLink = (rel, href, sizes) => {
+      let link = document.querySelector(`link[rel="${rel}"]`);
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = rel;
+        document.head.appendChild(link);
+      }
+      link.href = href;
+      link.type = 'image/png';
+      if (sizes) link.sizes = sizes;
+    };
+    ensureLink('icon', './icons/icon-192.png', '192x192');
+    ensureLink('apple-touch-icon', './icons/apple-touch-icon.png', '180x180');
+  };
+  syncInstallIcons();
+
   if (!document.getElementById('ignite-pwa-critical')) {
     const style = document.createElement('style');
     style.id = 'ignite-pwa-critical';

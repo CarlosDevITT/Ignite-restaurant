@@ -5,6 +5,7 @@ import { getGame, listGames } from './game-registry.js';
 import { getHighScore, setHighScoreIfBetter } from './score-store.js';
 
 const STYLE_ID = 'ignite-play-styles';
+const LIBRARY_STYLE_ID = 'ignite-play-library-styles';
 const LOCK_CLASS = 'ignite-play-lock';
 const SWIPE_THRESHOLD = 24;
 const KEY_DIRECTIONS = {
@@ -65,9 +66,14 @@ let keydownHandler = null;
 let pointerStart = null;
 
 const ensureStyles = () => {
-  if (document.getElementById(STYLE_ID)) return;
-  const link = document.createElement('link'); link.id = STYLE_ID; link.rel = 'stylesheet';
-  link.href = new URL('../../../styles/ignite-play.css', import.meta.url).href; document.head.appendChild(link);
+  if (!document.getElementById(STYLE_ID)) {
+    const link = document.createElement('link'); link.id = STYLE_ID; link.rel = 'stylesheet';
+    link.href = new URL('../../../styles/ignite-play.css', import.meta.url).href; document.head.appendChild(link);
+  }
+  if (!document.getElementById(LIBRARY_STYLE_ID)) {
+    const link = document.createElement('link'); link.id = LIBRARY_STYLE_ID; link.rel = 'stylesheet';
+    link.href = new URL('../../../styles/ignite-play-library.css', import.meta.url).href; document.head.appendChild(link);
+  }
 };
 const query = (role) => overlay?.querySelector(`[data-role="${role}"]`);
 const formatScore = (value) => String(Math.max(0, Math.floor(value))).padStart(3, '0');

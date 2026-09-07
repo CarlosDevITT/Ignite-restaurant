@@ -37,11 +37,14 @@ function supported() {
 async function saveSubscription(subscription) {
   const supabase = await getSupabase();
   const json = subscription.toJSON();
-  const { error } = await supabase.rpc('upsert_push_subscription', {
+  if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
+    throw new Error('O navegador não retornou uma inscrição push válida.');
+  }
+  const { data, error } = await supabase.rpc('upsert_push_subscription', {
     p_client_token: getClientToken(),
     p_endpoint: json.endpoint,
-    p_p256dh: json.keys?.p256dh || '',
-    p_auth_key: json.keys?.auth || '',
+    p_p256dh: json.keys.p256dh,
+    p_auth_key: json.keys.auth,
     p_device_name: deviceName(),
     p_user_agent: navigator.userAgent || '',
     p_order_updates: true,
@@ -49,6 +52,7 @@ async function saveSubscription(subscription) {
     p_ignite_play: true,
   });
   if (error) throw error;
+  if (!data) throw new Error('O servidor não confirmou a inscrição de notificações.');
   return subscription;
 }
 
@@ -60,14 +64,31 @@ async function getRegistration() {
 export function initNotifications() {
   const isSupported = supported();
 
+  const getStatus = async () => {
+    if (!isSupported) return { state: 'unsupported', label: 'Não suportadas' };
+    if (Notification.permission === 'denied') return { state: 'blocked', label: 'Bloqueadas' };
+    if (Notification.permission !== 'granted') return { state: 'disabled', label: 'Não ativadas' };
+    try {
+      const registration = await getRegistration();
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) return { state: 'incomplete', label: 'Permissão concedida, falta ativar' };
+      return { state: 'active', label: 'Ativadas' };
+    } catch (error) {
+      return { state: 'error', label: 'Erro de configuração', error };
+    }
+  };
+
   const syncExistingSubscription = async () => {
     if (!isSupported || Notification.permission !== 'granted') return null;
     try {
       const registration = await getRegistration();
       const subscription = await registration.pushManager.getSubscription();
       if (!subscription) return null;
-      return await saveSubscription(subscription);
+      const saved = await saveSubscription(subscription);
+      localStorage.setItem(PROMPTED_KEY, '1');
+      return saved;
     } catch (error) {
+      localStorage.removeItem(PROMPTED_KEY);
       console.warn('[Push] Não foi possível sincronizar a inscrição existente:', error);
       return null;
     }
@@ -82,7 +103,10 @@ export function initNotifications() {
     const permission = Notification.permission === 'granted'
       ? 'granted'
       : await Notification.requestPermission();
-    if (permission !== 'granted') throw new Error('Permissão de notificações não concedida.');
+    if (permission !== 'granted') {
+      localStorage.removeItem(PROMPTED_KEY);
+      throw new Error('Permissão de notificações não concedida.');
+    }
 
     const registration = await getRegistration();
     let subscription = await registration.pushManager.getSubscription();
@@ -92,16 +116,25 @@ export function initNotifications() {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
     }
-    await saveSubscription(subscription);
-    localStorage.setItem(PROMPTED_KEY, '1');
-    return subscription;
+
+    try {
+      await saveSubscription(subscription);
+      localStorage.setItem(PROMPTED_KEY, '1');
+      return subscription;
+    } catch (error) {
+      localStorage.removeItem(PROMPTED_KEY);
+      throw error;
+    }
   };
 
   const disable = async () => {
     if (!isSupported) return false;
     const registration = await getRegistration();
     const subscription = await registration.pushManager.getSubscription();
-    if (!subscription) return true;
+    if (!subscription) {
+      localStorage.removeItem(PROMPTED_KEY);
+      return true;
+    }
     try {
       const supabase = await getSupabase();
       await supabase.rpc('disable_push_subscription', {
@@ -110,22 +143,27 @@ export function initNotifications() {
       });
     } finally {
       await subscription.unsubscribe().catch(() => false);
+      localStorage.removeItem(PROMPTED_KEY);
     }
     return true;
   };
 
   const promptAfterOrder = async () => {
-    if (!isSupported || Notification.permission === 'denied') return;
-    if (Notification.permission === 'granted') {
-      await syncExistingSubscription();
+    if (!isSupported) return;
+    if (Notification.permission === 'denied') {
+      localStorage.removeItem(PROMPTED_KEY);
       return;
     }
-    if (localStorage.getItem(PROMPTED_KEY) === '1' || !window.Swal) return;
+    if (Notification.permission === 'granted') {
+      const synced = await syncExistingSubscription();
+      if (synced) return;
+    }
+    if (!window.Swal) return;
 
     const result = await Swal.fire({
       icon: 'info',
       title: 'Receber atualizações do pedido?',
-      text: 'A Ignite pode avisar quando seu pedido for confirmado, entrar em preparação, ficar pronto ou sair para entrega.',
+      text: 'A Ignite pode avisar mesmo com o PWA fechado quando seu pedido for confirmado, entrar em preparação, ficar pronto ou sair para entrega.',
       showCancelButton: true,
       confirmButtonText: 'Ativar notificações',
       cancelButtonText: 'Agora não',
@@ -135,14 +173,19 @@ export function initNotifications() {
           await requestEnable();
           return true;
         } catch (error) {
-          Swal.showValidationMessage(error.message || 'Não foi possível ativar as notificações.');
+          localStorage.removeItem(PROMPTED_KEY);
+          Swal.showValidationMessage(error.message || 'Não foi possível ativar as notificações. Tente novamente.');
           return false;
         }
       },
     });
-    localStorage.setItem(PROMPTED_KEY, '1');
+
     if (result.isConfirmed) {
+      localStorage.setItem(PROMPTED_KEY, '1');
       Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Notificações ativadas', showConfirmButton: false, timer: 2200 });
+    } else {
+      // Cancelar não deve bloquear uma tentativa futura após outro pedido.
+      localStorage.removeItem(PROMPTED_KEY);
     }
   };
 
@@ -150,12 +193,16 @@ export function initNotifications() {
     syncExistingSubscription();
   }
 
-  return {
+  // API pública para Perfil/diagnóstico e testes manuais.
+  const api = {
     supported: isSupported,
     permission: () => isSupported ? Notification.permission : 'unsupported',
+    getStatus,
     requestEnable,
     disable,
     syncExistingSubscription,
     promptAfterOrder,
   };
+  window.IgniteNotifications = api;
+  return api;
 }

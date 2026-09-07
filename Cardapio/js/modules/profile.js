@@ -41,8 +41,14 @@ export function initProfile({ requestInstall }) {
       <section class="account-welcome"><div class="account-welcome__mark">IG</div><span class="section-kicker">Sua conta Ignite</span><h2>Compre rápido. Crie sua conta quando quiser.</h2><p>Seu primeiro pedido continua simples: nome e telefone. A conta sincroniza pedidos, dados e seu progresso no Ignite Play entre aparelhos.</p></section>
       <div class="auth-tabs card-panel"><button type="button" class="is-active" data-auth-tab="login">Entrar</button><button type="button" data-auth-tab="signup">Criar conta</button></div>
       <form class="account-auth card-panel" id="customer-login-form">
-        <div class="account-auth__heading"><strong>Bem-vindo de volta</strong><small>Acesse seus pedidos e benefícios.</small></div>
-        <label class="field"><span>E-mail</span><input name="email" type="email" autocomplete="email" required value="${esc(local.email)}" placeholder="voce@email.com"></label>
+        <div class="account-auth__heading"><strong>Bem-vindo de volta</strong><small>Entre com e-mail ou número de telefone.</small></div>
+        <div class="login-methods" role="group" aria-label="Forma de login">
+          <button type="button" class="is-active" data-login-method="email"><i class="fi fi-rr-envelope"></i><span>E-mail</span></button>
+          <button type="button" data-login-method="phone"><i class="fi fi-rr-phone-call"></i><span>Telefone</span></button>
+        </div>
+        <input type="hidden" name="login_type" value="email">
+        <label class="field" data-login-field="email"><span>E-mail</span><input name="email" type="email" autocomplete="email" required value="${esc(local.email)}" placeholder="voce@email.com"></label>
+        <label class="field" data-login-field="phone" hidden><span>Telefone / WhatsApp</span><input name="phone" inputmode="tel" autocomplete="tel" value="${esc(local.phone)}" placeholder="(47) 99999-9999"></label>
         <label class="field"><span>Senha</span><input name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Sua senha"></label>
         <button class="button button--full" type="submit">Entrar</button><button class="account-link" type="button" id="forgot-password">Esqueci minha senha</button>
       </form>
@@ -52,15 +58,35 @@ export function initProfile({ requestInstall }) {
         <label class="field"><span>WhatsApp</span><input name="phone" inputmode="tel" autocomplete="tel" required value="${esc(local.phone)}" placeholder="(47) 99999-9999"></label>
         <label class="field"><span>E-mail</span><input name="email" type="email" autocomplete="email" required value="${esc(local.email)}" placeholder="voce@email.com"></label>
         <label class="field"><span>Senha</span><input name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="Mínimo de 6 caracteres"></label>
-        <button class="button button--full" type="submit">Criar minha conta</button><small class="account-auth__note">Pedidos anteriores deste cliente e o Ignite Play serão vinculados quando a conta for conectada.</small>
+        <button class="button button--full" type="submit">Criar minha conta</button><small class="account-auth__note">Depois disso, você poderá entrar tanto pelo e-mail quanto pelo telefone cadastrado.</small>
       </form>
       <div class="account-guest-note card-panel"><i class="fi fi-rr-shopping-bag"></i><div><strong>Quer apenas pedir?</strong><small>Volte ao cardápio e finalize normalmente. Conta não é obrigatória.</small></div></div>
       <div class="settings-list card-panel"><button type="button" id="profile-install"><span>Instalar aplicativo</span><small>Tenha o Ignite na tela inicial</small></button></div>`;
 
     const tabs = [...view.querySelectorAll('[data-auth-tab]')], login = view.querySelector('#customer-login-form'), signup = view.querySelector('#customer-signup-form');
     tabs.forEach(button => button.addEventListener('click', () => { const mode = button.dataset.authTab; tabs.forEach(item => item.classList.toggle('is-active', item === button)); login.hidden = mode !== 'login'; signup.hidden = mode !== 'signup'; }));
+
+    const methodButtons = [...login.querySelectorAll('[data-login-method]')];
+    const loginType = login.elements.login_type;
+    const emailField = login.querySelector('[data-login-field="email"]');
+    const phoneField = login.querySelector('[data-login-field="phone"]');
+    const emailInput = login.elements.email;
+    const phoneInput = login.elements.phone;
+    methodButtons.forEach(button => button.addEventListener('click', () => {
+      const method = button.dataset.loginMethod;
+      loginType.value = method;
+      methodButtons.forEach(item => item.classList.toggle('is-active', item === button));
+      emailField.hidden = method !== 'email';
+      phoneField.hidden = method !== 'phone';
+      emailInput.required = method === 'email';
+      phoneInput.required = method === 'phone';
+      setTimeout(() => (method === 'email' ? emailInput : phoneInput).focus(), 30);
+    }));
+
     login.addEventListener('submit', async event => {
-      event.preventDefault(); const button = login.querySelector('[type="submit"]'); button.disabled = true; button.textContent = 'Entrando...';
+      event.preventDefault();
+      if (!login.checkValidity()) { login.reportValidity(); return; }
+      const button = login.querySelector('[type="submit"]'); button.disabled = true; button.textContent = 'Entrando...';
       try { await signInCustomer(Object.fromEntries(new FormData(login))); await render(); await Swal.fire({ icon: 'success', title: 'Conta conectada', text: 'Pedidos e Ignite Play foram sincronizados.', timer: 2000, showConfirmButton: false }); }
       catch (error) { await Swal.fire({ icon: 'error', title: 'Não foi possível entrar', text: error.message }); }
       finally { button.disabled = false; button.textContent = 'Entrar'; }
@@ -72,7 +98,7 @@ export function initProfile({ requestInstall }) {
       finally { button.disabled = false; button.textContent = 'Criar minha conta'; }
     });
     view.querySelector('#forgot-password').addEventListener('click', async () => {
-      const result = await Swal.fire({ title: 'Recuperar senha', input: 'email', inputValue: login.elements.email.value || local.email || '', inputLabel: 'E-mail da sua conta', showCancelButton: true, confirmButtonText: 'Enviar recuperação', cancelButtonText: 'Cancelar' });
+      const result = await Swal.fire({ title: 'Recuperar senha', input: 'email', inputValue: login.elements.email.value || local.email || '', inputLabel: 'Informe o e-mail vinculado à sua conta', showCancelButton: true, confirmButtonText: 'Enviar recuperação', cancelButtonText: 'Cancelar' });
       if (!result.isConfirmed || !result.value) return;
       try { await requestPasswordReset(result.value); await Swal.fire({ icon: 'success', title: 'E-mail enviado', text: 'Abra o link recebido para definir uma nova senha.' }); }
       catch (error) { await Swal.fire({ icon: 'error', title: 'Falha ao enviar', text: error.message }); }

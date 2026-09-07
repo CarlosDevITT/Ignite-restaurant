@@ -5,6 +5,7 @@ import { initChat } from './modules/chat.js';
 import { initFeed } from './modules/feed.js';
 import { IgnitePlay } from './modules/ignite-play/index.js';
 import { initNavigation } from './modules/navigation.js';
+import { initNotifications } from './modules/notifications.js';
 import { initOrders, isWaitingStatus } from './modules/orders.js';
 import { initProfile } from './modules/profile.js';
 import { initPWA } from './modules/pwa.js';
@@ -43,6 +44,7 @@ async function bootstrap() {
         CATALOG_BOOT_TIMEOUT_MS,
         'O carregamento do cardápio demorou mais que o esperado.'
       );
+      const notifications = initNotifications();
       const orders = initOrders({
         onPlayRequested: (order) => {
           const orderId = order?.id;
@@ -69,7 +71,10 @@ async function bootstrap() {
       initCart({
         onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
         onCreateAccount: () => navigation.navigate('profile'),
-        onOrderPlaced: () => orders.load(),
+        onOrderPlaced: () => {
+          orders.load();
+          notifications.promptAfterOrder().catch(error => console.warn('[Push]', error));
+        },
       });
 
       if (catalog.source === 'demo' && window.Swal) {

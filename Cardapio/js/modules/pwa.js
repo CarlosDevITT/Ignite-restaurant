@@ -13,11 +13,29 @@ export function initPWA() {
     document.head.appendChild(link);
   }
 
-  const buttons = [document.querySelector('#install-app'), document.querySelector('#profile-install')].filter(Boolean);
-  const badge = document.querySelector('#connection-badge');
-  const launch = document.querySelector('#pwa-launch');
   const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  let launch = document.querySelector('#pwa-launch');
+  if (!launch && isStandalone()) {
+    launch = document.createElement('div');
+    launch.id = 'pwa-launch';
+    launch.className = 'pwa-launch';
+    launch.setAttribute('role', 'status');
+    launch.setAttribute('aria-live', 'polite');
+    launch.innerHTML = `
+      <div class="pwa-launch__inner">
+        <div class="pwa-launch__logo"><img src="../../assets/images/logos/ignite2.png" alt="Ignite"></div>
+        <div class="pwa-launch__brand">IGNITE<span>.</span></div>
+        <p class="pwa-launch__copy">Cardápio · Pedidos · Ignite Play</p>
+        <div class="pwa-launch__progress" aria-hidden="true"></div>
+        <span class="pwa-launch__status">Preparando sua experiência</span>
+      </div>`;
+    document.body.prepend(launch);
+  }
+
+  const buttons = [document.querySelector('#install-app'), document.querySelector('#profile-install')].filter(Boolean);
+  const badge = document.querySelector('#connection-badge');
 
   const setInstallVisibility = () => {
     const installed = isStandalone();

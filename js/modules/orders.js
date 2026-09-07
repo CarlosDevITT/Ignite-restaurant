@@ -25,7 +25,7 @@ export function initOrders({ onPlayRequested } = {}) {
   let lastOrders = [];
   let destroyed = false, requestVersion = 0, revision = 0;
   const watchers = new Map();
-  const realtimeChannels = new Map(); // orderId(string) -> { cleanup, refCount, cancelled }
+  const realtimeChannels = new Map();
 
   const orderKey = (order) => String(order.id ?? '');
 
@@ -35,8 +35,7 @@ export function initOrders({ onPlayRequested } = {}) {
       const id = orderKey(order);
       const callbacks = watchers.get(id);
       if (!callbacks || !callbacks.size) return;
-      const normalizedStatus = order.status;
-      callbacks.forEach((callback) => { try { callback(normalizedStatus, order); } catch (error) { console.warn(error); } });
+      callbacks.forEach((callback) => { try { callback(order.status, order); } catch (error) { console.warn(error); } });
     });
   };
 
@@ -107,14 +106,15 @@ export function initOrders({ onPlayRequested } = {}) {
     try {
       const orders = await getOrders();
       if (destroyed || request !== requestVersion) return;
-      if (version !== revision) return; // Realtime wins over earlier HTTP.
+      if (version !== revision) return;
       const visible = new Set(orders.map(orderKey));
       lastOrders.filter(o => !visible.has(orderKey(o))).forEach(o =>
         watchers.get(orderKey(o))?.forEach(callback => callback('cancelled', { ...o, unavailable: true })));
       render(orders);
     } catch (error) {
+      console.error('[Pedidos] Falha ao carregar pedidos do cliente.', error);
       if (!destroyed && request === requestVersion && !lastOrders.length)
-        root.innerHTML = `<div class="empty-state"><h3>Não foi possível carregar</h3><p>${escapeHTML(error.message)}</p></div>`;
+        root.innerHTML = '<div class="empty-state"><h3>Não foi possível atualizar seus pedidos</h3><p>Verifique sua conexão e tente novamente.</p></div>';
     }
   };
 
@@ -127,7 +127,8 @@ export function initOrders({ onPlayRequested } = {}) {
   };
   root.addEventListener('click', onClick);
 
-  document.querySelector('#refresh-orders').addEventListener('click', load);
+  const refreshButton = document.querySelector('#refresh-orders');
+  refreshButton?.addEventListener('click', load);
   subscribeToOrders(load).then((cleanup) => { if (destroyed) cleanup(); else unsubscribe = cleanup; }).catch(console.warn);
   void load();
   return {
@@ -137,7 +138,7 @@ export function initOrders({ onPlayRequested } = {}) {
       destroyed = true; requestVersion++;
       unsubscribe();
       root.removeEventListener('click', onClick);
-      document.querySelector('#refresh-orders').removeEventListener('click', load);
+      refreshButton?.removeEventListener('click', load);
       watchers.clear();
       realtimeChannels.forEach((entry) => { entry.cancelled = true; entry.cleanup?.(); });
       realtimeChannels.clear();

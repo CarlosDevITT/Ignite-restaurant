@@ -3,6 +3,7 @@ export function initPWA() {
   let registration = null;
   let refreshing = false;
   let connectionTimer = null;
+  let launchShownAt = 0;
 
   if (!document.getElementById('ignite-pwa-style')) {
     const link = document.createElement('link');
@@ -14,6 +15,7 @@ export function initPWA() {
 
   const buttons = [document.querySelector('#install-app'), document.querySelector('#profile-install')].filter(Boolean);
   const badge = document.querySelector('#connection-badge');
+  const launch = document.querySelector('#pwa-launch');
   const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
@@ -24,6 +26,23 @@ export function initPWA() {
       else button.hidden = installed;
     });
     document.documentElement.classList.toggle('is-pwa', installed);
+  };
+
+  const showLaunch = () => {
+    if (!launch || !isStandalone()) return;
+    launchShownAt = performance.now();
+    launch.hidden = false;
+    launch.classList.remove('is-leaving');
+    launch.setAttribute('aria-hidden', 'false');
+  };
+
+  const markReady = async () => {
+    if (!launch || launch.hidden) return;
+    const elapsed = performance.now() - launchShownAt;
+    if (elapsed < 520) await new Promise((resolve) => setTimeout(resolve, 520 - elapsed));
+    launch.classList.add('is-leaving');
+    launch.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { launch.hidden = true; }, 300);
   };
 
   const toast = (icon, title) => {
@@ -86,6 +105,8 @@ export function initPWA() {
     });
   };
 
+  showLaunch();
+
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredPrompt = event;
@@ -140,5 +161,5 @@ export function initPWA() {
     setInterval(() => registration?.update().catch(() => {}), 60 * 60 * 1000);
   }
 
-  return { requestInstall, getRegistration: () => registration };
+  return { requestInstall, markReady, getRegistration: () => registration };
 }

@@ -1,4 +1,4 @@
-const VERSION='v46-customer-account';
+const VERSION='v47-customer-account-deploy';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v2-${SCOPE_KEY}`;

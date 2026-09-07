@@ -1,10 +1,9 @@
 // sw.js — Ignite Restaurant PWA v3.0
 // Estratégia: Cache First para assets, Network First para páginas HTML
 
-const CACHE_NAME   = 'ignite-v7';
+const CACHE_NAME   = 'ignite-v8-order-isolation';
 const OFFLINE_PAGE = '/offline.html';
 
-// Arquivos pre-cacheados na instalação
 const PRE_CACHE = [
   '/',
   '/index.html',
@@ -19,15 +18,11 @@ const PRE_CACHE = [
   '/assets/images/logos/logo.png',
 ];
 
-/* ── INSTALL: pré-cacheia tudo ── */
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRE_CACHE))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRE_CACHE)));
   self.skipWaiting();
 });
 
-/* ── ACTIVATE: limpa caches antigos ── */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -37,47 +32,44 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-/* ── FETCH ── */
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-
-  // Ignora requisições não-HTTP (chrome-extension, etc.)
   if (!url.protocol.startsWith('http')) return;
-
-  // Ignora APIs externas (fonts, CDN icons, sweetalert)
   if (url.hostname !== self.location.hostname) {
     event.respondWith(fetch(request).catch(() => new Response('')));
     return;
   }
 
   const isHTML = request.headers.get('accept')?.includes('text/html');
+  const isJS = url.pathname.endsWith('.js');
 
-  if (isHTML) {
-    // Páginas HTML → Network First; se falhar → cache; se não tiver → offline.html
+  // HTML and JS are Network First so security/order fixes are not pinned by an old PWA cache.
+  if (isHTML || isJS) {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          // Atualiza cache com resposta fresca
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
           return res;
         })
-        .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match(OFFLINE_PAGE))
-        )
+        .catch(() => caches.match(request).then((cached) => cached || (isHTML ? caches.match(OFFLINE_PAGE) : new Response('', { status: 408 }))))
     );
-  } else {
-    // Assets (CSS, JS, imagens) → Cache First
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((res) => {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((res) => {
+        if (res.ok) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return res;
-        }).catch(() => new Response('', { status: 408 }));
-      })
-    );
-  }
+        }
+        return res;
+      }).catch(() => new Response('', { status: 408 }));
+    })
+  );
 });

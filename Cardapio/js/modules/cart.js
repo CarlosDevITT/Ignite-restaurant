@@ -1,6 +1,6 @@
 import { APP_CONFIG } from '../config.js';
 import { placeOrder } from '../services/order-service.js';
-import { getLocalProfile, saveProfile } from '../services/profile-service.js';
+import { getLocalProfile, getSession, saveProfile } from '../services/profile-service.js';
 import { cartStore } from '../store/cart-store.js';
 import { escapeHTML, money } from '../utils/format.js';
 
@@ -25,7 +25,7 @@ const whatsappUrl = ({ order, payload, items, subtotal, fee, total }) => {
   return `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
 };
 
-export function initCart({ onViewOrders, onOrderPlaced }) {
+export function initCart({ onViewOrders, onCreateAccount, onOrderPlaced }) {
   let returnFocus;
   const floatingCart = document.querySelector('#floating-cart');
   const drawer = document.querySelector('#cart-drawer');
@@ -107,7 +107,18 @@ export function initCart({ onViewOrders, onOrderPlaced }) {
       const currentProfile = getLocalProfile(); await saveProfile({ name: payload.customerName, phone: payload.phone, address: type === 'delivery' ? payload.address : currentProfile.address || '' }).catch(console.warn);
       const order = await placeOrder(payload, snapshot.items); cartStore.clear(); close();
       const result = await Swal.fire({ icon: 'success', title: 'Pedido recebido!', html: `<div class="order-success"><div class="order-success__number">${escapeHTML(order.order_number || order.numero_pedido || order.id)}</div><div class="order-success__meta"><div><span>Modalidade</span><strong>${ORDER_TYPES[type].label}</strong></div><div><span>Pagamento</span><strong>${PAYMENT_LABELS[payload.paymentMethod]}</strong></div><div><span>Total</span><strong>${money(Number(order.total) || total)}</strong></div></div><p>Seu pedido já foi enviado. Você também pode confirmá-lo diretamente com a Ignite.</p></div>`, confirmButtonText: '<i class="fi fi-rr-receipt"></i> Ver pedidos', denyButtonText: '<i class="fi fi-rr-comment"></i> Confirmar no WhatsApp', showDenyButton: true, allowOutsideClick: false });
-      if (result.isDenied) { const url = whatsappUrl({ order, payload, items: snapshot.items, subtotal, fee, total: Number(order.total) || total }); const popup = window.open(url, '_blank'); if (popup) popup.opener = null; if (!popup) window.location.href = url; } else if (result.isConfirmed) onViewOrders?.(order);
+      if (result.isDenied) {
+        const url = whatsappUrl({ order, payload, items: snapshot.items, subtotal, fee, total: Number(order.total) || total }); const popup = window.open(url, '_blank'); if (popup) popup.opener = null; if (!popup) window.location.href = url;
+      } else if (result.isConfirmed) {
+        onViewOrders?.(order);
+        const session = await getSession().catch(() => null);
+        if (!session) {
+          setTimeout(async () => {
+            const account = await Swal.fire({ icon: 'info', title: 'Salve seu pedido na sua conta', text: 'Criar conta é opcional. Ela sincroniza seus pedidos e o Ignite Play em qualquer aparelho.', showCancelButton: true, confirmButtonText: 'Criar minha conta', cancelButtonText: 'Agora não' });
+            if (account.isConfirmed) onCreateAccount?.();
+          }, 350);
+        }
+      }
       onOrderPlaced?.(order);
     } catch (error) { await Swal.fire({ icon: 'error', title: 'Não foi possível enviar', text: friendlyOrderError(error), confirmButtonText: 'Entendi' }); }
     finally { submitButton.disabled = false; submitButton.querySelector('span').textContent = 'Finalizar pedido'; updateCheckoutSummary(); }

@@ -4,17 +4,34 @@ Esta pasta é a única fonte de implementação do Ignite Play usada pelo Cardá
 
 `/Cardapio/js/modules/ignite-play/`
 
-## Arquivos oficiais
+## Estrutura oficial
 
-- `index.js` — shell, controles, fullscreen e integração pública `IgnitePlay`.
-- `games/snake.js` — motor oficial do Snake.
-- `score-store.js` — persistência de recorde.
-- `/Cardapio/styles/ignite-play.css` — estilos oficiais.
+- `index.js` — shell fullscreen, biblioteca de jogos, controles e API pública `IgnitePlay`.
+- `game-registry.js` — catálogo único dos jogos disponíveis.
+- `score-store.js` — persistência de recorde por jogo.
+- `games/snake.js` — Snake.
+- `games/pong.js` — Pong.
+- `games/breakout.js` — Breakout.
+- `games/tetris.js` — Tetris.
+- `/Cardapio/styles/ignite-play.css` — estilos do console/jogo.
+- `/Cardapio/styles/ignite-play-library.css` — estilos da biblioteca de jogos.
+
+## Contrato dos jogos
+
+Todo jogo registrado deve implementar o mesmo contrato:
+
+`createGame({ canvas, onScoreChange, onStateChange })`
+
+Retornando:
+
+`start`, `pause`, `resume`, `restart`, `setDirection`, `destroy`, `getScore`, `getState`.
+
+Estados esperados: `ready`, `playing`, `paused`, `game_over`.
 
 ## Regra de manutenção
 
-Não copie a implementação do Ignite Play para outras árvores do repositório. Entry points antigos que ainda existam devem apenas reexportar este módulo para compatibilidade.
+Não copie a implementação do Ignite Play para outras árvores do repositório. Entry points antigos devem apenas reexportar este módulo para compatibilidade.
 
-Toda feature nova, correção, novo jogo, ranking ou alteração de UX deve ser implementada nesta pasta (e no CSS oficial citado acima).
+Novos jogos devem ser criados em `games/` e registrados exclusivamente em `game-registry.js`.
 
-O Ignite Play não deve acessar Supabase/pedidos diretamente. A integração com status do pedido continua pertencendo ao `Cardapio/js/app.js` e aos módulos de pedidos.
+O Ignite Play não acessa Supabase/pedidos diretamente. A integração com status do pedido continua pertencendo ao `Cardapio/js/app.js` e aos módulos de pedidos.

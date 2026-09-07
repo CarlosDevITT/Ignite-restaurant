@@ -1,5 +1,10 @@
-const SHELL_CACHE='ignite-cardapio-v39-category-icons-'+encodeURIComponent(self.registration.scope);
-const GAME_CACHE='ignite-play-games-v2-'+encodeURIComponent(self.registration.scope);
+const VERSION='v40-pwa-core';
+const SCOPE_KEY=encodeURIComponent(self.registration.scope);
+const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
+const GAME_CACHE=`ignite-play-games-v2-${SCOPE_KEY}`;
+const IMAGE_CACHE=`ignite-product-images-v1-${SCOPE_KEY}`;
+const MAX_RUNTIME_IMAGES=80;
+
 const APP_SHELL=[
   './','./index.html','./manifest.json','./styles/cardapio.css','./styles/catalog-premium.css','./styles/catalog-vertical.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
   './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',
@@ -11,30 +16,103 @@ const APP_SHELL=[
   './assets/uicons/css/uicons-regular-rounded.css','./assets/uicons/webfonts/uicons-regular-rounded.woff2','./assets/uicons/webfonts/uicons-regular-rounded.woff',
   '../../assets/images/logos/ignite.jpg','../../assets/images/logos/ignite2.png'
 ];
+
 const GAME_PATH='/js/modules/ignite-play/games/';
-self.addEventListener('install',event=>{event.waitUntil(caches.open(SHELL_CACHE).then(cache=>cache.addAll(APP_SHELL)));self.skipWaiting();});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>(key.startsWith('ignite-cardapio-')&&key!==SHELL_CACHE)||(key.startsWith('ignite-play-games-')&&key!==GAME_CACHE)).map(key=>caches.delete(key)))));self.clients.claim();});
+const STATIC_HOSTS=new Set(['cdn.jsdelivr.net','cdn-uicons.flaticon.com','fonts.googleapis.com','fonts.gstatic.com','esm.sh']);
+
+async function trimCache(name,maxEntries){
+  const cache=await caches.open(name);
+  const keys=await cache.keys();
+  if(keys.length<=maxEntries)return;
+  await Promise.all(keys.slice(0,keys.length-maxEntries).map(key=>cache.delete(key)));
+}
+
+async function putSafe(cacheName,request,response){
+  if(!response || !(response.ok || response.type==='opaque'))return response;
+  const cache=await caches.open(cacheName);
+  await cache.put(request,response.clone());
+  return response;
+}
+
+async function cacheFirst(request,cacheName,{refresh=false,limit=0}={}){
+  const cache=await caches.open(cacheName);
+  const cached=await cache.match(request);
+  if(cached){
+    if(refresh){
+      fetch(request).then(response=>putSafe(cacheName,request,response)).then(()=>limit&&trimCache(cacheName,limit)).catch(()=>{});
+    }
+    return cached;
+  }
+  const response=await fetch(request);
+  await putSafe(cacheName,request,response);
+  if(limit)trimCache(cacheName,limit).catch(()=>{});
+  return response;
+}
+
+async function networkFirst(request,cacheName,fallbackRequest){
+  try{
+    const response=await fetch(request);
+    await putSafe(cacheName,request,response);
+    return response;
+  }catch{
+    const cache=await caches.open(cacheName);
+    return (await cache.match(request)) || (fallbackRequest ? await cache.match(fallbackRequest) : null) || Response.error();
+  }
+}
+
+self.addEventListener('install',event=>{
+  event.waitUntil((async()=>{
+    const cache=await caches.open(SHELL_CACHE);
+    await Promise.allSettled(APP_SHELL.map(path=>cache.add(path)));
+  })());
+});
+
+self.addEventListener('message',event=>{
+  if(event.data?.type==='SKIP_WAITING')self.skipWaiting();
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>
+      (key.startsWith('ignite-cardapio-')&&key!==SHELL_CACHE)||
+      (key.startsWith('ignite-play-games-')&&key!==GAME_CACHE)||
+      (key.startsWith('ignite-product-images-')&&key!==IMAGE_CACHE)
+    ).map(key=>caches.delete(key)));
+    await self.clients.claim();
+  })());
+});
+
 self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
-  const url=new URL(event.request.url),staticHosts=['cdn.jsdelivr.net','cdn-uicons.flaticon.com','fonts.googleapis.com','fonts.gstatic.com','esm.sh'];
+  const request=event.request;
+  if(request.method!=='GET')return;
+  const url=new URL(request.url);
+
+  if(request.destination==='image'){
+    event.respondWith(cacheFirst(request,IMAGE_CACHE,{refresh:true,limit:MAX_RUNTIME_IMAGES}).catch(()=>Response.error()));
+    return;
+  }
+
   if(url.origin!==self.location.origin){
-    if(!staticHosts.includes(url.hostname))return;
-    event.respondWith(caches.open(SHELL_CACHE).then(cache=>cache.match(event.request)).then(cached=>cached||fetch(event.request).then(response=>{if(response.ok||response.type==='opaque')caches.open(SHELL_CACHE).then(cache=>cache.put(event.request,response.clone()));return response;})));
+    if(!STATIC_HOSTS.has(url.hostname))return;
+    event.respondWith(cacheFirst(request,SHELL_CACHE,{refresh:true}).catch(()=>fetch(request)));
     return;
   }
+
   if(url.pathname.includes(GAME_PATH)&&url.pathname.endsWith('.js')){
-    event.respondWith(caches.open(GAME_CACHE).then(async cache=>{
-      const cached=await cache.match(event.request);
-      const network=fetch(event.request).then(response=>{if(response.ok)cache.put(event.request,response.clone());return response;}).catch(()=>null);
-      if(cached){event.waitUntil(network);return cached;}
-      const response=await network;
-      return response||Response.error();
-    }));
+    event.respondWith(cacheFirst(request,GAME_CACHE,{refresh:true}).catch(()=>Response.error()));
     return;
   }
-  if(event.request.mode==='navigate'||url.pathname.endsWith('.js')){
-    event.respondWith(fetch(event.request).then(response=>{if(response.ok)caches.open(SHELL_CACHE).then(cache=>cache.put(event.request,response.clone()));return response;}).catch(()=>caches.open(SHELL_CACHE).then(cache=>cache.match(event.request)).then(cached=>cached||(event.request.mode==='navigate'?caches.open(SHELL_CACHE).then(cache=>cache.match('./index.html')):Response.error()))));
+
+  if(request.mode==='navigate'){
+    event.respondWith(networkFirst(request,SHELL_CACHE,'./index.html'));
     return;
   }
-  event.respondWith(caches.open(SHELL_CACHE).then(cache=>cache.match(event.request)).then(cached=>cached||fetch(event.request).then(response=>{if(response.ok)caches.open(SHELL_CACHE).then(c=>c.put(event.request,response.clone()));return response;})));
+
+  if(['script','style','font','manifest'].includes(request.destination)||/\.(?:js|css|woff2?|json)$/.test(url.pathname)){
+    event.respondWith(networkFirst(request,SHELL_CACHE));
+    return;
+  }
+
+  event.respondWith(cacheFirst(request,SHELL_CACHE,{refresh:true}).catch(()=>fetch(request)));
 });

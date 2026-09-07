@@ -97,11 +97,46 @@ export async function signUpCustomer({ name, phone, email, password }) {
   return data;
 }
 
-export async function signInCustomer({ email, password }) {
+async function signInByPhone(supabase, phone, password) {
+  const normalizedPhone = cleanPhone(phone);
+  if (normalizedPhone.length < 10) throw new Error('Informe um telefone válido com DDD.');
+  const { data, error } = await supabase.functions.invoke('customer-phone-login', {
+    body: { phone: normalizedPhone, password },
+  });
+  if (error) {
+    let message = 'Telefone ou senha inválidos.';
+    try {
+      const payload = await error.context?.json?.();
+      if (payload?.error) message = payload.error;
+    } catch {}
+    throw new Error(message);
+  }
+  if (!data?.access_token || !data?.refresh_token) throw new Error(data?.error || 'Telefone ou senha inválidos.');
+  const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+  });
+  if (sessionError || !sessionData?.session) throw sessionError || new Error('Não foi possível iniciar sua sessão.');
+  saveLocalProfile({ phone: normalizedPhone, email: sessionData.user?.email || getLocalProfile().email || '' });
+  return sessionData;
+}
+
+export async function signInCustomer({ login_type = 'email', email, phone, identifier, password }) {
   const supabase = await getSupabase();
-  const { data, error } = await supabase.auth.signInWithPassword({ email: String(email || '').trim().toLowerCase(), password });
-  if (error) throw error;
-  await syncCustomerAccount({ email: data?.user?.email || email });
+  let data;
+  if (login_type === 'phone') {
+    data = await signInByPhone(supabase, phone || identifier, password);
+  } else {
+    const normalizedEmail = String(email || identifier || '').trim().toLowerCase();
+    const result = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+    if (result.error) throw result.error;
+    data = result.data;
+    saveLocalProfile({ email: data?.user?.email || normalizedEmail });
+  }
+  await syncCustomerAccount({
+    email: data?.user?.email || getLocalProfile().email || '',
+    phone: login_type === 'phone' ? cleanPhone(phone || identifier) : getLocalProfile().phone || '',
+  });
   return data;
 }
 

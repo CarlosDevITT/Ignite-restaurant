@@ -1,4 +1,4 @@
-const VERSION='v49-pwa-icons';
+const VERSION='v50-pwa-startup-fix';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v2-${SCOPE_KEY}`;

@@ -36,6 +36,7 @@ function supported() {
 
 async function saveSubscription(subscription) {
   const supabase = await getSupabase();
+  if (!supabase) throw new Error('Supabase indisponível.');
   const json = subscription.toJSON();
   if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
     throw new Error('O navegador não retornou uma inscrição push válida.');
@@ -61,6 +62,29 @@ async function getRegistration() {
   return navigator.serviceWorker.ready;
 }
 
+async function getHealth(subscription) {
+  const supabase = await getSupabase();
+  if (!supabase) return { needs_refresh: true };
+  const { data, error } = await supabase.rpc('get_push_subscription_health', {
+    p_client_token: getClientToken(),
+    p_endpoint: subscription.endpoint,
+  });
+  if (error) throw error;
+  return data || { needs_refresh: true };
+}
+
+async function createFreshSubscription(registration, existing = null) {
+  if (existing) {
+    try { await existing.unsubscribe(); } catch (_) {}
+  }
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+  });
+  await saveSubscription(subscription);
+  return subscription;
+}
+
 export function initNotifications() {
   const isSupported = supported();
 
@@ -72,6 +96,8 @@ export function initNotifications() {
       const registration = await getRegistration();
       const subscription = await registration.pushManager.getSubscription();
       if (!subscription) return { state: 'incomplete', label: 'Permissão concedida, falta ativar' };
+      const health = await getHealth(subscription).catch(() => ({ needs_refresh: true }));
+      if (health?.needs_refresh) return { state: 'stale', label: 'Precisa renovar' };
       return { state: 'active', label: 'Ativadas' };
     } catch (error) {
       return { state: 'error', label: 'Erro de configuração', error };
@@ -82,14 +108,23 @@ export function initNotifications() {
     if (!isSupported || Notification.permission !== 'granted') return null;
     try {
       const registration = await getRegistration();
-      const subscription = await registration.pushManager.getSubscription();
-      if (!subscription) return null;
-      const saved = await saveSubscription(subscription);
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await createFreshSubscription(registration);
+      } else {
+        const health = await getHealth(subscription).catch(() => ({ needs_refresh: true }));
+        if (health?.needs_refresh) {
+          console.warn('[Push] Inscrição inválida/desatualizada. Renovando endpoint...');
+          subscription = await createFreshSubscription(registration, subscription);
+        } else {
+          await saveSubscription(subscription);
+        }
+      }
       localStorage.setItem(PROMPTED_KEY, '1');
-      return saved;
+      return subscription;
     } catch (error) {
       localStorage.removeItem(PROMPTED_KEY);
-      console.warn('[Push] Não foi possível sincronizar a inscrição existente:', error);
+      console.warn('[Push] Não foi possível sincronizar/renovar a inscrição:', error);
       return null;
     }
   };
@@ -111,20 +146,15 @@ export function initNotifications() {
     const registration = await getRegistration();
     let subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
+      subscription = await createFreshSubscription(registration);
+    } else {
+      const health = await getHealth(subscription).catch(() => ({ needs_refresh: true }));
+      if (health?.needs_refresh) subscription = await createFreshSubscription(registration, subscription);
+      else await saveSubscription(subscription);
     }
 
-    try {
-      await saveSubscription(subscription);
-      localStorage.setItem(PROMPTED_KEY, '1');
-      return subscription;
-    } catch (error) {
-      localStorage.removeItem(PROMPTED_KEY);
-      throw error;
-    }
+    localStorage.setItem(PROMPTED_KEY, '1');
+    return subscription;
   };
 
   const disable = async () => {
@@ -137,10 +167,12 @@ export function initNotifications() {
     }
     try {
       const supabase = await getSupabase();
-      await supabase.rpc('disable_push_subscription', {
-        p_client_token: getClientToken(),
-        p_endpoint: subscription.endpoint,
-      });
+      if (supabase) {
+        await supabase.rpc('disable_push_subscription', {
+          p_client_token: getClientToken(),
+          p_endpoint: subscription.endpoint,
+        });
+      }
     } finally {
       await subscription.unsubscribe().catch(() => false);
       localStorage.removeItem(PROMPTED_KEY);
@@ -184,7 +216,6 @@ export function initNotifications() {
       localStorage.setItem(PROMPTED_KEY, '1');
       Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Notificações ativadas', showConfirmButton: false, timer: 2200 });
     } else {
-      // Cancelar não deve bloquear uma tentativa futura após outro pedido.
       localStorage.removeItem(PROMPTED_KEY);
     }
   };
@@ -193,7 +224,6 @@ export function initNotifications() {
     syncExistingSubscription();
   }
 
-  // API pública para Perfil/diagnóstico e testes manuais.
   const api = {
     supported: isSupported,
     permission: () => isSupported ? Notification.permission : 'unsupported',

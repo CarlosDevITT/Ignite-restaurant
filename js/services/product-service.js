@@ -20,7 +20,6 @@ const defaultCategories = [
   { id: 'bebidas', name: 'Bebidas', icon: '🥤', position: 3 },
   { id: 'combos', name: 'Combos', icon: '🍱', position: 4 },
   { id: 'promocoes', name: 'Promoções', icon: '🏷️', position: 5 },
-  { id: 'principal', name: 'principal', icon: '🍽️', position: 6 },
 ];
 
 export function normalizeProduct(product, index = 0) {
@@ -95,11 +94,13 @@ export async function getCatalog() {
     .map(normalizeProduct);
 
   const dbCategories = !categoryResult.error && categoryResult.data?.length
-    ? categoryResult.data.map((category) => ({
-      ...category,
-      id: category.slug || String(category.id),
-      name: category.name || category.nome,
-    }))
+    ? categoryResult.data
+      .filter((category) => category.active !== false && category.slug !== 'principal')
+      .map((category) => ({
+        ...category,
+        id: category.slug || String(category.id),
+        name: category.name || category.nome,
+      }))
     : [];
 
   const productCategories = [...new Map(products.map((product) => [

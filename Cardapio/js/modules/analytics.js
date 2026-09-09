@@ -1,3 +1,4 @@
+// Ignite Analytics v1.1 — Vercel Web Analytics + Speed Insights
 const ANALYTICS_SCRIPT_ID = 'ignite-vercel-analytics';
 const SPEED_SCRIPT_ID = 'ignite-vercel-speed-insights';
 let initialized = false;

@@ -6,6 +6,7 @@ import { initChat } from './modules/chat.js';
 import { initFeed } from './modules/feed.js';
 import { IgnitePlay } from './modules/ignite-play/index.js';
 import { initNavigation } from './modules/navigation.js';
+import { initNotices } from './modules/notices.js';
 import { initNotifications } from './modules/notifications.js';
 import { initOrders, isWaitingStatus } from './modules/orders.js';
 import { initProfile } from './modules/profile.js';
@@ -29,6 +30,7 @@ async function bootstrap() {
 
   try {
     initAnalytics();
+    initNotices().catch(error => console.warn('[Avisos]', error));
     pwa = initPWA();
     splashFailsafe = setTimeout(() => {
       console.warn('[PWA] Tempo máximo de inicialização atingido; liberando interface.');

@@ -1,3 +1,4 @@
+import { initAnalytics, trackEvent } from './modules/analytics.js';
 import { initCarousel } from './modules/carousel.js';
 import { initCart } from './modules/cart.js';
 import { initCatalog } from './modules/catalog.js';
@@ -27,6 +28,7 @@ async function bootstrap() {
   let splashFailsafe = null;
 
   try {
+    initAnalytics();
     pwa = initPWA();
     splashFailsafe = setTimeout(() => {
       console.warn('[PWA] Tempo máximo de inicialização atingido; liberando interface.');
@@ -50,6 +52,10 @@ async function bootstrap() {
           const orderId = order?.id;
           if (orderId == null) { console.error('Pedido sem orders.id'); return; }
           if (!isWaitingStatus(order.status)) return;
+          trackEvent('ignite_play_started', {
+            order_id: orderId,
+            order_number: order.order_number || order.numero_pedido || orderId,
+          });
           let stopWatching = () => {};
           let closed = false;
           IgnitePlay.show({
@@ -71,7 +77,11 @@ async function bootstrap() {
       initCart({
         onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
         onCreateAccount: () => navigation.navigate('profile'),
-        onOrderPlaced: () => {
+        onOrderPlaced: (order) => {
+          trackEvent('order_created', {
+            order_type: order?.order_type || order?.tipo || 'cardapio',
+            total: Number(order?.total || 0),
+          });
           orders.load();
           notifications.promptAfterOrder().catch(error => console.warn('[Push]', error));
         },

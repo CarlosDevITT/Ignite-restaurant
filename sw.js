@@ -1,7 +1,7 @@
-// sw.js — Ignite Restaurant PWA v3.0
-// Estratégia: Cache First para assets, Network First para páginas HTML
+// sw.js — Ignite Restaurant PWA v3.1
+// Estratégia: Cache First para assets, Network First para páginas HTML/JS.
 
-const CACHE_NAME   = 'ignite-v8-order-isolation';
+const CACHE_NAME   = 'ignite-v9-knowledge-v6';
 const OFFLINE_PAGE = '/offline.html';
 
 const PRE_CACHE = [
@@ -44,7 +44,6 @@ self.addEventListener('fetch', (event) => {
   const isHTML = request.headers.get('accept')?.includes('text/html');
   const isJS = url.pathname.endsWith('.js');
 
-  // HTML and JS are Network First so security/order fixes are not pinned by an old PWA cache.
   if (isHTML || isJS) {
     event.respondWith(
       fetch(request)

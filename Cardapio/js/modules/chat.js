@@ -45,14 +45,15 @@ function tokensFor(value) {
   return [...tokens];
 }
 
-async function loadKnowledge() {
-  const supabase = await getSupabase();
+async function loadKnowledge(supabaseInstance = null) {
+  const supabase = supabaseInstance || await getSupabase();
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('knowledge_base')
-    .select('id,categoria,titulo,conteudo,ordem')
+    .select('id,categoria,titulo,conteudo,ordem,updated_at')
     .eq('ativo', true)
-    .order('ordem', { ascending: true });
+    .order('ordem', { ascending: true })
+    .order('titulo', { ascending: true });
   if (error) throw error;
   return data || [];
 }
@@ -143,11 +144,38 @@ export function initChat(products) {
 
   let knowledge = [];
   let knowledgeReady = false;
-  const knowledgePromise = loadKnowledge()
+  let knowledgeChannel = null;
+  let reloadTimer = null;
+  let supabaseClient = null;
+
+  const applyKnowledge = (items) => {
+    knowledge = Array.isArray(items) ? items : [];
+    knowledgeReady = true;
+    console.info(`[Chat Ignite] Knowledge sincronizado: ${knowledge.length} registros ativos.`);
+    return knowledge;
+  };
+
+  const reloadKnowledge = async () => {
+    if (!supabaseClient) supabaseClient = await getSupabase();
+    if (!supabaseClient) return applyKnowledge([]);
+    return applyKnowledge(await loadKnowledge(supabaseClient));
+  };
+
+  const startKnowledgeRealtime = async () => {
+    if (!supabaseClient) supabaseClient = await getSupabase();
+    if (!supabaseClient || knowledgeChannel) return;
+    knowledgeChannel = supabaseClient
+      .channel('cardapio:knowledge-base:v6')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'knowledge_base' }, () => {
+        clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => reloadKnowledge().catch((error) => console.warn('[Chat Ignite] Realtime knowledge:', error.message)), 150);
+      })
+      .subscribe();
+  };
+
+  const knowledgePromise = reloadKnowledge()
     .then((items) => {
-      knowledge = items;
-      knowledgeReady = true;
-      console.info(`[Chat Ignite] Knowledge carregado: ${items.length} registros ativos.`);
+      startKnowledgeRealtime().catch((error) => console.warn('[Chat Ignite] Realtime indisponível:', error.message));
       return items;
     })
     .catch((error) => {
@@ -155,6 +183,13 @@ export function initChat(products) {
       knowledgeReady = true;
       return [];
     });
+
+  const cleanupKnowledgeRealtime = () => {
+    clearTimeout(reloadTimer);
+    if (knowledgeChannel && supabaseClient) supabaseClient.removeChannel(knowledgeChannel);
+    knowledgeChannel = null;
+  };
+  window.addEventListener('pagehide', cleanupKnowledgeRealtime, { once: true });
 
   const scrollToBottom = () => { messages.scrollTop = messages.scrollHeight; };
   const addMessage = (text, user = false) => {

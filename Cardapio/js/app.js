@@ -18,6 +18,17 @@ const CATALOG_BOOT_TIMEOUT_MS = 10000;
 const SPLASH_FAILSAFE_MS = 12000;
 let storeGuardInstalled = false;
 
+function ensureFrontendPolishStyles() {
+  if (document.querySelector('link[data-ignite-frontend-polish]')) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = './styles/frontend-polish.css?v=20260912-1';
+  link.dataset.igniteFrontendPolish = 'true';
+  document.head.appendChild(link);
+}
+
+ensureFrontendPolishStyles();
+
 function withTimeout(promise, timeoutMs, message) {
   let timeoutId;
   const timeout = new Promise((_, reject) => {

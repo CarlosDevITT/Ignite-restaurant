@@ -1,3 +1,5 @@
+import { initCartUX } from './cart-ux.js';
+
 const KEYBOARD_THRESHOLD = 140;
 
 function setupKeyboardAwareness() {
@@ -92,4 +94,5 @@ function setupCategoryFilterSheet() {
 export function initMobileUX() {
   setupKeyboardAwareness();
   setupCategoryFilterSheet();
+  initCartUX();
 }

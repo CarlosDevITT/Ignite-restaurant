@@ -16,6 +16,7 @@ import { cartStore } from './store/cart-store.js';
 
 const CATALOG_BOOT_TIMEOUT_MS = 10000;
 const SPLASH_FAILSAFE_MS = 12000;
+let storeGuardInstalled = false;
 
 function withTimeout(promise, timeoutMs, message) {
   let timeoutId;
@@ -42,6 +43,7 @@ function settingsFingerprint(settings) {
 function applyStoreSettings(settings) {
   window.__igniteStoreSettings = settings;
   window.__igniteDeliveryFee = Number(settings?.delivery_fee || 0);
+  document.body?.classList.toggle('store-closed', settings?.store_open === false);
   const mini = document.querySelector('.store-mini');
   if (!mini) return;
   const title = mini.querySelector('strong');
@@ -50,6 +52,22 @@ function applyStoreSettings(settings) {
   if (title) title.textContent = settings?.store_open === false ? 'Loja fechada' : 'Loja aberta';
   if (copy) copy.textContent = settings?.store_open === false ? 'Novos pedidos indisponíveis' : 'Pedidos online disponíveis';
   dot?.classList.toggle('is-closed', settings?.store_open === false);
+}
+
+function installStoreCheckoutGuard() {
+  if (storeGuardInstalled) return;
+  storeGuardInstalled = true;
+  document.addEventListener('submit', event => {
+    if (event.target?.id !== 'checkout-form' || window.__igniteStoreSettings?.store_open !== false) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.Swal?.fire({
+      icon: 'info',
+      title: 'Loja fechada no momento',
+      text: 'O cardápio continua disponível para consulta, mas novos pedidos estão temporariamente pausados.',
+      confirmButtonText: 'Entendi',
+    });
+  }, true);
 }
 
 function renderCatalogFailure(grid, error) {
@@ -83,12 +101,13 @@ async function bootstrap() {
       const [catalog, storeSettings] = await Promise.all([
         withTimeout(getCatalog(), CATALOG_BOOT_TIMEOUT_MS, 'O carregamento do cardápio demorou mais que o esperado.'),
         getStoreSettings().catch(error => {
-          console.warn('[Loja] Não foi possível carregar configurações públicas:', error);
-          return { store_open: true, delivery_fee: 7, updated_at: null };
+          console.warn('[Loja] Não foi possível confirmar o status público da loja:', error);
+          return { store_open: false, delivery_fee: 0, updated_at: null };
         }),
       ]);
 
       applyStoreSettings(storeSettings);
+      installStoreCheckoutGuard();
       const cartSync = cartStore.reconcileCatalog(catalog.products);
       if (cartSync.removed.length && window.Swal) {
         Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Carrinho atualizado', text: 'Itens indisponíveis foram removidos.', showConfirmButton: false, timer: 2600 });
@@ -158,8 +177,6 @@ async function bootstrap() {
           applyStoreSettings(nextSettings);
           cartStore.reconcileCatalog(nextCatalog.products);
 
-          // Rebuild from the canonical public views. The cart is persisted and
-          // reconciled first, so a reload cannot resurrect stale prices/stock.
           console.info('[Catálogo] Dados operacionais alterados; recarregando interface.', reason);
           location.reload();
         } catch (error) {

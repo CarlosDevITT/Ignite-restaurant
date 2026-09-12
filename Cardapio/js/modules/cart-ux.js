@@ -4,7 +4,7 @@ function ensureStyles() {
   if (document.querySelector('link[data-ignite-cart-ux]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = new URL('../../styles/cart-ux.css?v=20260912-1', import.meta.url).href;
+  link.href = new URL('../../styles/cart-ux.css?v=20260912-2', import.meta.url).href;
   link.dataset.igniteCartUx = 'true';
   document.head.appendChild(link);
 }

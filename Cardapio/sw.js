@@ -1,15 +1,15 @@
-const VERSION='v52-marketing-notices';
+const VERSION='v53-canonical-contract';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
-const GAME_CACHE=`ignite-play-games-v2-${SCOPE_KEY}`;
-const IMAGE_CACHE=`ignite-product-images-v1-${SCOPE_KEY}`;
+const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;
+const IMAGE_CACHE=`ignite-product-images-v2-${SCOPE_KEY}`;
 const MAX_RUNTIME_IMAGES=80;
 
 const APP_SHELL=[
   './','./index.html','./manifest.json','./styles/cardapio.css','./styles/catalog-premium.css','./styles/catalog-vertical.css','./styles/pwa.css','./styles/profile-auth.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
   './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',
   './icons/icon-192.png','./icons/icon-512.png','./icons/icon-192-maskable.png','./icons/icon-512-maskable.png','./icons/apple-touch-icon.png',
-  './js/app.js','./js/config.js','./js/data/mock-products.js','./js/supabase-config.js',
+  './js/app.js','./js/config.js','./js/supabase-config.js',
   './js/utils/format.js','./js/store/cart-store.js','./js/services/supabase-client.js','./js/services/product-service.js',
   './js/services/order-service.js','./js/services/profile-service.js','./js/modules/carousel.js','./js/modules/navigation.js','./js/modules/catalog.js','./js/modules/cart.js',
   './js/modules/orders.js','./js/modules/profile.js','./js/modules/feed.js','./js/modules/chat.js','./js/modules/pwa.js','./js/modules/notifications.js','./js/modules/notices.js',
@@ -86,27 +86,27 @@ self.addEventListener('activate',event=>{
 
 self.addEventListener('push',event=>{
   let payload={};
-  try{ payload=event.data?.json?.() || {}; }catch{ payload={ body:event.data?.text?.() || 'Você tem uma atualização no Ignite.' }; }
-  const title=payload.title || 'Ignite Restaurante';
+  try{payload=event.data?.json?.()||{};}catch{payload={body:event.data?.text?.()||'Você tem uma atualização no Ignite.'};}
+  const title=payload.title||'Ignite Restaurante';
   const options={
-    body:payload.body || 'Seu pedido foi atualizado.',
-    icon:payload.icon || './icons/icon-192.png',
-    badge:payload.badge || './icons/icon-192-maskable.png',
-    tag:payload.tag || 'ignite-order-update',
-    renotify:payload.renotify !== false,
-    data:payload.data || { url:'./index.html?source=push' },
+    body:payload.body||'Seu pedido foi atualizado.',
+    icon:payload.icon||'./icons/icon-192.png',
+    badge:payload.badge||'./icons/icon-192-maskable.png',
+    tag:payload.tag||'ignite-order-update',
+    renotify:payload.renotify!==false,
+    data:payload.data||{url:'./index.html?source=push'},
   };
   event.waitUntil(self.registration.showNotification(title,options));
 });
 
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
-  const target=new URL(event.notification.data?.url || './index.html?source=push',self.registration.scope).href;
+  const target=new URL(event.notification.data?.url||'./index.html?source=push',self.registration.scope).href;
   event.waitUntil((async()=>{
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     const current=windows.find(client=>client.url.startsWith(self.registration.scope));
     if(current){
-      if('navigate' in current) await current.navigate(target).catch(()=>{});
+      if('navigate' in current)await current.navigate(target).catch(()=>{});
       return current.focus();
     }
     return self.clients.openWindow(target);
@@ -118,11 +118,19 @@ self.addEventListener('fetch',event=>{
   if(request.method!=='GET')return;
   const url=new URL(request.url);
 
+  // Product/banner images are network-first. This prevents a reused Storage URL
+  // from displaying old artwork after the PDV updates it, while retaining an
+  // offline fallback.
   if(request.destination==='image'){
-    event.respondWith(cacheFirst(request,IMAGE_CACHE,{refresh:true,limit:MAX_RUNTIME_IMAGES}).catch(()=>Response.error()));
+    event.respondWith((async()=>{
+      const response=await networkFirst(request,IMAGE_CACHE);
+      trimCache(IMAGE_CACHE,MAX_RUNTIME_IMAGES).catch(()=>{});
+      return response;
+    })());
     return;
   }
 
+  // Supabase/PostgREST/Realtime responses are intentionally never intercepted.
   if(url.origin!==self.location.origin){
     if(!STATIC_HOSTS.has(url.hostname))return;
     event.respondWith(cacheFirst(request,SHELL_CACHE,{refresh:true}).catch(()=>fetch(request)));

@@ -5,6 +5,7 @@ import { initCatalog } from './modules/catalog.js';
 import { initChat } from './modules/chat.js';
 import { initFeed } from './modules/feed.js';
 import { IgnitePlay } from './modules/ignite-play/index.js';
+import { initMobileUX } from './modules/mobile-ux.js';
 import { initNavigation } from './modules/navigation.js';
 import { initNotices } from './modules/notices.js';
 import { initNotifications } from './modules/notifications.js';
@@ -22,12 +23,13 @@ function ensureFrontendPolishStyles() {
   if (document.querySelector('link[data-ignite-frontend-polish]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = './styles/frontend-polish.css?v=20260912-1';
+  link.href = './styles/frontend-polish.css?v=20260912-2';
   link.dataset.igniteFrontendPolish = 'true';
   document.head.appendChild(link);
 }
 
 ensureFrontendPolishStyles();
+initMobileUX();
 
 function withTimeout(promise, timeoutMs, message) {
   let timeoutId;

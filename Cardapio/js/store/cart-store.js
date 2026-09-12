@@ -21,13 +21,19 @@ class CartStore extends EventTarget {
     const existing = this.items.find(item => item.key === key);
     const max = product.track_stock === true ? Math.max(0, Number(product.stock || 0)) : 50;
     if (max <= 0 || product.available === false) return;
-    if (existing) existing.quantity = Math.min(max, existing.quantity + quantity);
-    else this.items.push({
+    if (existing) {
+      existing.quantity = Math.min(max, existing.quantity + quantity);
+      existing.name = product.name;
+      existing.price = Number(product.price);
+      existing.emoji = product.emoji || existing.emoji || '🍽️';
+      existing.image_url = product.image_url || existing.image_url || null;
+    } else this.items.push({
       key,
       product_id: product.id,
       name: product.name,
       price: Number(product.price),
       emoji: product.emoji || '🍽️',
+      image_url: product.image_url || null,
       quantity: Math.min(max, quantity),
       notes: notes.trim(),
     });
@@ -63,11 +69,15 @@ class CartStore extends EventTarget {
         name: product.name,
         price: Number(product.price),
         emoji: product.emoji || item.emoji || '🍽️',
+        image_url: product.image_url || null,
         quantity: Math.min(Math.max(1, Number(item.quantity || 1)), max),
       };
-      if (reconciled.price !== Number(item.price) || reconciled.quantity !== Number(item.quantity) || reconciled.name !== item.name) {
-        changed.push(reconciled.name);
-      }
+      if (
+        reconciled.price !== Number(item.price)
+        || reconciled.quantity !== Number(item.quantity)
+        || reconciled.name !== item.name
+        || reconciled.image_url !== (item.image_url || null)
+      ) changed.push(reconciled.name);
       next.push(reconciled);
     }
 

@@ -9,34 +9,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="../../assets/images/logos/ignite.jpg">
-  <link rel="apple-touch-icon" href="../../assets/images/logos/ignite.jpg">
-  <script>
-    (() => {
-      const build = 'ignite-cardapio-2026-09-06-22';
-      if (!navigator.onLine || localStorage.getItem('ignite-build') === build) return;
-      Promise.all([
-        'serviceWorker' in navigator
-          ? navigator.serviceWorker.getRegistrations().then((items) => Promise.all(items.map((item) => item.unregister())))
-          : Promise.resolve(),
-        'caches' in window
-          ? caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('ignite-')).map((key) => caches.delete(key))))
-          : Promise.resolve(),
-      ]).then(() => {
-        localStorage.setItem('ignite-build', build);
-        if (navigator.serviceWorker?.controller) location.reload();
-      });
-    })();
-  </script>
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="js/supabase-config.js?v=status-final-20260906" defer></script>
+  <script src="js/supabase-config.js?v=canonical-20260912" defer></script>
   <link href="assets/uicons/css/uicons-regular-rounded.css?v=4" rel="stylesheet">
-  <link rel="stylesheet" href="styles/cardapio.css?v=10">
+  <link rel="stylesheet" href="styles/cardapio.css?v=canonical-20260912">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
   <title>Cardápio | Ignite</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <a class="skip-link" href="#app-content">Ir para o conteúdo</a>
@@ -53,7 +36,7 @@
     </nav>
     <div class="desktop-sidebar__bottom">
       <button class="nav-item nav-item--create" type="button" data-open-quick><i class="fi fi-rr-plus nav-icon nav-icon--plus" aria-hidden="true"></i><span>Explorar</span></button>
-      <div class="store-mini"><span class="status-dot"></span><span><strong>Loja aberta</strong><small>Entrega em 35–50 min</small></span></div>
+      <div class="store-mini"><span class="status-dot"></span><span><strong>Sincronizando loja</strong><small>Consultando disponibilidade</small></span></div>
     </div>
   </aside>
 
@@ -182,7 +165,7 @@
 
         <div class="checkout-total-card">
           <div><span>Subtotal</span><strong id="checkout-subtotal">R$ 0,00</strong></div>
-          <div><span id="checkout-fee-label">Taxa de entrega</span><strong id="checkout-fee">R$ 7,00</strong></div>
+          <div><span id="checkout-fee-label">Taxa de entrega</span><strong id="checkout-fee">R$ 0,00</strong></div>
           <div class="checkout-total-card__total"><span>Total</span><strong id="checkout-total">R$ 0,00</strong></div>
         </div>
 
@@ -210,9 +193,8 @@
     <button class="mobile-nav-item" type="button" data-route="profile"><i class="fi fi-rr-user" aria-hidden="true"></i><small>Perfil</small></button>
   </nav>
 
-  
   <div class="connection-badge" id="connection-badge" role="status" hidden></div>
   <template id="product-skeleton"><article class="product-card product-card--skeleton"><div></div><span></span><span></span><span></span></article></template>
-  <script type="module" src="js/app.js?v=status-final-20260906"></script>
+  <script type="module" src="js/app.js?v=canonical-20260912"></script>
 </body>
 </html>

@@ -18,18 +18,63 @@ class CartStore extends EventTarget {
 
   add(product, quantity = 1, notes = '') {
     const key = `${product.id}:${notes.trim().toLowerCase()}`;
-    const existing = this.items.find((item) => item.key === key);
-    if (existing) existing.quantity += quantity;
-    else this.items.push({ key, product_id: product.id, name: product.name, price: Number(product.price), emoji: product.emoji || '🍽️', quantity, notes: notes.trim() });
+    const existing = this.items.find(item => item.key === key);
+    const max = product.track_stock === true ? Math.max(0, Number(product.stock || 0)) : 50;
+    if (max <= 0 || product.available === false) return;
+    if (existing) existing.quantity = Math.min(max, existing.quantity + quantity);
+    else this.items.push({
+      key,
+      product_id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      emoji: product.emoji || '🍽️',
+      quantity: Math.min(max, quantity),
+      notes: notes.trim(),
+    });
     this.save();
   }
 
   change(key, amount) {
-    const item = this.items.find((entry) => entry.key === key);
+    const item = this.items.find(entry => entry.key === key);
     if (!item) return;
     item.quantity += amount;
-    if (item.quantity <= 0) this.items = this.items.filter((entry) => entry.key !== key);
+    if (item.quantity <= 0) this.items = this.items.filter(entry => entry.key !== key);
     this.save();
+  }
+
+  reconcileCatalog(products = []) {
+    const byId = new Map(products.map(product => [String(product.id), product]));
+    const removed = [];
+    const changed = [];
+    const next = [];
+
+    for (const item of this.items) {
+      const product = byId.get(String(item.product_id));
+      const unavailable = !product || product.available === false
+        || (product.track_stock === true && Number(product.stock || 0) <= 0);
+      if (unavailable) {
+        removed.push(item.name);
+        continue;
+      }
+
+      const max = product.track_stock === true ? Math.max(1, Number(product.stock || 0)) : 50;
+      const reconciled = {
+        ...item,
+        name: product.name,
+        price: Number(product.price),
+        emoji: product.emoji || item.emoji || '🍽️',
+        quantity: Math.min(Math.max(1, Number(item.quantity || 1)), max),
+      };
+      if (reconciled.price !== Number(item.price) || reconciled.quantity !== Number(item.quantity) || reconciled.name !== item.name) {
+        changed.push(reconciled.name);
+      }
+      next.push(reconciled);
+    }
+
+    const didChange = removed.length > 0 || changed.length > 0 || next.length !== this.items.length;
+    this.items = next;
+    if (didChange) this.save();
+    return { removed, changed, didChange };
   }
 
   clear() { this.items = []; this.save(); }

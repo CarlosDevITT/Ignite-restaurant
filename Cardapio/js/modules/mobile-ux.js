@@ -1,4 +1,5 @@
 import { initCartUX } from './cart-ux.js';
+import { initPurchaseFeedback } from './purchase-feedback.js';
 
 const KEYBOARD_THRESHOLD = 140;
 
@@ -95,4 +96,5 @@ export function initMobileUX() {
   setupKeyboardAwareness();
   setupCategoryFilterSheet();
   initCartUX();
+  initPurchaseFeedback();
 }

@@ -52,6 +52,20 @@ export async function createFeedComment(postId, text) {
   return Array.isArray(data) ? data[0] || null : data;
 }
 
+export async function trackFeedEvent(postId, eventType, productId = null) {
+  try {
+    const supabase = await getSupabase();
+    const { error } = await supabase.rpc('track_feed_event', {
+      p_post_id: postId,
+      p_event_type: eventType,
+      p_product_id: productId ? Number(productId) : null,
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.debug('[Feed] Métrica não registrada:', error?.message || error);
+  }
+}
+
 export async function subscribeToFeed(onChange) {
   const supabase = await getSupabase();
   const channel = supabase

@@ -2,15 +2,16 @@ import { cartStore } from '../store/cart-store.js';
 
 function ensureStyles() {
   const files = [
-    ['ignite-cart-ux', '../../styles/cart-ux.css?v=20260912-5'],
-    ['ignite-checkout-polish', '../../styles/checkout-polish.css?v=20260912-1'],
+    ['ignite-cart-ux', '../../styles/cart-ux.css?v=20260912-6'],
+    ['ignite-checkout-polish', '../../styles/checkout-polish.css?v=20260912-2'],
   ];
   files.forEach(([id, path]) => {
-    if (document.querySelector(`link[data-${id}]`)) return;
+    const attribute = `data-${id}`;
+    if (document.querySelector(`link[${attribute}]`)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = new URL(path, import.meta.url).href;
-    link.dataset[id] = 'true';
+    link.setAttribute(attribute, 'true');
     document.head.appendChild(link);
   });
 }
@@ -147,7 +148,9 @@ function enhanceCheckout() {
     const type = form.elements.order_type?.value || 'delivery';
     const payment = form.elements.payment_method?.value || 'pix';
     const [title, body] = typeCopy[type] || typeCopy.delivery;
-    contextual.innerHTML = `<span class="checkout-context__icon"><i class="fi ${type === 'delivery' ? 'fi-rr-motorcycle' : type === 'pickup' ? 'fi-rr-shopping-bag' : 'fi-rr-restaurant'}" aria-hidden="true"></i></span><span><strong>${title}</strong><small>${body}</small></span>`;
+    if (contextual) {
+      contextual.innerHTML = `<span class="checkout-context__icon"><i class="fi ${type === 'delivery' ? 'fi-rr-motorcycle' : type === 'pickup' ? 'fi-rr-shopping-bag' : 'fi-rr-restaurant'}" aria-hidden="true"></i></span><span><strong>${title}</strong><small>${body}</small></span>`;
+    }
     if (paymentHint) paymentHint.textContent = paymentCopy[payment] || '';
 
     [addressField, tableField].forEach((field) => {

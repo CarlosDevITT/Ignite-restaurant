@@ -1,5 +1,6 @@
 import { initCartUX } from './cart-ux.js';
 import { initPurchaseFeedback } from './purchase-feedback.js';
+import { initCheckoutAddressBook } from './checkout-address-book.js';
 
 const KEYBOARD_THRESHOLD = 140;
 
@@ -61,7 +62,6 @@ function setupCategoryFilterSheet() {
     sheet.querySelector('.category-filter-option')?.focus({ preventScroll: true });
   };
 
-  // Capture phase blocks the old "featured only" handler in catalog.js.
   document.addEventListener('click', (event) => {
     const trigger = event.target.closest('#filter-products');
     if (trigger) {
@@ -96,5 +96,6 @@ export function initMobileUX() {
   setupKeyboardAwareness();
   setupCategoryFilterSheet();
   initCartUX();
+  initCheckoutAddressBook();
   initPurchaseFeedback();
 }

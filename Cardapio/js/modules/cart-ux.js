@@ -4,7 +4,7 @@ function ensureStyles() {
   if (document.querySelector('link[data-ignite-cart-ux]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = new URL('../../styles/cart-ux.css?v=20260912-4', import.meta.url).href;
+  link.href = new URL('../../styles/cart-ux.css?v=20260912-5', import.meta.url).href;
   link.dataset.igniteCartUx = 'true';
   document.head.appendChild(link);
 }
@@ -81,8 +81,87 @@ function enhanceCheckout() {
   const checkoutStep = document.querySelector('#checkout-step');
   if (!drawer || !form || !checkoutStep) return;
 
-  form.querySelectorAll('.checkout-section').forEach((section, index) => {
+  const serviceSection = form.querySelector('.service-types');
+  const dataSection = form.querySelector('.checkout-fields')?.closest('.checkout-section');
+  const paymentSection = form.querySelector('.payment-section');
+  const addressField = form.querySelector('.checkout-address');
+  const tableField = form.querySelector('.checkout-table');
+  const notesField = form.querySelector('.checkout-notes');
+
+  const helperCopy = [
+    [serviceSection, 'Escolha a modalidade para mostrarmos apenas o que é necessário.'],
+    [dataSection, 'Usamos estes dados para identificar e atualizar seu pedido.'],
+    [paymentSection, 'Informe como pretende pagar. Nenhum valor é cobrado nesta tela.'],
+  ];
+
+  helperCopy.forEach(([section, text], index) => {
+    if (!section) return;
     section.dataset.checkoutBlock = String(index + 1);
+    if (section.querySelector('.checkout-section__hint')) return;
+    const hint = document.createElement('p');
+    hint.className = 'checkout-section__hint';
+    hint.textContent = text;
+    const firstContent = section.querySelector(':scope > div');
+    section.insertBefore(hint, firstContent || null);
+  });
+
+  if (notesField && !notesField.querySelector('.checkout-field-hint')) {
+    const hint = document.createElement('small');
+    hint.className = 'checkout-field-hint';
+    hint.textContent = 'Use este campo para troco, referência ou observações do preparo.';
+    notesField.appendChild(hint);
+  }
+
+  let contextual = form.querySelector('.checkout-context');
+  if (!contextual) {
+    contextual = document.createElement('div');
+    contextual.className = 'checkout-context';
+    serviceSection?.insertAdjacentElement('afterend', contextual);
+  }
+
+  let paymentHint = paymentSection?.querySelector('.checkout-payment-hint');
+  if (paymentSection && !paymentHint) {
+    paymentHint = document.createElement('div');
+    paymentHint.className = 'checkout-payment-hint';
+    paymentSection.appendChild(paymentHint);
+  }
+
+  const typeCopy = {
+    delivery: ['Delivery', 'Informe o endereço completo para evitar atraso na entrega.'],
+    pickup: ['Retirada', 'Seu pedido será preparado para retirada no balcão.'],
+    local: ['No local', 'Informe o número da mesa para identificarmos onde servir.'],
+  };
+  const paymentCopy = {
+    pix: 'PIX selecionado. O restaurante confirmará as instruções do pagamento.',
+    card: 'Cartão selecionado. Informe esta preferência ao restaurante no pedido.',
+    cash: 'Dinheiro selecionado. Se precisar de troco, informe nas observações.',
+  };
+
+  const updateContext = () => {
+    const type = form.elements.order_type?.value || 'delivery';
+    const payment = form.elements.payment_method?.value || 'pix';
+    const [title, body] = typeCopy[type] || typeCopy.delivery;
+    contextual.innerHTML = `<span class="checkout-context__icon"><i class="fi ${type === 'delivery' ? 'fi-rr-motorcycle' : type === 'pickup' ? 'fi-rr-shopping-bag' : 'fi-rr-restaurant'}" aria-hidden="true"></i></span><span><strong>${title}</strong><small>${body}</small></span>`;
+    if (paymentHint) paymentHint.textContent = paymentCopy[payment] || '';
+
+    [addressField, tableField].forEach((field) => {
+      if (!field) return;
+      field.classList.toggle('is-context-visible', !field.hidden);
+    });
+  };
+
+  const updateFieldState = (input) => {
+    const field = input.closest('.field');
+    if (!field) return;
+    const hasValue = Boolean(String(input.value || '').trim());
+    field.classList.toggle('has-value', hasValue);
+    field.classList.toggle('is-invalid', input.matches(':user-invalid'));
+  };
+
+  form.querySelectorAll('input, textarea').forEach((input) => {
+    updateFieldState(input);
+    input.addEventListener('input', () => updateFieldState(input));
+    input.addEventListener('blur', () => updateFieldState(input));
   });
 
   const updateKeyboardState = () => {
@@ -98,9 +177,19 @@ function enhanceCheckout() {
 
   form.addEventListener('change', (event) => {
     if (event.target.name === 'order_type' || event.target.name === 'payment_method') {
-      event.target.closest('label')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      updateContext();
+      requestAnimationFrame(() => event.target.closest('label')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }));
     }
   });
+
+  const stepObserver = new MutationObserver(() => {
+    if (!checkoutStep.hidden) {
+      updateContext();
+      form.querySelectorAll('input, textarea').forEach(updateFieldState);
+    }
+  });
+  stepObserver.observe(checkoutStep, { attributes: true, attributeFilter: ['hidden'] });
+  updateContext();
 }
 
 export function initCartUX() {

@@ -1,0 +1,104 @@
+/* Ignite Cardápio — Product UX v4
+   Canonical customer UI: DM Sans, touch-first cards, responsive product detail. */
+
+.catalog-section__heading h3,
+.product-card,
+.product-card *,
+.product-dialog,
+.product-dialog * {
+  font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;
+}
+
+.catalog-section__heading h3{font-weight:800!important;letter-spacing:-.035em!important}
+
+.product-card.product-card--premium{
+  isolation:isolate;
+  border:1px solid rgba(15,31,22,.075)!important;
+  background:#fff!important;
+  box-shadow:0 5px 18px rgba(15,31,22,.055)!important;
+}
+.product-card.product-card--premium:focus-within{outline:3px solid rgba(8,124,72,.14);outline-offset:2px}
+.product-card--premium .product-card__visual{background:#edf2ee!important}
+.product-card--premium .product-card__image{background:#edf2ee}
+.product-card--premium .product-name{font-weight:750!important;color:#102019!important}
+.product-card--premium .product-card__description{color:#68766e!important}
+.product-card--premium .product-card__price strong{font-weight:850!important;letter-spacing:-.025em}
+.product-card--premium .product-add{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.product-card--premium .product-add:focus-visible{outline:3px solid rgba(8,124,72,.22);outline-offset:2px}
+
+/* Product detail */
+.product-dialog{overscroll-behavior:contain!important}
+.product-dialog__body{scrollbar-gutter:stable}
+.swal-product__heading h2{font-weight:850!important}
+.swal-product__description{color:#58675e!important}
+.swal-product__price strong{font-weight:850!important}
+.swal-product .field>span:first-child{font-weight:750!important}
+.product-dialog__actions .swal2-confirm{box-shadow:0 9px 22px rgba(8,124,72,.2)!important}
+.product-dialog__actions button{touch-action:manipulation}
+
+@media(max-width:520px){
+  /* A single horizontal card is easier to scan/read on phones than two tiny columns. */
+  .catalog-section__products{grid-template-columns:1fr!important;gap:.62rem!important}
+  .product-card.product-card--premium{
+    display:grid!important;
+    grid-template-columns:116px minmax(0,1fr)!important;
+    min-height:132px!important;
+    border-radius:18px!important;
+    overflow:hidden!important;
+  }
+  .product-card--premium .product-card__visual{
+    width:116px!important;
+    height:100%!important;
+    min-height:132px!important;
+    aspect-ratio:auto!important;
+    border-radius:0!important;
+  }
+  .product-card--premium .product-card__content{min-width:0;padding:.72rem .72rem .68rem!important}
+  .product-card--premium .product-card__category{font-size:.52rem!important;margin-bottom:.18rem!important}
+  .product-card--premium h3{margin-bottom:.24rem!important}
+  .product-card--premium .product-name{font-size:.91rem!important;line-height:1.17!important;-webkit-line-clamp:2}
+  .product-card--premium .product-card__description{min-height:0!important;font-size:.67rem!important;line-height:1.32!important;-webkit-line-clamp:2}
+  .product-card--premium .product-card__promo-copy{margin-top:.28rem!important;font-size:.58rem!important}
+  .product-card--premium .product-card__footer{padding-top:.42rem!important;align-items:center!important}
+  .product-card--premium .product-card__price{font-size:.93rem!important}
+  .product-card--premium .product-add{width:38px!important;height:38px!important;flex-basis:38px!important;border-radius:12px!important}
+  .product-card--premium .product-card__badges{top:.4rem!important;left:.4rem!important;right:.4rem!important}
+  .product-card--premium .product-card__badge{max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .product-card--premium .product-card__discount{margin-left:auto}
+
+  .product-dialog{max-height:94dvh!important;border-radius:24px 24px 0 0!important}
+  .swal-product__visual{aspect-ratio:1.55/1!important;max-height:34dvh}
+  .swal-product__heading,.swal-product__description,.swal-product__price,.swal-product .field{margin-left:1rem!important;margin-right:1rem!important}
+  .swal-product__heading{margin-top:.82rem!important}
+  .swal-product__heading h2{font-size:1.24rem!important}
+  .swal-product__description{margin-top:.45rem!important;font-size:.78rem!important;line-height:1.43!important}
+  .swal-product__price{margin-top:.6rem!important}
+  .swal-product__price strong{font-size:1.28rem!important}
+  .swal-product .field{margin-top:.62rem!important}
+  .product-quantity{min-height:44px!important;grid-template-columns:44px 1fr 44px!important}
+  .swal-product textarea{min-height:72px!important}
+  .product-dialog__actions{grid-template-columns:.72fr 1.35fr!important;padding:.62rem .72rem calc(.62rem + env(safe-area-inset-bottom))!important}
+  .product-dialog__actions button{min-height:50px!important}
+}
+
+@media(max-width:360px){
+  .product-card.product-card--premium{grid-template-columns:104px minmax(0,1fr)!important;min-height:124px!important}
+  .product-card--premium .product-card__visual{width:104px!important;min-height:124px!important}
+  .product-card--premium .product-card__content{padding:.62rem!important}
+  .product-card--premium .product-name{font-size:.86rem!important}
+  .product-card--premium .product-card__description{font-size:.63rem!important;-webkit-line-clamp:2}
+  .product-card--premium .product-card__price{font-size:.88rem!important}
+}
+
+@media(min-width:521px) and (max-width:679px){
+  .catalog-section__products{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media(hover:none){
+  .product-card.product-card--premium:hover{transform:none!important}
+  .product-card--premium:hover .product-card__image{transform:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .product-card.product-card--premium,.product-card--premium .product-card__image{transition:none!important}
+}

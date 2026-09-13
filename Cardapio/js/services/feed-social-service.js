@@ -83,3 +83,42 @@ export async function watchFeedAuth(onChange) {
   const { data } = supabase.auth.onAuthStateChange(() => { void onChange?.(); });
   return () => data?.subscription?.unsubscribe?.();
 }
+
+function setupFeedInstrumentation() {
+  if (window.__igniteFeedMetricsReady) return;
+  window.__igniteFeedMetricsReady = true;
+  const viewed = new Set();
+  let observer = null;
+
+  const observePosts = () => {
+    if (!('IntersectionObserver' in window)) return;
+    if (!observer) {
+      observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting || entry.intersectionRatio < 0.55) return;
+          const id = entry.target.getAttribute('data-feed-post');
+          if (!id || viewed.has(id)) return;
+          viewed.add(id);
+          void trackFeedEvent(id, 'view');
+        });
+      }, { threshold: [0.55] });
+    }
+    document.querySelectorAll('[data-feed-post]').forEach(node => observer.observe(node));
+  };
+
+  const mutation = new MutationObserver(observePosts);
+  mutation.observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('click', event => {
+    const card = event.target.closest?.('[data-feed-post]');
+    const postId = card?.getAttribute('data-feed-post');
+    if (!postId) return;
+    if (event.target.closest('[data-feed-share]')) void trackFeedEvent(postId, 'share');
+    const product = event.target.closest('[data-feed-view-product]');
+    if (product) void trackFeedEvent(postId, 'product_open', product.getAttribute('data-feed-view-product'));
+    const add = event.target.closest('[data-feed-add-product]');
+    if (add) void trackFeedEvent(postId, 'add_to_cart', add.getAttribute('data-feed-add-product'));
+  }, { capture: true });
+  observePosts();
+}
+
+if (typeof window !== 'undefined' && typeof document !== 'undefined') setupFeedInstrumentation();

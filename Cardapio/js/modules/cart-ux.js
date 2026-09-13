@@ -4,7 +4,7 @@ function ensureStyles() {
   if (document.querySelector('link[data-ignite-cart-ux]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = new URL('../../styles/cart-ux.css?v=20260912-3', import.meta.url).href;
+  link.href = new URL('../../styles/cart-ux.css?v=20260912-4', import.meta.url).href;
   link.dataset.igniteCartUx = 'true';
   document.head.appendChild(link);
 }
@@ -45,6 +45,36 @@ function scheduleCartImages() {
   requestAnimationFrame(() => requestAnimationFrame(renderCartImages));
 }
 
+function setupCartHeader() {
+  const drawer = document.querySelector('#cart-drawer');
+  const header = drawer?.querySelector('.drawer-header');
+  const titleWrap = header?.querySelector('.drawer-header__title');
+  const checkoutStep = document.querySelector('#checkout-step');
+  if (!drawer || !header || !titleWrap || !checkoutStep) return;
+
+  let meta = titleWrap.querySelector('.drawer-header__meta');
+  if (!meta) {
+    meta = document.createElement('div');
+    meta.className = 'drawer-header__meta';
+    titleWrap.appendChild(meta);
+  }
+
+  const update = () => {
+    const { count, subtotal } = cartStore.snapshot();
+    const checkout = !checkoutStep.hidden;
+    drawer.classList.toggle('is-checkout-step', checkout);
+    drawer.classList.toggle('is-cart-step', !checkout);
+    meta.textContent = checkout
+      ? 'Revise os dados antes de enviar'
+      : `${count} ${count === 1 ? 'item' : 'itens'} · ${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+  };
+
+  const observer = new MutationObserver(update);
+  observer.observe(checkoutStep, { attributes: true, attributeFilter: ['hidden'] });
+  cartStore.addEventListener('change', update);
+  update();
+}
+
 function enhanceCheckout() {
   const drawer = document.querySelector('#cart-drawer');
   const form = document.querySelector('#checkout-form');
@@ -75,6 +105,7 @@ function enhanceCheckout() {
 
 export function initCartUX() {
   ensureStyles();
+  setupCartHeader();
   scheduleCartImages();
   cartStore.addEventListener('change', scheduleCartImages);
   const root = document.querySelector('#cart-items');

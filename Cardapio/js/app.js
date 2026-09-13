@@ -23,7 +23,7 @@ function ensureFrontendPolishStyles() {
   if (document.querySelector('link[data-ignite-frontend-polish]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = './styles/frontend-polish.css?v=20260912-2';
+  link.href = './styles/frontend-polish.css?v=20260912-3';
   link.dataset.igniteFrontendPolish = 'true';
   document.head.appendChild(link);
 }
@@ -74,82 +74,49 @@ function installStoreCheckoutGuard() {
     if (event.target?.id !== 'checkout-form' || window.__igniteStoreSettings?.store_open !== false) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    window.Swal?.fire({
-      icon: 'info',
-      title: 'Loja fechada no momento',
-      text: 'O cardápio continua disponível para consulta, mas novos pedidos estão temporariamente pausados.',
-      confirmButtonText: 'Entendi',
-    });
+    window.Swal?.fire({ icon: 'info', title: 'Loja fechada no momento', text: 'O cardápio continua disponível para consulta, mas novos pedidos estão temporariamente pausados.', confirmButtonText: 'Entendi' });
   }, true);
 }
 
 function renderCatalogFailure(grid, error) {
   grid.innerHTML = `<div class="empty-state"><span>⚠️</span><h3>Cardápio temporariamente indisponível</h3><p>${navigator.onLine ? 'Não conseguimos sincronizar os produtos agora.' : 'Você está sem conexão. Reconecte-se para carregar o cardápio atual.'}</p><button class="button" type="button" data-catalog-retry>Tentar novamente</button></div>`;
   grid.querySelector('[data-catalog-retry]')?.addEventListener('click', () => location.reload(), { once: true });
-  if (window.Swal) {
-    Swal.fire({ icon: 'error', title: 'Não foi possível carregar o cardápio', text: error.message || 'Verifique sua conexão e tente novamente.', confirmButtonText: 'Entendi' });
-  }
+  if (window.Swal) Swal.fire({ icon: 'error', title: 'Não foi possível carregar o cardápio', text: error.message || 'Verifique sua conexão e tente novamente.', confirmButtonText: 'Entendi' });
 }
 
 async function bootstrap() {
   let pwa = null;
   let splashFailsafe = null;
   let stopCatalogSync = () => {};
-
   try {
     initAnalytics();
     initNotices().catch(error => console.warn('[Avisos]', error));
     pwa = initPWA();
-    splashFailsafe = setTimeout(() => {
-      console.warn('[PWA] Tempo máximo de inicialização atingido; liberando interface.');
-      pwa?.markReady?.();
-    }, SPLASH_FAILSAFE_MS);
-
+    splashFailsafe = setTimeout(() => { console.warn('[PWA] Tempo máximo de inicialização atingido; liberando interface.'); pwa?.markReady?.(); }, SPLASH_FAILSAFE_MS);
     document.querySelectorAll('[data-carousel]').forEach(initCarousel);
     const grid = document.querySelector('#product-grid');
     const skeleton = document.querySelector('#product-skeleton');
     grid.replaceChildren(...Array.from({ length: 6 }, () => skeleton.content.cloneNode(true)));
-
     try {
       const [catalog, storeSettings] = await Promise.all([
         withTimeout(getCatalog(), CATALOG_BOOT_TIMEOUT_MS, 'O carregamento do cardápio demorou mais que o esperado.'),
-        getStoreSettings().catch(error => {
-          console.warn('[Loja] Não foi possível confirmar o status público da loja:', error);
-          return { store_open: false, delivery_fee: 0, updated_at: null };
-        }),
+        getStoreSettings().catch(error => { console.warn('[Loja] Não foi possível confirmar o status público da loja:', error); return { store_open: false, delivery_fee: 0, updated_at: null }; }),
       ]);
-
       applyStoreSettings(storeSettings);
       installStoreCheckoutGuard();
       const cartSync = cartStore.reconcileCatalog(catalog.products);
-      if (cartSync.removed.length && window.Swal) {
-        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Carrinho atualizado', text: 'Itens indisponíveis foram removidos.', showConfirmButton: false, timer: 2600 });
-      }
-
+      if (cartSync.removed.length && window.Swal) Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Carrinho atualizado', text: 'Itens indisponíveis foram removidos.', showConfirmButton: false, timer: 2600 });
       const notifications = initNotifications();
-      const orders = initOrders({
-        onPlayRequested: order => {
-          const orderId = order?.id;
-          if (orderId == null) { console.error('Pedido sem orders.id'); return; }
-          if (!isWaitingStatus(order.status)) return;
-          trackEvent('ignite_play_started', {
-            order_id: orderId,
-            order_number: order.order_number || order.numero_pedido || orderId,
-          });
-          let stopWatching = () => {};
-          let closed = false;
-          IgnitePlay.show({
-            orderId,
-            orderNumber: order.order_number || order.numero_pedido || orderId,
-            onClose: () => { closed = true; stopWatching(); },
-          });
-          stopWatching = orders.watchOrder(orderId, status => {
-            if (!isWaitingStatus(status)) IgnitePlay.hide();
-          });
-          if (closed) stopWatching();
-        },
-      });
-
+      const orders = initOrders({ onPlayRequested: order => {
+        const orderId = order?.id;
+        if (orderId == null) { console.error('Pedido sem orders.id'); return; }
+        if (!isWaitingStatus(order.status)) return;
+        trackEvent('ignite_play_started', { order_id: orderId, order_number: order.order_number || order.numero_pedido || orderId });
+        let stopWatching = () => {}; let closed = false;
+        IgnitePlay.show({ orderId, orderNumber: order.order_number || order.numero_pedido || orderId, onClose: () => { closed = true; stopWatching(); } });
+        stopWatching = orders.watchOrder(orderId, status => { if (!isWaitingStatus(status)) IgnitePlay.hide(); });
+        if (closed) stopWatching();
+      }});
       const navigation = initNavigation({ onRoute: route => { if (route === 'orders') orders.load(); } });
       initCatalog(catalog);
       initChat(catalog.products);
@@ -159,15 +126,11 @@ async function bootstrap() {
         onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
         onCreateAccount: () => navigation.navigate('profile'),
         onOrderPlaced: order => {
-          trackEvent('order_created', {
-            order_type: order?.order_type || order?.tipo || 'cardapio',
-            total: Number(order?.total || 0),
-          });
+          trackEvent('order_created', { order_type: order?.order_type || order?.tipo || 'cardapio', total: Number(order?.total || 0) });
           orders.load();
           notifications.promptAfterOrder().catch(error => console.warn('[Push]', error));
         },
       });
-
       let lastCatalogFingerprint = catalogFingerprint(catalog);
       let lastSettingsFingerprint = settingsFingerprint(storeSettings);
       let refreshingCatalog = false;
@@ -175,28 +138,20 @@ async function bootstrap() {
         if (refreshingCatalog) return;
         refreshingCatalog = true;
         try {
-          const [nextCatalog, nextSettings] = await Promise.all([
-            getCatalog(),
-            getStoreSettings().catch(() => window.__igniteStoreSettings || storeSettings),
-          ]);
+          const [nextCatalog, nextSettings] = await Promise.all([getCatalog(), getStoreSettings().catch(() => window.__igniteStoreSettings || storeSettings)]);
           const nextCatalogFingerprint = catalogFingerprint(nextCatalog);
           const nextSettingsFingerprint = settingsFingerprint(nextSettings);
           const catalogChanged = nextCatalogFingerprint !== lastCatalogFingerprint;
           const settingsChanged = nextSettingsFingerprint !== lastSettingsFingerprint;
           if (!catalogChanged && !settingsChanged) return;
-
           lastCatalogFingerprint = nextCatalogFingerprint;
           lastSettingsFingerprint = nextSettingsFingerprint;
           applyStoreSettings(nextSettings);
           cartStore.reconcileCatalog(nextCatalog.products);
-
           console.info('[Catálogo] Dados operacionais alterados; recarregando interface.', reason);
           location.reload();
-        } catch (error) {
-          console.warn('[Catálogo] Falha ao reconciliar atualização:', error);
-        } finally {
-          refreshingCatalog = false;
-        }
+        } catch (error) { console.warn('[Catálogo] Falha ao reconciliar atualização:', error); }
+        finally { refreshingCatalog = false; }
       });
     } catch (error) {
       console.error('[Bootstrap] Catálogo indisponível:', error);
@@ -211,7 +166,6 @@ async function bootstrap() {
     if (splashFailsafe) clearTimeout(splashFailsafe);
     await pwa?.markReady?.();
   }
-
   window.addEventListener('pagehide', () => stopCatalogSync(), { once: true });
 }
 

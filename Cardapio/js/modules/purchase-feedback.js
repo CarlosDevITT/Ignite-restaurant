@@ -1,18 +1,30 @@
 import { cartStore } from '../store/cart-store.js';
 
 function ensurePurchasePolish() {
-  if (document.querySelector('link[data-ignite-purchase-polish]')) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = new URL('../../styles/purchase-polish.css?v=20260912-1', import.meta.url).href;
-  link.setAttribute('data-ignite-purchase-polish', 'true');
-  document.head.appendChild(link);
+  const files = [
+    ['ignite-purchase-polish', '../../styles/purchase-polish.css?v=20260912-2'],
+    ['ignite-final-audit', '../../styles/final-audit.css?v=20260912-1'],
+  ];
+  files.forEach(([id, path]) => {
+    const attribute = `data-${id}`;
+    if (document.querySelector(`link[${attribute}]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = new URL(path, import.meta.url).href;
+    link.setAttribute(attribute, 'true');
+    document.head.appendChild(link);
+  });
 }
 
 function cleanupLegacyTypography() {
   document.querySelectorAll('link[href*="fonts.googleapis.com"][href*="family=Syne"]').forEach((link) => {
     link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
   });
+}
+
+function cleanupLegacyHeader() {
+  const eyebrow = document.querySelector('.app-header .eyebrow');
+  if (eyebrow && /Manaus\s*[·-]\s*AM/i.test(eyebrow.textContent || '')) eyebrow.remove();
 }
 
 function pulse(element, className, duration = 360) {
@@ -73,6 +85,7 @@ function setupDrawerMotion() {
 export function initPurchaseFeedback() {
   ensurePurchasePolish();
   cleanupLegacyTypography();
+  cleanupLegacyHeader();
   setupCartFeedback();
   setupDrawerMotion();
 }

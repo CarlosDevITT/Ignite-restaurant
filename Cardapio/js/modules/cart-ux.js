@@ -1,12 +1,18 @@
 import { cartStore } from '../store/cart-store.js';
 
 function ensureStyles() {
-  if (document.querySelector('link[data-ignite-cart-ux]')) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = new URL('../../styles/cart-ux.css?v=20260912-5', import.meta.url).href;
-  link.dataset.igniteCartUx = 'true';
-  document.head.appendChild(link);
+  const files = [
+    ['ignite-cart-ux', '../../styles/cart-ux.css?v=20260912-5'],
+    ['ignite-checkout-polish', '../../styles/checkout-polish.css?v=20260912-1'],
+  ];
+  files.forEach(([id, path]) => {
+    if (document.querySelector(`link[data-${id}]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = new URL(path, import.meta.url).href;
+    link.dataset[id] = 'true';
+    document.head.appendChild(link);
+  });
 }
 
 function renderCartImages() {

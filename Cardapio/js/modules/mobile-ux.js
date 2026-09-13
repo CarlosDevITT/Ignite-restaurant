@@ -3,6 +3,7 @@ import { initPurchaseFeedback } from './purchase-feedback.js';
 import { initCheckoutAddressBook } from './checkout-address-book.js';
 import { initCustomerPreferences } from './customer-preferences.js';
 import { initProfileOrderHistory } from './profile-order-history.js';
+import { initProfilePrivacy } from './profile-privacy.js';
 
 const KEYBOARD_THRESHOLD = 140;
 
@@ -101,5 +102,6 @@ export function initMobileUX() {
   initCheckoutAddressBook();
   initCustomerPreferences();
   initProfileOrderHistory();
+  initProfilePrivacy();
   initPurchaseFeedback();
 }

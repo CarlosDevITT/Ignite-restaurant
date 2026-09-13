@@ -4,6 +4,7 @@ import { initCheckoutAddressBook } from './checkout-address-book.js';
 import { initCustomerPreferences } from './customer-preferences.js';
 import { initProfileOrderHistory } from './profile-order-history.js';
 import { initProfilePrivacy } from './profile-privacy.js';
+import { initDesktopUX } from './desktop-ux.js';
 
 const KEYBOARD_THRESHOLD = 140;
 
@@ -96,6 +97,7 @@ function setupCategoryFilterSheet() {
 }
 
 export function initMobileUX() {
+  initDesktopUX();
   setupKeyboardAwareness();
   setupCategoryFilterSheet();
   initCartUX();

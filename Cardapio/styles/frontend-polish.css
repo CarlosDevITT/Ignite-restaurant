@@ -41,7 +41,7 @@ h1,h2,h3,h4 { letter-spacing: -.025em; }
   margin-top: 0 !important;
 }
 .app-header > div:first-child { gap: .12rem !important; }
-.app-header .eyebrow { margin: 0 0 .18rem !important; }
+.app-header .eyebrow { display: none !important; }
 
 /* Category filter sheet */
 .category-filter-sheet[hidden] { display: none !important; }
@@ -73,11 +73,6 @@ body.category-filter-open { overflow: hidden; }
     max-width: 310px !important;
     font-size: clamp(1.72rem, 7vw, 2.15rem) !important;
     line-height: 1.02 !important;
-  }
-
-  .app-header .eyebrow {
-    font-size: .64rem !important;
-    letter-spacing: .15em !important;
   }
 
   .hero-carousel { margin-top: 0 !important; }

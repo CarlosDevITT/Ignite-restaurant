@@ -1,324 +1,168 @@
-// main.js — Ignite Restaurant v3.2
-(function () {
+// Landing page: native navigation, progressive motion and local feedback.
+(() => {
   'use strict';
+  const $ = selector => document.querySelector(selector);
+  const all = selector => [...document.querySelectorAll(selector)];
+  const icon = name => `<svg class="site-icon" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
+  const read = (store, key) => { try { return window[store].getItem(key); } catch { return null; } };
+  const write = (store, key, value) => { try { window[store].setItem(key, value); } catch { /* Storage is optional. */ } };
+  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  const animations = new Set();
+  const menu = $('#nav-menu');
+  const toggle = $('#nav-toggle');
+  const theme = $('#theme-button');
+  const header = $('#header');
+  const progress = $('#reading-progress');
+  const hero = $('.home__img');
+  const topLink = $('#scroll-top');
+  let menuOpen = false;
+  let statusTimer;
+  let frame;
 
-  const $ = (sel, ctx = document) => ctx.querySelector(sel);
-  const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+  function applyTheme(dark) {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.body.classList.toggle('dark-theme', dark);
+    theme.innerHTML = icon(dark ? 'sun' : 'moon');
+    theme.setAttribute('aria-label', dark ? 'Ativar tema claro' : 'Ativar tema escuro');
+    theme.setAttribute('aria-pressed', String(dark));
+  }
+  applyTheme(document.documentElement.dataset.theme === 'dark');
+  theme.addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    applyTheme(dark);
+    write('localStorage', 'igniteTheme', dark ? 'dark' : 'light');
+  });
+  function setMenu(open, restoreFocus = false) {
+    menuOpen = open;
+    menu.classList.toggle('show-menu', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    toggle.innerHTML = icon(open ? 'close' : 'menu');
+    if (restoreFocus) toggle.focus();
+  }
+  toggle.addEventListener('click', event => { event.stopPropagation(); setMenu(!menuOpen); });
+  menu.addEventListener('click', event => { if (event.target.closest('a')) setMenu(false); });
+  document.addEventListener('click', event => { if (menuOpen && !event.composedPath().includes(menu) && !event.composedPath().includes(toggle)) setMenu(false); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && menuOpen) setMenu(false, true); });
 
-  /* ── THEME (pode rodar antes do DOMContentLoaded) ── */
-  const THEME_KEY = 'igniteTheme';
-
-  function applyTheme(isDark) {
-    document.body.classList.toggle('dark-theme', isDark);
-    const btn = document.getElementById('theme-button');
-    if (btn) {
-      btn.innerHTML = '';
-      const icon = document.createElement('i');
-      icon.className = isDark ? 'bx bx-sun' : 'bx bx-moon';
-      btn.appendChild(icon);
+  function notify(message) {
+    const status = $('#site-status');
+    clearTimeout(statusTimer);
+    status.textContent = message;
+    status.classList.add('is-visible');
+    statusTimer = setTimeout(() => status.classList.remove('is-visible'), 5000);
+  }
+  async function share(data) {
+    try {
+      if (navigator.share) await navigator.share(data);
+      else {
+        if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(data.url);
+        notify('Link copiado. Agora é só compartilhar.');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') notify('Não foi possível compartilhar. Copie o endereço na barra do navegador.');
     }
   }
+  $('#share-button').addEventListener('click', () => share({ title: document.title, text: 'Conheça o Ignite Restaurante Pub.', url: location.href }));
+  window.shareProduct = (name, description, id) => share({ title: name, text: description, url: `${location.origin}/Cardapio/index.html?item=${encodeURIComponent(id)}` });
 
-  function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(saved ? saved === 'dark' : prefersDark);
+  function animate(element, keyframes, options) {
+    if (motion.matches || !element.animate) return;
+    const animation = element.animate(keyframes, { duration: 650, easing: 'cubic-bezier(.2,.7,.2,1)', ...options });
+    animations.add(animation);
+    animation.finished.then(() => animations.delete(animation), () => animations.delete(animation));
   }
+  // Content stays visible by default; effects enhance it rather than gate it.
+  const revealElements = all('.reveal, .services__content');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const element = entry.target;
+        const index = element.classList.contains('services__content') ? all('.services__content').indexOf(element) : 0;
+        animate(element, [{ opacity: .25, transform: 'translateY(28px)' }, { opacity: 1, transform: 'translateY(0)' }], { delay: index * 80 });
+        element.classList.add('visible');
+        observer.unobserve(element);
+      });
+    }, { threshold: .12 });
+    revealElements.forEach(element => observer.observe(element));
+  }
+  const sections = all('section[id]');
+  function updateScroll() {
+    frame = null;
+    const y = window.scrollY;
+    const distance = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    progress.style.transform = `scaleX(${Math.min(1, y / distance)})`;
+    header.classList.toggle('scroll-header', y > 32);
+    const showTop = y > 400;
+    topLink.classList.toggle('show-scroll', showTop);
+    topLink.tabIndex = showTop ? 0 : -1;
+    hero.style.transform = !motion.matches && finePointer.matches && y < innerHeight ? `translateY(${Math.min(24, y * .045)}px)` : '';
+    let active = sections[0]?.id;
+    for (const section of sections) { if (section.getBoundingClientRect().top <= header.offsetHeight + 70) active = section.id; }
+    all('.nav__link[href^="#"]').forEach(link => {
+      const selected = link.hash === `#${active}`;
+      link.classList.toggle('active-link', selected);
+      if (selected) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
+    });
+  }
+  function scheduleScroll() { if (!frame) frame = requestAnimationFrame(updateScroll); }
+  addEventListener('scroll', scheduleScroll, { passive: true });
+  addEventListener('resize', () => { if (innerWidth > 768) setMenu(false); scheduleScroll(); });
+  motion.addEventListener('change', () => { if (motion.matches) animations.forEach(animation => animation.cancel()); scheduleScroll(); });
+  finePointer.addEventListener('change', scheduleScroll);
+  all('a[href^="#"]').forEach(link => link.addEventListener('click', event => {
+    const target = document.getElementById(link.hash.slice(1));
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: motion.matches ? 'instant' : 'smooth', block: 'start' });
+    // Preserve anchor semantics and move keyboard focus without a second scroll.
+    if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+    try { history.replaceState(null, '', link.hash); } catch { /* Optional URL state. */ }
+  }));
+  updateScroll();
 
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('#theme-button') || e.target.closest('.change-theme')) {
-      const isDark = !document.body.classList.contains('dark-theme');
-      applyTheme(isDark);
-      localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+  const installBanner = $('#install-banner');
+  const installButton = $('#btn-install');
+  let installPrompt = null;
+  let installTimer;
+  function hideInstall() {
+    clearTimeout(installTimer);
+    if (installBanner.contains(document.activeElement)) $('.nav__logo').focus();
+    installBanner.classList.remove('show');
+    installBanner.hidden = true;
+  }
+  addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    installPrompt = event;
+    if (!read('sessionStorage', 'installBannerClosed')) {
+      installTimer = setTimeout(() => {
+        if (installPrompt && !read('sessionStorage', 'installBannerClosed')) { installBanner.hidden = false; installBanner.classList.add('show'); }
+      }, 7000);
     }
   });
-
-  /* ── TUDO O MAIS roda após DOM pronto ── */
-  document.addEventListener('DOMContentLoaded', function () {
-
-    initTheme();
-
-    /* NAV */
-    const navMenu   = document.getElementById('nav-menu');
-    const navToggle = document.getElementById('nav-toggle');
-
-    function openMenu() {
-      if (!navMenu) return;
-      navMenu.classList.add('show-menu');
-      if (navToggle) {
-        navToggle.innerHTML = "<i class='bx bx-x' aria-hidden='true'></i>";
-        navToggle.setAttribute('aria-expanded', 'true');
-        navToggle.setAttribute('aria-label', 'Fechar menu');
-      }
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeMenu() {
-      if (!navMenu) return;
-      navMenu.classList.remove('show-menu');
-      if (navToggle) {
-        navToggle.innerHTML = "<i class='bx bx-menu' aria-hidden='true'></i>";
-        navToggle.setAttribute('aria-expanded', 'false');
-        navToggle.setAttribute('aria-label', 'Abrir menu');
-      }
-      document.body.style.overflow = '';
-    }
-
-    if (navToggle) {
-      navToggle.addEventListener('click', function (e) {
-        e.stopPropagation();
-        navMenu && navMenu.classList.contains('show-menu') ? closeMenu() : openMenu();
-      });
-    }
-
-    $$('.nav__link').forEach(function (link) {
-      link.addEventListener('click', function () {
-        if (navMenu && navMenu.classList.contains('show-menu')) closeMenu();
-      });
-    });
-
-    document.addEventListener('click', function (e) {
-      if (
-        navMenu && navMenu.classList.contains('show-menu') &&
-        !navMenu.contains(e.target) &&
-        navToggle && !navToggle.contains(e.target)
-      ) {
-        closeMenu();
-      }
-    });
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && navMenu && navMenu.classList.contains('show-menu')) {
-        closeMenu();
-        if (navToggle) navToggle.focus();
-      }
-    });
-
-    /* ACTIVE LINK */
-    const sections = $$('section[id]');
-    const header   = document.getElementById('header');
-
-    function updateActiveLink() {
-      const scrollY = window.scrollY;
-      sections.forEach(function (section) {
-        const top    = section.offsetTop - 100;
-        const height = section.offsetHeight;
-        const id     = section.getAttribute('id');
-        const link   = $(`.nav__link[href="#${id}"]`);
-        if (!link) return;
-        if (scrollY >= top && scrollY < top + height) {
-          $$('.nav__link').forEach(function (l) { l.classList.remove('active-link'); });
-          link.classList.add('active-link');
-        }
-      });
-    }
-
-    /* SCROLL HEADER */
-    function scrollHeader() {
-      if (header) header.classList.toggle('scroll-header', window.scrollY >= 50);
-    }
-
-    /* SCROLL TOP */
-    const scrollTopBtn = document.getElementById('scroll-top');
-    function handleScrollTop() {
-      if (scrollTopBtn) scrollTopBtn.classList.toggle('show-scroll', window.scrollY >= 400);
-    }
-
-    /* REVEAL */
-    const revealEls = $$('.reveal');
-    if (revealEls.length && 'IntersectionObserver' in window) {
-      const revealObs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            revealObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-      revealEls.forEach(function (el) { revealObs.observe(el); });
-    }
-
-    /* COUNTERS */
-    const counters = $$('[data-count]');
-    if (counters.length && 'IntersectionObserver' in window) {
-      const countObs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            animateCounter(entry.target);
-            countObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.5 });
-      counters.forEach(function (el) { countObs.observe(el); });
-    }
-
-    function animateCounter(el) {
-      const target = parseInt(el.dataset.count, 10);
-      if (isNaN(target)) return;
-      const duration = 1600;
-      const startTime = performance.now();
-      function update(now) {
-        const elapsed  = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased    = 1 - Math.pow(2, -10 * progress);
-        el.textContent = Math.round(eased * target) + (el.dataset.suffix || '');
-        if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-
-    /* SERVICES STAGGER */
-    $$('.services__content').forEach(function (card, i) {
-      card.classList.add('reveal');
-      card.style.transitionDelay = (i * 0.1) + 's';
-    });
-
-    /* SMOOTH SCROLL */
-    $$('a[href^="#"]').forEach(function (anchor) {
-      anchor.addEventListener('click', function (e) {
-        var hval = anchor.getAttribute('href');
-        if (!hval || hval === '#') return;
-        var target = document.querySelector(hval);
-        if (!target) return;
-        e.preventDefault();
-        var headerH = header ? header.offsetHeight : 0;
-        var top = target.getBoundingClientRect().top + window.scrollY - headerH - 16;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      });
-    });
-
-    /* SHARE */
-    function showToast(msg, icon) {
-      if (typeof Swal !== 'undefined') {
-        Swal.fire({
-          toast: true, position: 'top-end', icon: icon || 'success',
-          title: msg, showConfirmButton: false, timer: 2200, timerProgressBar: true,
-        });
-      }
-    }
-
-    var shareBtn = document.getElementById('share-button');
-    if (shareBtn) {
-      shareBtn.addEventListener('click', async function () {
-        const shareData = {
-          title: 'Ignite – Restaurante Pub',
-          text: 'Confira os melhores pratos da cidade no Ignite! 🔥',
-          url: window.location.href,
-        };
-        if (navigator.share) {
-          try { await navigator.share(shareData); }
-          catch (err) { if (err.name !== 'AbortError') console.error(err); }
-        } else {
-          try {
-            await navigator.clipboard.writeText(window.location.href);
-            showToast('Link copiado! 🔗');
-          } catch { showToast('Não foi possível copiar', 'error'); }
-        }
-      });
-    }
-
-    window.shareProduct = async function (name, desc, id) {
-      var url  = window.location.origin + '/Cardapio/index.html?item=' + id;
-      var text = 'Olha esse ' + name + ' do Ignite! 😋';
-      if (navigator.share) {
-        try { await navigator.share({ title: name, text: text, url: url }); }
-        catch (err) { if (err.name !== 'AbortError') console.error(err); }
-      } else {
-        await navigator.clipboard.writeText(text + '\n' + url).catch(function () {});
-        showToast('Link copiado!');
-      }
-    };
-
-    /* PWA INSTALL */
-    var deferredPrompt   = null;
-    var installBanner    = document.getElementById('install-banner');
-    var btnInstall       = document.getElementById('btn-install');
-    var btnCloseBanner   = document.getElementById('btn-close-banner');
-
-    window.addEventListener('beforeinstallprompt', function (e) {
-      e.preventDefault();
-      deferredPrompt = e;
-      if (!sessionStorage.getItem('installBannerClosed')) {
-        setTimeout(function () {
-          if (installBanner) installBanner.classList.add('show');
-        }, 4500);
-      }
-    });
-
-    if (btnInstall) {
-      btnInstall.addEventListener('click', async function () {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        var result = await deferredPrompt.userChoice;
-        console.log('[PWA]', result.outcome);
-        deferredPrompt = null;
-        if (installBanner) installBanner.classList.remove('show');
-      });
-    }
-
-    if (btnCloseBanner) {
-      btnCloseBanner.addEventListener('click', function () {
-        if (installBanner) installBanner.classList.remove('show');
-        sessionStorage.setItem('installBannerClosed', 'true');
-      });
-    }
-
-    window.addEventListener('appinstalled', function () {
-      if (installBanner) installBanner.classList.remove('show');
-      deferredPrompt = null;
-      showToast('App instalado com sucesso! 🎉');
-    });
-
-    /* OFFLINE TOAST */
-    var toast = document.getElementById('offline-toast');
-    if (toast) {
-      function showOffline() {
-        toast.style.display = 'flex';
-        toast.innerHTML = "<i class='bx bx-wifi-off' style='margin-right:.4rem'></i> Você está offline";
-      }
-      function showOnline() {
-        toast.style.display = 'flex';
-        toast.innerHTML = "<i class='bx bx-wifi' style='margin-right:.4rem'></i> Conexão restaurada!";
-        setTimeout(function () { toast.style.display = 'none'; }, 3000);
-      }
-      window.addEventListener('offline', showOffline);
-      window.addEventListener('online', showOnline);
-      if (!navigator.onLine) showOffline();
-    }
-
-    /* SCROLL EVENT */
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        scrollHeader();
-        handleScrollTop();
-        updateActiveLink();
-        ticking = false;
-      });
-    }, { passive: true });
-
-    /* INITIAL STATE */
-    scrollHeader();
-    handleScrollTop();
-    updateActiveLink();
-
-    var homeLink = $('.nav__link[href="#home"]');
-    if (homeLink && window.scrollY < 100) {
-      $$('.nav__link').forEach(function (l) { l.classList.remove('active-link'); });
-      homeLink.classList.add('active-link');
-    }
-
-  }); // fim DOMContentLoaded
-
-  /* ── SERVICE WORKER (fora do DOMContentLoaded) ── */
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
-        .then(function (reg) { console.log('[SW] Registered:', reg.scope); })
-        .catch(function (err) { console.warn('[SW] Failed:', err); });
-    });
+  $('#btn-close-banner').addEventListener('click', () => { hideInstall(); write('sessionStorage', 'installBannerClosed', 'true'); });
+  installButton.addEventListener('click', async () => {
+    if (!installPrompt || installButton.disabled) return;
+    installButton.disabled = true;
+    try { await installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; hideInstall(); }
+    catch { notify('Não foi possível instalar agora. Tente novamente pelo menu do navegador.'); }
+    finally { installButton.disabled = false; }
+  });
+  addEventListener('appinstalled', () => { installPrompt = null; hideInstall(); notify('Ignite instalado.'); });
+  function connectivity() {
+    const toast = $('#offline-toast');
+    toast.style.display = navigator.onLine ? 'none' : 'flex';
+    toast.textContent = 'Você está offline. Alguns recursos podem não estar disponíveis.';
   }
-
+  addEventListener('offline', connectivity);
+  addEventListener('online', () => { connectivity(); notify('Conexão restaurada.'); });
+  connectivity();
+  $('#copyright-year').textContent = String(new Date().getFullYear());
+  if ('serviceWorker' in navigator) addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(error => console.warn('Service worker indisponível:', error.message));
+  });
 })();

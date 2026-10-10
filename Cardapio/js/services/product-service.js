@@ -73,15 +73,36 @@ export function normalizeProduct(product, index = 0) {
 export async function getCatalog() {
   try {
     const supabase = await getSupabase();
-    const [categoryResult, productResult] = await Promise.all([
+    let [categoryResult, productResult] = await Promise.all([
       supabaseRetry(() => supabase.from('cardapio_categories_public').select('*').order('position', { ascending: true })),
       supabaseRetry(() => supabase.from('cardapio_products_public').select('*').order('id', { ascending: true })),
     ]);
 
-    if (categoryResult.error) throw categoryResult.error;
-    if (productResult.error) throw productResult.error;
+    // A migração pode ainda não ter publicado as views públicas. Consulte as
+    // tabelas legadas somente quando a view não existe; erros de permissão/RLS
+    // continuam explícitos e nunca são contornados.
+    const missingView = error => error && (
+      ['42P01', 'PGRST205'].includes(error.code)
+      || /(?:relation|table|view).*does not exist|could not find the table/i.test(error.message || '')
+    );
+    if (missingView(productResult.error)) {
+      console.warn('[Catálogo] View de produtos ausente; tentando tabela legada.');
+      productResult = await supabaseRetry(() => supabase.from('products').select('*').order('id', { ascending: true }));
+    }
+    if (missingView(categoryResult.error)) {
+      console.warn('[Catálogo] View de categorias ausente; tentando tabela legada.');
+      categoryResult = await supabaseRetry(() => supabase.from('categories').select('*').order('position', { ascending: true }));
+    }
 
-    const products = (productResult.data || [])
+    if (productResult.error) throw productResult.error;
+    if (!Array.isArray(productResult.data)) throw new Error('O Supabase não retornou os produtos do cardápio.');
+    if (categoryResult.error) {
+      // Categorias são metadados auxiliares: os produtos carregados já contêm
+      // o nome da categoria necessário para montar a interface.
+      console.warn('[Catálogo] Categorias indisponíveis; usando categorias dos produtos.', categoryResult.error);
+    }
+
+    const products = productResult.data
       .filter(product => product.active !== false && product.ativo !== false)
       .map(normalizeProduct);
     const dbCategories = (categoryResult.data || []).map(category => ({

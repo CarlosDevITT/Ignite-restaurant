@@ -1,0 +1,11 @@
+# Ignite Restaurante Pub — public website
+# Keep CSS, JavaScript and images crawlable for page rendering.
+User-agent: *
+Allow: /
+
+# Internal project documentation and offline fallback are not search pages.
+Disallow: /docs/
+Disallow: /DESIGN.md
+Disallow: /offline.html
+
+Sitemap: https://ignite-restaurant-kappa.vercel.app/sitemap.xml

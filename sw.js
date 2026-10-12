@@ -1,7 +1,7 @@
 // sw.js — Ignite Restaurant PWA v3.1
 // Estratégia: Cache First para assets, Network First para páginas HTML/JS.
 
-const CACHE_NAME   = 'ignite-v19-scroll-depth';
+const CACHE_NAME   = 'ignite-v20-google-reviews';
 const OFFLINE_PAGE = '/offline.html';
 
 const PRE_CACHE = [
@@ -15,6 +15,8 @@ const PRE_CACHE = [
   '/styles/header.css',
   '/styles/scroll-fire.css',
   '/js/scroll-fire.js',
+  '/js/google-reviews.js',
+  '/styles/google-reviews.css',
   '/Cardapio/assets/uicons/css/uicons-regular-rounded.css',
   '/Cardapio/assets/uicons/webfonts/uicons-regular-rounded.woff2',
   '/js/landing-catalog.js',
@@ -44,6 +46,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (!url.protocol.startsWith('http')) return;
+  // Live review responses must never become permanent offline testimonials.
+  if (url.pathname === '/api/google-reviews') return;
   if (url.hostname !== self.location.hostname) {
     event.respondWith(fetch(request).catch(() => new Response('')));
     return;

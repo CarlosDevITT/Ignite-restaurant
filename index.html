@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="Cardapio/assets/uicons/css/uicons-regular-rounded.css">
   <link rel="stylesheet" href="styles/header.css">
   <link rel="stylesheet" href="styles/scroll-fire.css">
+  <link rel="stylesheet" href="styles/google-reviews.css">
 
 
   <script type="application/ld+json">
@@ -173,6 +174,17 @@
 
     <section class="services section" id="services"><div class="bd-container"><span class="section-subtitle">Cada ocasião, uma escolha</span><h2 class="section-title">O que combina com hoje?</h2><div class="services__container" id="landing-service-links"><a class="services__content" href="Cardapio/index.html"><span class="service-label">Para escolher</span><h3 class="services__title">Pratos e combos</h3><p class="services__description">Conheça as opções disponíveis no cardápio.</p><span class="service-action">Explorar opções ↗</span></a><a class="services__content" href="Cardapio/index.html"><span class="service-label">Para acompanhar</span><h3 class="services__title">Bebidas</h3><p class="services__description">Encontre a bebida para acompanhar seu pedido.</p><span class="service-action">Ver no cardápio ↗</span></a><a class="services__content" href="#contact"><span class="service-label">Converse com a equipe</span><h3 class="services__title">Atendimento</h3><p class="services__description">Confirme a unidade, horários e área de entrega antes de pedir.</p><span class="service-action">Falar com a equipe ↓</span></a></div></div></section>
 <section class="units-section section bd-container" id="unidades" aria-labelledby="units-title"><div class="menu-preview-heading"><div><span class="section-label">Perto de você</span><h2 class="section-title" id="units-title">Escolha sua cidade.<br>Fale com a sua unidade.</h2></div><p>Confira endereço, atendimento e contato de cada unidade.<br>Pedidos online seguem a disponibilidade do Cardápio.</p></div><div class="unit-grid" id="landing-units"><article class="unit-card"><span class="service-label">Somente delivery</span><h3>Itajaí<small> / SC</small></h3><p class="unit-address">Rua Frindolim Heathl Junior</p><p><strong>18h às 23h30</strong> · Atendimento</p><div class="unit-actions"><a class="button" href="https://wa.me/5547974008620?text=Ol%C3%A1%21%20Vim%20pelo%20site%20Ignite%20e%20gostaria%20de%20falar%20com%20a%20unidade%20de%20Itaja%C3%AD." target="_blank" rel="noopener">WhatsApp Itajaí ↗</a><a href="https://www.google.com/maps/search/?api=1&query=Rua%20Frindolim%20Heathl%20Junior%2C%20Itaja%C3%AD%2C%20SC" target="_blank" rel="noopener">Consultar região no mapa ↗</a></div><a class="unit-phone" href="tel:+5547974008620">(47) 97400-8620</a></article><article class="unit-card"><span class="service-label">Delivery e consumo no local</span><h3>Manaus<small> / AM</small></h3><p class="unit-address">Rua São José · Lírio do Vale 1</p><p><strong>18h às 23h30</strong> · Atendimento</p><div class="unit-actions"><a class="button" href="https://wa.me/5592985130951?text=Ol%C3%A1%21%20Vim%20pelo%20site%20Ignite%20e%20gostaria%20de%20falar%20com%20a%20unidade%20de%20Manaus." target="_blank" rel="noopener">WhatsApp Manaus ↗</a><a href="https://www.google.com/maps/search/?api=1&query=Rua%20S%C3%A3o%20Jos%C3%A9%20%C2%B7%20L%C3%ADrio%20do%20Vale%201%2C%20Manaus%2C%20AM" target="_blank" rel="noopener">Consultar região no mapa ↗</a></div><a class="unit-phone" href="tel:+5592985130951">(92) 98513-0951</a></article></div></section>
+    <section class="google-reviews section bd-container" id="avaliacoes" aria-labelledby="google-reviews-title">
+      <div class="google-reviews-header reveal">
+        <div><span class="section-label">Avaliações no Google</span><h2 class="section-title" id="google-reviews-title">Experiências à mesa.<br>Na voz de quem veio.</h2></div>
+        <a class="button button--outline" href="https://share.google/vL5oBr2LOXtuQyCfm" target="_blank" rel="noopener" data-google-profile>Ver avaliações no Google ↗</a>
+      </div>
+      <p class="google-reviews-summary" data-reviews-summary hidden></p>
+      <p class="google-reviews-status" data-reviews-status role="status" aria-live="polite">Confira as avaliações e os comentários diretamente no perfil do Google.</p>
+      <button class="button button--outline" type="button" data-reviews-retry hidden>Tentar novamente</button>
+      <div class="google-reviews-grid" data-reviews-grid aria-busy="false"></div>
+      <div class="google-reviews-attributions" data-reviews-attributions></div>
+    </section>
     <section class="faq-section section bd-container" id="duvidas" aria-labelledby="faq-title"><div><span class="section-label">Antes do primeiro pedido</span><h2 class="section-title" id="faq-title">Boa comida.<br>Sem dúvidas no caminho.</h2></div><div class="faq-list"><details><summary>Como faço meu pedido?</summary><p>Abra o Cardápio, escolha seus itens e confira as opções de atendimento no checkout. O status dos pedidos online aparece nesta página quando conseguimos confirmá-lo.</p></details><details><summary>Quanto custa a entrega?</summary><p id="landing-delivery-copy">A taxa aparece no checkout antes de finalizar. Confirme a cobertura do seu endereço com a equipe.</p></details><details><summary>Como cada unidade atende?</summary><p>Itajaí atende somente delivery. Manaus atende delivery e consumo no local. Confira as informações da sua unidade antes de finalizar.</p></details><details><summary>Quais são os horários e endereços?</summary><p id="faq-unit-info">As duas unidades atendem das 18h às 23h30. Em Itajaí: Rua Frindolim Heathl Junior, somente delivery. Em Manaus: Rua São José, Lírio do Vale 1, delivery e consumo no local. Consulte a unidade para orientações de acesso.</p><a href="#unidades">Ver os contatos das unidades ↓</a></details><details><summary>Como funciona o pagamento?</summary><p>O checkout apresenta as formas de pagamento disponíveis. Revise sua escolha e confirme as instruções com o restaurante; consultar esta página não gera cobrança.</p></details></div></section>
 
   </main>
@@ -256,6 +268,7 @@
   <script src="js/main.js" defer></script>
   <script type="module" src="js/landing-catalog.js"></script>
   <script type="module" src="js/scroll-fire.js"></script>
+  <script type="module" src="js/google-reviews.js"></script>
 
 </body>
 </html>

@@ -117,6 +117,7 @@
       all('.landing-product-media img').forEach(image => mediaObserver.observe(image));
     };
     addEventListener('landing:catalog-ready', watchCatalog);
+    addEventListener('landing:reviews-ready', () => all('.google-review-card').forEach(card => observer.observe(card)));
     watchCatalog();
   }
   const sections = all('section[id]');

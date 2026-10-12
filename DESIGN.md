@@ -65,3 +65,5 @@ Buttons retain labels and valid destinations. Theme and menu actions use native 
 - Do preserve native navigation, local theme choice and the existing PWA behavior.
 - Don't invent ratings, hours, availability or food photography.
 - Don't spread the hero's expressive composition into commerce controls.
+
+Code ownership and retired legacy entrypoints are documented in docs/code-ownership.md. Landing base CSS retains geometry/components; brand values and motion must not be duplicated there.

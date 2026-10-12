@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Você está offline - Ignite Restaurante</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="Cardapio/assets/uicons/css/uicons-regular-rounded.css">
     <style>
         :root {
             --first-color: #069C54;
@@ -17,7 +16,7 @@
 
         body {
             margin: 0;
-            font-family: 'Poppins', sans-serif;
+            font-family: system-ui, sans-serif;
             background-color: var(--body-color);
             color: var(--text-color);
             display: flex;
@@ -90,11 +89,11 @@
 <body>
     <div class="offline-container">
         <div class="icon-wrapper">
-            <i class="fas fa-wifi-slash"></i>
+            <i class="fi fi-rr-wifi-slash" aria-hidden="true"></i>
         </div>
         <h1>Ops! Sem conexão.</h1>
         <p>Parece que você está offline. Verifique sua conexão com a internet para saborear o nosso cardápio.</p>
-        <button onclick="window.location.reload()" class="btn">Tentar Novamente</button>
+        <button onclick="window.location.reload()" class="btn" type="button">Tentar novamente</button>
     </div>
 </body>
 

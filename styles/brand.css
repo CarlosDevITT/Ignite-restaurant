@@ -155,10 +155,10 @@ section[id] { scroll-margin-top: 100px; }
 .about-heading,.contact-heading { text-align: left; }
 .brand-emphasis { color: var(--green); font-style: normal; }
 
-/* Green atmosphere: fixed, static gradients avoid repaint-heavy animation. */
-body { background: radial-gradient(ellipse at 95% 12%, #14644724, transparent 46%), radial-gradient(ellipse at 0% 60%, #14644714, transparent 50%), var(--bg); background-attachment: fixed; }
-:root[data-theme="dark"] body { background: radial-gradient(ellipse at 95% 12%, #14644770, transparent 48%), radial-gradient(ellipse at 0% 65%, #14644738, transparent 50%), var(--bg); background-attachment: fixed; }
-.services.section { background: linear-gradient(135deg, var(--surface-2), #14644712); }
+/* One continuous green gradient across the full document, in both themes. */
+body { background: radial-gradient(ellipse at 100% 8%, #14644730, transparent 30%), radial-gradient(ellipse at 0% 45%, #14644724, transparent 35%), linear-gradient(180deg, var(--bg), #e3eee5 35%, #d4e6da 72%, #accfbb); }
+:root[data-theme="dark"] body { background: radial-gradient(ellipse at 100% 8%, #14644780, transparent 30%), radial-gradient(ellipse at 0% 45%, #14644760, transparent 35%), linear-gradient(180deg, #101e18, #123b2b 35%, #0c3022 72%, #071b13); }
+.services.section { background: transparent; }
 .contact.section { background: linear-gradient(120deg, #0b3023, #146447 65%, #1c7955); }
 .footer { --title: #f3f7ec; --body: #cfddd2; --muted: #bccfc2; --green: #b2dfc1; --surface-2: #ffffff0d; --border: #ffffff24; background: radial-gradient(ellipse at 85% 0, #14644790, transparent 60%), linear-gradient(140deg, #10291e, #071b13); border-top: 1px solid #146447; padding: 64px 0 24px; color: var(--body); }
 .footer__inner { max-width: var(--max-w); }

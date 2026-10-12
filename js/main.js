@@ -14,7 +14,7 @@
   const theme = $('#theme-button');
   const header = $('#header');
   const progress = $('#reading-progress');
-  const hero = $('.home__img');
+  const hero = $('.hero-fire-stage');
   const topLink = $('#scroll-top');
   let menuOpen = false;
   let statusTimer;
@@ -74,20 +74,21 @@
   $('#share-button').addEventListener('click', () => share({ title: document.title, text: 'Conheça o Ignite Restaurante Pub.', url: location.href }));
 
   function animate(element, keyframes, options) {
-    if (motion.matches || !element.animate) return;
+    if (motion.matches || document.documentElement.hasAttribute('data-effects-paused') || !element.animate) return;
     const animation = element.animate(keyframes, { duration: 650, easing: 'cubic-bezier(.2,.7,.2,1)', ...options });
     animations.add(animation);
     animation.finished.then(() => animations.delete(animation), () => animations.delete(animation));
   }
   // Content stays visible by default; effects enhance it rather than gate it.
-  const revealElements = all('.reveal, .services__content');
+  const revealElements = all('.reveal, .services__content, .menu-preview-heading, .unit-card, .faq-section > div, .footer__content, .how-order');
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
         const element = entry.target;
-        const index = element.classList.contains('services__content') ? all('.services__content').indexOf(element) : 0;
-        animate(element, [{ opacity: .25, transform: 'translateY(28px)' }, { opacity: 1, transform: 'translateY(0)' }], { delay: index * 80 });
+        const siblings = [...element.parentElement.children];
+        const index = element.matches('.services__content, .landing-product-card, .unit-card, .footer__content') ? siblings.indexOf(element) % 3 : 0;
+        animate(element, [{ opacity: .15, transform: 'translateY(32px) scale(.98)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }], { delay: index * 80 });
         element.classList.add('visible');
         observer.unobserve(element);
       });

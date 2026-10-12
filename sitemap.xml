@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Somente páginas públicas: sem duplicar /index.html, parâmetros ou âncoras. -->
+<!-- lastmod corresponde à última alteração de código da página no Git.
+     Atualizar quando a página mudar; não substituir pela data de cada acesso. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ignite-restaurant-kappa.vercel.app/</loc>
+    <lastmod>2026-10-12T03:00:42Z</lastmod>
   </url>
   <url>
     <loc>https://ignite-restaurant-kappa.vercel.app/Cardapio/index.html</loc>
+    <lastmod>2026-10-12T01:56:26Z</lastmod>
   </url>
 </urlset>

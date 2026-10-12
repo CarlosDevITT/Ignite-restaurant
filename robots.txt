@@ -1,9 +1,14 @@
-# Ignite Restaurante Pub — public website
-# Keep CSS, JavaScript and images crawlable for page rendering.
+# Ignite Restaurante Pub — regras de rastreamento
+# Aplicável a todos os robôs. Landing page e cardápio são públicos.
 User-agent: *
-# Internal project documentation and offline fallback are not search pages.
+# Documentação interna, metadados do repositório e página de contingência.
 Disallow: /docs/
 Disallow: /DESIGN.md
+Disallow: /.git/
+Disallow: /.env
 Disallow: /offline.html
+# Demais páginas e recursos (CSS, JavaScript, fontes e imagens) liberados.
+Allow: /
 
+# URLs públicas canônicas; não incluir fragmentos de navegação (#).
 Sitemap: https://ignite-restaurant-kappa.vercel.app/sitemap.xml

@@ -22,6 +22,7 @@ let lastFingerprint = null;
 let pollingStatus = false;
 let statusGeneration = 0;
 let stopCatalogSync = null;
+let unitsFingerprint = null;
 
 
 function element(tag, className, text) {
@@ -106,6 +107,9 @@ function renderProducts(products) {
   renderHero(products);
 }
 function renderUnits(units) {
+  const fingerprint = JSON.stringify(units);
+  if (fingerprint === unitsFingerprint) return;
+  unitsFingerprint = fingerprint;
   const cards = document.querySelectorAll('#landing-units .unit-card');
   units.slice(0, cards.length).forEach((unit, index) => {
     const card = cards[index];
@@ -133,11 +137,14 @@ function renderUnits(units) {
 }
 renderUnits(storefrontUnits);
 
+function setStatus(text) {
+  if (status.textContent !== text) status.textContent = text;
+}
 function renderSettings(result) {
   const data = result.status === 'fulfilled' && !result.value.error ? result.value.data : null;
   status.classList.remove('is-open', 'is-closed');
   if (!data || typeof data.store_open !== 'boolean') {
-    status.textContent = 'Consulte a disponibilidade de pedidos com a equipe.';
+    setStatus('Consulte a disponibilidade de pedidos com a equipe.');
     document.querySelector('#landing-delivery-copy').textContent = 'A taxa aparece no checkout antes de finalizar. Confirme a cobertura do seu endereço com a equipe.';
     return;
   }
@@ -155,7 +162,7 @@ function renderSettings(result) {
     renderUnits(units);
   }
   status.classList.add(data.store_open ? 'is-open' : 'is-closed');
-  status.textContent = data.store_open ? 'Pedidos online disponíveis' : 'Pedidos online pausados · Consulte o cardápio';
+  setStatus(data.store_open ? 'Pedidos online disponíveis' : 'Pedidos online pausados · Consulte o cardápio');
   if (Number.isFinite(Number(data.delivery_fee)) && data.delivery_fee !== null && Number(data.delivery_fee) >= 0) {
     document.querySelector('#landing-delivery-copy').textContent = `A taxa de entrega configurada no cardápio é ${money(Number(data.delivery_fee))}. Revise o total no checkout e confirme a cobertura do seu endereço com a equipe.`;
   }
@@ -192,7 +199,7 @@ async function loadCatalog() {
   } catch {
     if (current !== generation) return;
     // Never substitute mock products or claim current availability after a failed request.
-    status.textContent = 'Consulte a disponibilidade de pedidos com a equipe.';
+    setStatus('Consulte a disponibilidade de pedidos com a equipe.');
     status.classList.remove('is-open', 'is-closed');
     state.hidden = false; state.classList.add('is-error'); retry.hidden = false;
     state.querySelector('p').textContent = visibleProducts.length ? 'Não conseguimos atualizar os destaques. Confira os preços atuais no Cardápio.' : 'Não conseguimos carregar os pratos agora. Tente novamente ou abra o Cardápio.';

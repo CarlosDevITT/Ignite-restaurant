@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#146447">
-  <meta name="description" content="Ignite – Restaurante pub com as melhores refeições da cidade. MELHOPUB092">
+  <meta name="description" content="Conheça os pratos, combos e bebidas do Ignite. Consulte fotos e preços atualizados do cardápio e fale com a equipe para combinar seu pedido.">
   <meta name="keywords" content="MELHOPUB092, restaurante, pub, delivery, manaus, itajaí, ignite">
 
   <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/x-icon">
@@ -18,8 +18,8 @@
 
   <meta property="og:title" content="Ignite – Restaurante Pub">
   <meta property="og:description" content="As melhores refeições e delivery da cidade. Confira nosso cardápio online!">
-  <meta property="og:image" content="https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg">
-  <meta property="og:url" content="https://ignite-restaurant.vercel.app">
+  <meta property="og:image" content="https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg">
+  <meta property="og:url" content="https://ignite-restaurant-kappa.vercel.app">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -34,38 +34,22 @@
   </script>
   <link rel="stylesheet" href="styles/styles.css">
   <link rel="stylesheet" href="styles/brand.css">
+  <link rel="stylesheet" href="styles/landing-menu.css">
 
 
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Restaurant",
-    "name": "Ignite – Restaurante Pub",
-    "image": "https://ignite-restaurant.vercel.app/assets/images/logos/ignite.jpg",
-    "@id": "https://ignite-restaurant.vercel.app",
-    "url": "https://ignite-restaurant.vercel.app",
-    "telephone": "+5592985130951",
-    "priceRange": "$$",
-    "menu": "https://ignite-restaurant.vercel.app/Cardapio/index.html",
-    "servesCuisine": "Brasileira, Pub",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Manaus",
-      "addressRegion": "AM",
-      "addressCountry": "BR"
-    },
-    "openingHoursSpecification": [{
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-      "opens": "09:00",
-      "closes": "22:00"
-    }],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "128"
-    }
-  }
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Ignite – Restaurante Pub",
+  "image": "https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg",
+  "url": "https://ignite-restaurant-kappa.vercel.app/index.html",
+  "menu": "https://ignite-restaurant-kappa.vercel.app/Cardapio/index.html",
+  "servesCuisine": [
+    "Brasileira",
+    "Pub"
+  ]
+}
   </script>
 
   <title>Ignite – Restaurante Pub</title>
@@ -104,7 +88,7 @@
         <ul class="nav__list">
           <li><a href="#home"     class="nav__link active-link">Início</a></li>
           <li><a href="#about"    class="nav__link">Sobre</a></li>
-          <li><a href="#services" class="nav__link">Serviços</a></li>
+          <li><a href="#destaques" class="nav__link">Pratos</a></li>
           <li><a href="Cardapio/index.html" class="nav__link">Cardápio</a></li>
           <li><a href="#contact"  class="nav__link">Contato</a></li>
 
@@ -120,7 +104,7 @@
 
           <li class="nav__cta">
             <a href="Cardapio/index.html" class="button" style="padding:.55rem 1.2rem;font-size:.82rem;">
-              <svg class="site-icon" aria-hidden="true"><use href="#icon-utensils"/></svg> Pedir agora
+              <svg class="site-icon" aria-hidden="true"><use href="#icon-utensils"/></svg> Ver cardápio
             </a>
           </li>
         </ul>
@@ -140,30 +124,39 @@
       <div class="home__container bd-container">
 
         <div class="home__data reveal">
-          <span class="home__eyebrow">Restaurante · Pub · Delivery</span>
+          <span class="home__eyebrow">Restaurante · Pub · Delivery</span><p id="landing-store-status" class="store-status" role="status">Consulte o cardápio e fale com a equipe.</p>
           <h1 class="home__title">Sabor que<br><span class="home__title-accent">acende</span><br>bons momentos.</h1>
-          <p class="home__subtitle">Do almoço caprichado ao encontro com os amigos. Tem sempre um bom motivo para escolher o Ignite.</p>
+          <p class="home__subtitle">Pratos, combos e bebidas para o seu próximo bom momento. Veja o que tem no cardápio e escolha o seu.</p>
           <div class="home__actions">
             <a href="Cardapio/index.html" class="button">
               Ver cardápio <span aria-hidden="true">→</span>
             </a>
-            <a href="https://wa.me/5592985130951" class="button button--outline" target="_blank" rel="noopener">
+            <a href="#unidades" class="button button--outline">
               <svg class="site-icon" aria-hidden="true"><use href="#icon-chat"/></svg> WhatsApp
             </a>
           </div>
 
-          <p class="home__locations"><span aria-hidden="true">⌖</span> Manaus, AM <span class="location-divider">/</span> Itajaí, SC</p>
+          <p class="home__locations"><span aria-hidden="true">⌖</span> <a href="#unidades">Manaus, AM</a> <span class="location-divider">/</span> <a href="#unidades">Itajaí, SC</a></p>
         </div>
 
-        <div class="home__img-wrap reveal reveal-delay-2">
-          <span class="brand-orbit" aria-hidden="true"></span>
-          <span class="brand-note">Comida boa.<br>Boa companhia.</span>
-          <img src="assets/images/logos/ignite2.png" alt="Marca Ignite Restaurante Pub, com uma chama e um copo de chope" class="home__img" width="480" height="480" fetchpriority="high">
-          <span class="brand-caption">O seu próximo bom momento começa aqui.</span>
-        </div>
+        <a class="home__img-wrap hero-dish reveal" id="hero-dish-link" href="Cardapio/index.html" aria-label="Conhecer o cardápio Ignite">
+          <img src="assets/images/logos/ignite2.png" alt="Ignite Restaurante Pub" class="home__img" id="hero-dish-image" width="600" height="640" fetchpriority="high">
+          <span class="hero-dish-caption" id="hero-dish-caption"><small>O seu próximo pedido começa aqui</small><strong>Explore o cardápio</strong><span>Ver pratos e preços <span aria-hidden="true">↗</span></span></span>
+        </a>
 
       </div>
       <a class="scroll-cue" href="#about">Conheça o Ignite <span aria-hidden="true">↓</span></a>
+    </section>
+
+    <section class="menu-preview section" id="destaques" aria-labelledby="menu-preview-title">
+      <div class="bd-container">
+        <div class="menu-preview-heading"><div><span class="section-label">Direto do nosso cardápio</span><h2 class="section-title" id="menu-preview-title">Sua próxima vontade<br>tem nome e sabor.</h2></div><a class="button button--outline" href="Cardapio/index.html">Ver cardápio <span aria-hidden="true">↗</span></a></div>
+        <p class="menu-preview-copy">Conheça algumas opções. Preços e disponibilidade são confirmados no Cardápio antes de finalizar.</p>
+        <div class="menu-categories" id="landing-categories" aria-label="Categorias do cardápio"></div>
+        <div class="menu-state" id="landing-menu-state" role="status"><span class="menu-spinner" aria-hidden="true"></span><p>Carregando os pratos do cardápio…</p><button class="button button--outline" type="button" id="retry-landing-menu" hidden>Tentar novamente</button></div>
+        <div class="landing-product-grid" id="landing-products" aria-label="Destaques do cardápio" aria-busy="true"></div>
+        <p class="menu-note" id="landing-menu-note" hidden></p>
+      </div>
     </section>
 
     <!-- ABOUT -->
@@ -181,53 +174,18 @@
             cada momento, em Manaus e Itajaí.
           </p>
           <a href="Cardapio/index.html" class="button">
-            <svg class="site-icon" aria-hidden="true"><use href="#icon-book"/></svg> Ver cardápio completo
+            <svg class="site-icon" aria-hidden="true"><use href="#icon-book"/></svg> Ver cardápio
           </a>
         </div>
 
-        <img src="assets/images/logos/ignite.jpg" alt="Identidade visual do Ignite Restaurante Pub" width="480" height="480" class="about__img reveal reveal-delay-1" loading="lazy">
+        <div class="how-order card-panel reveal"><span class="section-label">Do primeiro clique à sua mesa</span><h3>Escolher ficou mais simples.</h3><ol><li><strong>Explore o cardápio</strong><span>Veja fotos, preços e detalhes dos produtos.</span></li><li><strong>Monte seu pedido</strong><span>Escolha os itens e informe suas preferências.</span></li><li><strong>Confira antes de finalizar</strong><span>Revise modalidade, pagamento e total no checkout.</span></li></ol><a href="Cardapio/index.html">Começar pelo cardápio <span aria-hidden="true">↗</span></a></div>
 
       </div>
     </section>
 
-    <!-- SERVICES -->
-    <section class="services section" id="services">
-      <div class="bd-container">
-        <span class="section-subtitle">O que oferecemos</span>
-        <h2 class="section-title">Qual é a sua vontade?</h2>
-
-        <div class="services__container">
-
-          <div class="services__content">
-            <span class="service-label">Almoço</span>
-            <svg class="service-icon site-icon" aria-hidden="true"><use href="#icon-bowl"/></svg><h3 class="services__title">Almoço de verdade</h3>
-            <p class="services__description">
-              Pratos deliciosos e frescos que vão transformar seu dia a dia.
-              Ingredientes selecionados, porções generosas.
-            </p>
-          </div>
-
-          <div class="services__content">
-            <span class="service-label">Lanches</span>
-            <svg class="service-icon site-icon" aria-hidden="true"><use href="#icon-burger"/></svg><h3 class="services__title">Lanches e porções</h3>
-            <p class="services__description">
-              Sem tempo, mas quer comer bem? Delícias em minutos, perfeitas
-              para qualquer rotina. Sabor que não abre mão da qualidade.
-            </p>
-          </div>
-
-          <div class="services__content">
-            <span class="service-label">Mais leve</span>
-            <svg class="service-icon site-icon" aria-hidden="true"><use href="#icon-leaf"/></svg><h3 class="services__title">Uma escolha mais leve</h3>
-            <p class="services__description">
-              Quer comer saudável sem perder o sabor? Pratos nutritivos e
-              balanceados que te ajudam a manter a forma com prazer.
-            </p>
-          </div>
-
-        </div>
-      </div>
-    </section>
+    <section class="services section" id="services"><div class="bd-container"><span class="section-subtitle">Cada ocasião, uma escolha</span><h2 class="section-title">O que combina com hoje?</h2><div class="services__container" id="landing-service-links"><a class="services__content" href="Cardapio/index.html"><span class="service-label">Para escolher</span><h3 class="services__title">Pratos e combos</h3><p class="services__description">Conheça as opções disponíveis no cardápio.</p><span class="service-action">Explorar opções ↗</span></a><a class="services__content" href="Cardapio/index.html"><span class="service-label">Para acompanhar</span><h3 class="services__title">Bebidas</h3><p class="services__description">Encontre a bebida para acompanhar seu pedido.</p><span class="service-action">Ver no cardápio ↗</span></a><a class="services__content" href="#contact"><span class="service-label">Converse com a equipe</span><h3 class="services__title">Atendimento</h3><p class="services__description">Confirme a unidade, horários e área de entrega antes de pedir.</p><span class="service-action">Falar com a equipe ↓</span></a></div></div></section>
+<section class="units-section section bd-container" id="unidades" aria-labelledby="units-title"><div class="menu-preview-heading"><div><span class="section-label">Perto de você</span><h2 class="section-title" id="units-title">Escolha sua cidade.<br>Fale com a sua unidade.</h2></div><p>Confira endereço, atendimento e contato de cada unidade.<br>Pedidos online seguem a disponibilidade do Cardápio.</p></div><div class="unit-grid" id="landing-units"><article class="unit-card"><span class="service-label">Somente delivery</span><h3>Itajaí<small> / SC</small></h3><p class="unit-address">Rua Frindolim Heathl Junior</p><p><strong>18h às 23h30</strong> · Atendimento</p><div class="unit-actions"><a class="button" href="https://wa.me/5547974008620?text=Ol%C3%A1%21%20Vim%20pelo%20site%20Ignite%20e%20gostaria%20de%20falar%20com%20a%20unidade%20de%20Itaja%C3%AD." target="_blank" rel="noopener">WhatsApp Itajaí ↗</a><a href="https://www.google.com/maps/search/?api=1&query=Rua%20Frindolim%20Heathl%20Junior%2C%20Itaja%C3%AD%2C%20SC" target="_blank" rel="noopener">Consultar região no mapa ↗</a></div><a class="unit-phone" href="tel:+5547974008620">(47) 97400-8620</a></article><article class="unit-card"><span class="service-label">Delivery e consumo no local</span><h3>Manaus<small> / AM</small></h3><p class="unit-address">Rua São José · Lírio do Vale 1</p><p><strong>18h às 23h30</strong> · Atendimento</p><div class="unit-actions"><a class="button" href="https://wa.me/5592985130951?text=Ol%C3%A1%21%20Vim%20pelo%20site%20Ignite%20e%20gostaria%20de%20falar%20com%20a%20unidade%20de%20Manaus." target="_blank" rel="noopener">WhatsApp Manaus ↗</a><a href="https://www.google.com/maps/search/?api=1&query=Rua%20S%C3%A3o%20Jos%C3%A9%20%C2%B7%20L%C3%ADrio%20do%20Vale%201%2C%20Manaus%2C%20AM" target="_blank" rel="noopener">Consultar região no mapa ↗</a></div><a class="unit-phone" href="tel:+5592985130951">(92) 98513-0951</a></article></div></section>
+    <section class="faq-section section bd-container" id="duvidas" aria-labelledby="faq-title"><div><span class="section-label">Antes do primeiro pedido</span><h2 class="section-title" id="faq-title">Boa comida.<br>Sem dúvidas no caminho.</h2></div><div class="faq-list"><details><summary>Como faço meu pedido?</summary><p>Abra o Cardápio, escolha seus itens e confira as opções de atendimento no checkout. O status dos pedidos online aparece nesta página quando conseguimos confirmá-lo.</p></details><details><summary>Quanto custa a entrega?</summary><p id="landing-delivery-copy">A taxa aparece no checkout antes de finalizar. Confirme a cobertura do seu endereço com a equipe.</p></details><details><summary>Como cada unidade atende?</summary><p>Itajaí atende somente delivery. Manaus atende delivery e consumo no local. Confira as informações da sua unidade antes de finalizar.</p></details><details><summary>Quais são os horários e endereços?</summary><p id="faq-unit-info">As duas unidades atendem das 18h às 23h30. Em Itajaí: Rua Frindolim Heathl Junior, somente delivery. Em Manaus: Rua São José, Lírio do Vale 1, delivery e consumo no local. Consulte a unidade para orientações de acesso.</p><a href="#unidades">Ver os contatos das unidades ↓</a></details><details><summary>Como funciona o pagamento?</summary><p>O checkout apresenta as formas de pagamento disponíveis. Revise sua escolha e confirme as instruções com o restaurante; consultar esta página não gera cobrança.</p></details></div></section>
 
   </main>
 
@@ -236,15 +194,14 @@
     <div class="contact__container bd-container bd-grid">
       <div class="contact__data reveal">
         <span class="section-subtitle">Fale conosco</span>
-        <h2 class="section-title" style="text-align:left;color:#fff;">Seu próximo pedido?<br>Começa com um oi.</h2>
+        <h2 class="section-title" style="text-align:left;color:#fff;">Vamos combinar<br>seu próximo momento.</h2>
         <p class="contact__description">
-          Fale com a equipe pelo WhatsApp para consultar horários,
-          tirar dúvidas e combinar seu pedido.
+          Delivery em Itajaí. Delivery e consumo no local em Manaus. Escolha sua unidade e combine seu pedido diretamente com a equipe.
         </p>
       </div>
       <div class="contact__button reveal reveal-delay-1">
-        <a href="https://wa.me/5592985130951" class="button" target="_blank" rel="noopener">
-          <svg class="site-icon" aria-hidden="true"><use href="#icon-chat"/></svg> Falar no WhatsApp
+        <a href="#unidades" class="button">
+          <svg class="site-icon" aria-hidden="true"><use href="#icon-chat"/></svg> Escolher unidade
         </a>
       </div>
     </div>
@@ -256,12 +213,12 @@
 
       <div class="footer__content">
         <a href="#home" class="footer__logo">🔥 Ignite</a>
-        <span class="footer__description">Restaurante Pub · MELHOPUB092</span>
+        <span class="footer__description">Restaurante Pub</span>
         <div>
           <a href="https://www.instagram.com/ignite_restaurant" class="footer__social" target="_blank" rel="noopener" aria-label="Instagram">
             <svg class="site-icon" aria-hidden="true"><use href="#icon-instagram"/></svg>
           </a>
-          <a href="https://wa.me/5592985130951" class="footer__social" target="_blank" rel="noopener" aria-label="WhatsApp">
+          <a href="#unidades" class="footer__social" aria-label="WhatsApp">
             <svg class="site-icon" aria-hidden="true"><use href="#icon-chat"/></svg>
           </a>
         </div>
@@ -273,28 +230,28 @@
           <li><a href="Cardapio/index.html" class="footer__link">Delivery</a></li>
           <li><a href="Cardapio/index.html" class="footer__link">Cardápio</a></li>
           <li><a href="Cardapio/index.html" class="footer__link">Fast Food</a></li>
-          <li><a href="Cardapio/index.html" class="footer__link">Reservas</a></li>
+          <li><a href="#contact" class="footer__link">Consultar atendimento</a></li>
         </ul>
       </div>
 
       <div class="footer__content">
         <h3 class="footer__title">Informação</h3>
         <ul>
-          <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link" target="_blank" rel="noopener">Eventos</a></li>
-          <li><a href="https://wa.me/5592985130951" class="footer__link" target="_blank" rel="noopener">Contato</a></li>
-          <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit" class="footer__link" target="_blank" rel="noopener">Privacidade</a></li>
-          <li><a href="https://docs.google.com/document/d/1lYDogyU-0nLAg99iw3zlLtdNu1wYeun-dQEL3ihnII0/edit" class="footer__link" target="_blank" rel="noopener">Termos</a></li>
+          <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="#unidades" class="footer__link">Contato</a></li>
+          <li><a href="#contact" class="footer__link">Dúvidas sobre privacidade</a></li>
+
         </ul>
       </div>
 
       <div class="footer__content">
-        <h3 class="footer__title">Endereço</h3>
+        <h3 class="footer__title">Atendimento</h3>
         <ul>
-          <li style="margin-bottom:.4rem;font-size:.85rem;">2 Unidades</li>
+          <li style="margin-bottom:.4rem;font-size:.85rem;">Consulte a unidade desejada</li>
           <li class="footer__link" style="cursor:default;">📍 Manaus – AM</li>
           <li class="footer__link" style="cursor:default;">📍 Itajaí – SC</li>
           <li style="margin-top:.5rem;">
-            <a href="tel:+5592985130951" class="footer__link">+55 92 98513-0951</a>
+            <a href="tel:+5592985130951" class="footer__link" data-unit-phone="manaus">Manaus: (92) 98513-0951</a><br><a href="tel:+5547974008620" class="footer__link" data-unit-phone="itajai">Itajaí: (47) 97400-8620</a>
           </li>
           <li>
             <a href="mailto:contato@ignite.restaurant" class="footer__link">contato@ignite.restaurant</a>
@@ -321,7 +278,11 @@
     </div>
   </aside>
 
+  <a class="mobile-menu-cta" href="Cardapio/index.html">Ver cardápio <span aria-hidden="true">↗</span></a>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="Cardapio/js/supabase-config.js" defer></script>
   <script src="js/main.js" defer></script>
+  <script type="module" src="js/landing-catalog.js"></script>
 
 </body>
 </html>

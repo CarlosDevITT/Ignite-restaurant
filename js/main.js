@@ -88,6 +88,7 @@
       });
     }, { threshold: .12 });
     revealElements.forEach(element => observer.observe(element));
+    addEventListener('landing:catalog-ready', () => all('.landing-product-card').forEach(element => observer.observe(element)));
   }
   const sections = all('section[id]');
   function updateScroll() {

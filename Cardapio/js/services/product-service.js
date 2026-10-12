@@ -106,12 +106,18 @@ export async function getCatalog() {
   }
 }
 
-export async function getStoreSettings() {
+// Shared read-only source of the PDV/Cardápio online-order status.
+export async function readPublicStoreStatus(signal) {
   const supabase = await getSupabase();
-  const { data, error } = await supabaseRetry(() => supabase
-    .from('cardapio_store_status_public')
-    .select('store_open,delivery_fee,updated_at')
-    .maybeSingle());
+  return supabaseRetry(() => {
+    const query = supabase.from('cardapio_store_status_public')
+      .select('*').maybeSingle();
+    return signal ? query.abortSignal(signal) : query;
+  });
+}
+
+export async function getStoreSettings() {
+  const { data, error } = await readPublicStoreStatus();
   if (error) throw error;
   return {
     store_open: data?.store_open !== false,

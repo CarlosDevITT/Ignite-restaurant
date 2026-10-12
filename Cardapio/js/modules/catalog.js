@@ -327,4 +327,30 @@ export function initCatalog({ categories, products }) {
 
   renderCategories();
   renderProducts();
+
+  // Resolve landing links only after the real catalog has rendered.
+  if (!window.__igniteCatalogDeepLinkHandled) {
+    window.__igniteCatalogDeepLinkHandled = true;
+    const params = new URLSearchParams(location.search);
+    const requestedItem = params.get('item');
+    const requestedCategory = params.get('category');
+    if (requestedItem) {
+      const product = products.find(item => String(item.id) === requestedItem);
+      if (product) void showProduct(product);
+      else void Swal.fire({ icon: 'info', title: 'Produto não encontrado', text: 'Este item pode ter mudado. Escolha uma opção no cardápio.', confirmButtonText: 'Ver cardápio' });
+    } else if (requestedCategory) {
+      const section = sections.find(item => item.id === requestedCategory);
+      if (section) {
+        const target = document.querySelector(`#catalog-section-${CSS.escape(section.id)}`);
+        const navigate = () => {
+          activeSection = section.id;
+          renderCategories();
+          target?.scrollIntoView({ behavior: 'instant', block: 'start' });
+        };
+        // CSS/media may finish loading after the data, changing section geometry.
+        if (document.readyState === 'complete') requestAnimationFrame(navigate);
+        else window.addEventListener('load', navigate, { once: true });
+      }
+    }
+  }
 }

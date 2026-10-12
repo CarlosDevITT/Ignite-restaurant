@@ -135,8 +135,8 @@ body.dark-theme .install-banner__btn--install { color: var(--bg); }
 .site-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex: 0 0 auto; font-size: 20px; line-height: 1; vertical-align: middle; }
 .services__content { transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
 @media (hover: hover) { .services__content:hover { transform: translateY(-5px); border-color: var(--green); box-shadow: 0 12px 24px #183c2b0a; } }
-.reading-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 120; pointer-events: none; }
-.reading-progress span { display: block; height: 100%; background: var(--ember); transform: scaleX(0); transform-origin: left; }
+.reading-progress { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 120; pointer-events: none; }
+.reading-progress span { display: block; height: 100%; background: linear-gradient(90deg, #146447, #71b18e 50%, #e4b675); transform: scaleX(0); transform-origin: left; }
 .scroll-cue { display: flex; align-items: center; justify-content: center; gap: 16px; width: fit-content; margin: -24px auto 32px; font-size: .72rem; color: var(--body); }
 .scroll-cue > i { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 50%; transition: transform .25s; }
 .scroll-cue:hover > i { transform: translateY(4px); }

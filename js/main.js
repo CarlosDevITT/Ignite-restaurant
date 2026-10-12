@@ -75,26 +75,49 @@
 
   function animate(element, keyframes, options) {
     if (motion.matches || document.documentElement.hasAttribute('data-effects-paused') || !element.animate) return;
-    const animation = element.animate(keyframes, { duration: 650, easing: 'cubic-bezier(.2,.7,.2,1)', ...options });
+    const animation = element.animate(keyframes, { duration: 850, easing: 'cubic-bezier(.16,1,.3,1)', ...options });
     animations.add(animation);
     animation.finished.then(() => animations.delete(animation), () => animations.delete(animation));
   }
-  // Content stays visible by default; effects enhance it rather than gate it.
+  // Content stays visible without JavaScript. Re-entry only runs after leaving view.
   const revealElements = all('.reveal, .services__content, .menu-preview-heading, .unit-card, .faq-section > div, .footer__content, .how-order');
+  const visibleMedia = new Set();
+  let mediaObserver;
   if ('IntersectionObserver' in window) {
+    const lastEntry = new WeakMap();
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
         const element = entry.target;
-        const siblings = [...element.parentElement.children];
-        const index = element.matches('.services__content, .landing-product-card, .unit-card, .footer__content') ? siblings.indexOf(element) % 3 : 0;
-        animate(element, [{ opacity: .15, transform: 'translateY(32px) scale(.98)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }], { delay: index * 80 });
+        if (!entry.isIntersecting) { element.classList.remove('visible'); return; }
+        if (element.classList.contains('visible')) return;
         element.classList.add('visible');
-        observer.unobserve(element);
+        const now = performance.now();
+        if (now - (lastEntry.get(element) ?? -Infinity) < 1200) return;
+        lastEntry.set(element, now);
+        const siblings = [...element.parentElement.children];
+        const card = element.matches('.services__content, .landing-product-card, .unit-card, .footer__content');
+        const index = card ? siblings.indexOf(element) % 3 : 0;
+        const offset = card ? 48 : 30;
+        animate(element, [
+          { opacity: .08, transform: `translateY(${offset}px) scale(${card ? '.96' : '.99'})` },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ], { delay: index * 110, duration: card ? 950 : 800 });
       });
-    }, { threshold: .12 });
+    }, { threshold: .08 });
     revealElements.forEach(element => observer.observe(element));
-    addEventListener('landing:catalog-ready', () => all('.landing-product-card').forEach(element => observer.observe(element)));
+    mediaObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) visibleMedia.add(entry.target);
+        else { visibleMedia.delete(entry.target); entry.target.style.transform = ''; }
+      });
+      scheduleScroll();
+    });
+    const watchCatalog = () => {
+      all('.landing-product-card').forEach(element => observer.observe(element));
+      all('.landing-product-media img').forEach(image => mediaObserver.observe(image));
+    };
+    addEventListener('landing:catalog-ready', watchCatalog);
+    watchCatalog();
   }
   const sections = all('section[id]');
   function updateScroll() {
@@ -106,7 +129,16 @@
     const showTop = y > 400;
     topLink.classList.toggle('show-scroll', showTop);
     topLink.tabIndex = showTop ? 0 : -1;
-    hero.style.transform = !motion.matches && finePointer.matches && y < innerHeight ? `translateY(${Math.min(24, y * .045)}px)` : '';
+    const motionAllowed = !motion.matches && !document.documentElement.hasAttribute('data-effects-paused') && !document.hidden;
+    hero.style.transform = motionAllowed && finePointer.matches && y < innerHeight ? `translateY(${Math.min(24, y * .045)}px)` : '';
+    // Only visible photos participate; transform updates share the scroll RAF.
+    const travel = finePointer.matches ? 10 : 5;
+    visibleMedia.forEach(image => {
+      if (!motionAllowed) { image.style.transform = ''; return; }
+      const rect = image.parentElement.getBoundingClientRect();
+      const position = Math.max(-1, Math.min(1, (innerHeight / 2 - rect.top - rect.height / 2) / (innerHeight / 2)));
+      image.style.transform = `translateY(${position * travel}px) scale(${finePointer.matches ? 1.12 : 1.08})`;
+    });
     let active = sections[0]?.id;
     for (const section of sections) { if (section.getBoundingClientRect().top <= header.offsetHeight + 70) active = section.id; }
     all('.nav__link[href^="#"]').forEach(link => {
@@ -120,6 +152,12 @@
   addEventListener('resize', () => { if (innerWidth > 920) setMenu(false); scheduleScroll(); });
   motion.addEventListener('change', () => { if (motion.matches) animations.forEach(animation => animation.cancel()); scheduleScroll(); });
   finePointer.addEventListener('change', scheduleScroll);
+  const pauseObserver = new MutationObserver(() => {
+    if (document.documentElement.hasAttribute('data-effects-paused')) animations.forEach(animation => animation.cancel());
+    scheduleScroll();
+  });
+  pauseObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-effects-paused'] });
+  document.addEventListener('visibilitychange', scheduleScroll);
   all('a[href^="#"]').forEach(link => link.addEventListener('click', event => {
     const target = document.getElementById(link.hash.slice(1));
     if (!target) return;

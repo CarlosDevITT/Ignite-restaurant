@@ -1,7 +1,6 @@
 # Ignite Restaurante Pub — public website
 # Keep CSS, JavaScript and images crawlable for page rendering.
 User-agent: *
-
 # Internal project documentation and offline fallback are not search pages.
 Disallow: /docs/
 Disallow: /DESIGN.md

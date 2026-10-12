@@ -123,6 +123,11 @@
 
 /* Desktop quantity stepper: one bounded surface, equal hit targets, no native spinner. */
 @media (min-width: 900px) {
+  :root[data-menu-theme] .swal-product__controls { grid-template-columns: minmax(0,1fr); gap: 16px; }
+  :root[data-menu-theme] .swal-product__controls .field { min-width: 0; }
+  :root[data-menu-theme] .swal-product__summary-row { background: var(--primary-soft); border: 1px solid var(--border); }
+  :root[data-menu-theme] .swal-product__summary-row span { color: var(--body); }
+  :root[data-menu-theme] .swal-product__summary-row strong { color: var(--ink) !important; }
   :root[data-menu-theme] .swal-product .product-quantity { display: grid !important; grid-template-columns: 48px minmax(0,1fr) 48px; align-items: center; gap: 0; width: 224px !important; max-width: 100%; height: 54px; min-height: 54px; padding: 3px; border: 1px solid var(--border); border-radius: 16px; background: var(--primary-soft) !important; box-sizing: border-box; }
   :root[data-menu-theme] .swal-product .product-quantity button { display: grid; place-items: center; width: 46px !important; height: 46px !important; margin: 0; padding: 0; border: 0 !important; border-radius: 12px; background: var(--surface) !important; color: var(--ink) !important; font-size: 1.45rem !important; font-weight: 600; line-height: 1; cursor: pointer; }
   :root[data-menu-theme] .swal-product .product-quantity button:hover:not(:disabled) { background: #146447 !important; color: #fff !important; }

@@ -123,6 +123,10 @@
 
 /* Desktop quantity stepper: one bounded surface, equal hit targets, no native spinner. */
 @media (min-width: 900px) {
+  :root[data-menu-theme] #swal-notes { background: var(--surface) !important; color: var(--ink) !important; border-color: var(--border) !important; resize: none; }
+  :root[data-menu-theme] #swal-notes::placeholder { color: var(--body); }
+  :root[data-menu-theme] .swal-product__category { color: var(--body) !important; }
+  :root[data-menu-theme] .swal-product__price span { background: var(--primary-soft); color: var(--desktop-price-accent) !important; }
   :root[data-menu-theme] .swal-product__controls { grid-template-columns: minmax(0,1fr); gap: 16px; }
   :root[data-menu-theme] .swal-product__controls .field { min-width: 0; }
   :root[data-menu-theme] .swal-product__summary-row { background: var(--primary-soft); border: 1px solid var(--border); }

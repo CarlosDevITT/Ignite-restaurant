@@ -78,6 +78,7 @@
 
 /* Desktop checkout: modality cards and guidance share the active theme. */
 @media (min-width: 900px) {
+  :root[data-menu-theme] #cart-drawer :is(.service-type-card,.payment-options label span) { transition: none !important; }
   :root[data-menu-theme] #cart-drawer :is(.service-type-card,.checkout-context,.checkout-payment-hint,.payment-options label span) { background: var(--primary-soft) !important; border-color: var(--border) !important; color: var(--ink) !important; }
   :root[data-menu-theme] #cart-drawer :is(.service-type-card strong,.checkout-context strong,.payment-options label span) { color: var(--ink) !important; }
   :root[data-menu-theme] #cart-drawer :is(.service-type-card small,.checkout-context small,.checkout-section__hint,.checkout-payment-hint,.checkout-field-hint) { color: var(--body) !important; }

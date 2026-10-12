@@ -335,3 +335,24 @@ body:has(.mobile-bottom-nav.is-fan-open) .floating-cart { visibility: hidden; }
 @media (min-width: 1500px) {
   .products-carousel .product-grid { grid-auto-columns: calc((100% - 3rem) / 4); }
 }
+
+/* Desktop restaurant menu sidebar. Mobile retains its existing navigation. */
+@media (min-width: 900px) {
+  .desktop-sidebar { background: #f5f4ec; color: var(--ink); border-right: 1px solid #dce3d9; padding: 28px 20px 22px; overflow-y: auto; }
+  .desktop-sidebar .brand { flex-direction: column; gap: 12px; padding: 4px 0 24px; text-align: center; }
+  .desktop-sidebar .brand__mark { width: 112px; height: 112px; background: transparent; border-radius: 0; overflow: visible; }
+  .desktop-sidebar .brand__mark img { width: 112px; max-width: 100%; }
+  .desktop-sidebar .brand strong { color: #146447; font-size: 1.7rem; }
+  .desktop-sidebar .brand small { color: var(--body); margin-top: 4px; }
+  .sidebar-menu-caption { padding: 18px 0; margin-bottom: 12px; text-align: center; border-top: 1px solid #dce3d9; border-bottom: 1px solid #dce3d9; color: var(--body); font-size: .78rem; }
+  .desktop-sidebar .desktop-nav { gap: 10px; }
+  .desktop-sidebar .nav-item { border-radius: 12px; min-height: 52px; color: var(--body); font-weight: 600; }
+  .desktop-sidebar .nav-item:hover { background: #e7eee4; color: #146447; }
+  .desktop-sidebar .nav-item.is-active { background: #146447; color: #fff; }
+  .desktop-sidebar .nav-icon { background: transparent; font-size: 1.1rem; }
+  .desktop-sidebar__bottom { padding-top: 32px; gap: 16px; }
+  .desktop-sidebar .nav-item--create { background: transparent; color: #146447; font-size: .82rem; }
+  .desktop-sidebar .store-mini { border: 0; border-top: 1px solid #dce3d9; border-radius: 0; background: transparent; padding: 18px 4px 0; }
+  .desktop-sidebar .store-mini strong { color: var(--ink); }
+  .desktop-sidebar .store-mini small { color: var(--body); }
+}

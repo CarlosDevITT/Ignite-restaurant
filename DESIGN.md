@@ -67,3 +67,6 @@ Buttons retain labels and valid destinations. Theme and menu actions use native 
 - Don't spread the hero's expressive composition into commerce controls.
 
 Code ownership and retired legacy entrypoints are documented in docs/code-ownership.md. Landing base CSS retains geometry/components; brand values and motion must not be duplicated there.
+
+### Scroll fire
+Root landing only. js/scroll-fire.js owns a single Canvas 2D RAF loop with cached flame sprites, pooled particles and a 60ms passive scroll sampler. Drawing is capped at 30 FPS desktop / 24 FPS below 768px; pixel ratio is capped at 1.5 / 1. Negative isolated layers and pointer-events:none keep all decorative pixels behind content. Section AND logo/stage visibility gates painting through IntersectionObserver. Offscreen, hidden tabs, manual pause, reduced motion and forced colors cancel RAF and clear canvases. A persistent pause button supports users who do not want ambient motion. Pagehide destroys observers/listeners; persisted pageshow recreates them. CSS is isolated in styles/scroll-fire.css. Brand presence uses existing ignite2.png in a static hero seal and footer lockup; the real Supabase dish remains the hero image. Fire blends multiply on light surfaces and screen on dark ones, with red/orange/yellow cached gradients.

@@ -1,4 +1,4 @@
-const VERSION='v62-checkout-contrast';
+const VERSION='v63-product-quantity';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;

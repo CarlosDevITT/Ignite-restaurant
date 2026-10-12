@@ -99,3 +99,5 @@ Desktop contrast fixes: filled actions use #146447 / white in both themes; light
 Both desktop themes explicitly pair profile welcome/hero, cart summary/items and product-detail price surfaces with their text colors. Prices use theme ink; promotion accents use #9b3c17 light / #ffc08f dark. Floating cart and filled actions keep white text, while banner light actions keep dark text. Verify actual open cart/detail/profile states, not only catalog cards.
 
 Cart shell contrast: cart-ux.css owns ID-scoped #cart-drawer theme rules above 900px, including sticky header, body, summary and checkout surfaces. A class-only override cannot beat the previous ID + important white background. Verify the actual drawer and header computed backgrounds as well as text/price contrast.
+
+Desktop product quantity: product-detail-desktop.css owns a 224px bounded stepper, equal 46px +/- targets and centered numeric input. Native spinners are suppressed; focus and min/max disabled states remain visible. Surface/ink derive from the active theme. Existing 1–20 quantity limits and calculated add total remain in catalog.js. Scoped to 900px+; mobile is unchanged.

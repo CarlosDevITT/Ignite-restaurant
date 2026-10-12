@@ -120,3 +120,15 @@
   .swal-product__content { padding-top: 1.2rem; }
   .swal-product__description { font-size: .8rem !important; line-height: 1.42 !important; }
 }
+
+/* Desktop quantity stepper: one bounded surface, equal hit targets, no native spinner. */
+@media (min-width: 900px) {
+  :root[data-menu-theme] .swal-product .product-quantity { display: grid !important; grid-template-columns: 48px minmax(0,1fr) 48px; align-items: center; gap: 0; width: 224px !important; max-width: 100%; height: 54px; min-height: 54px; padding: 3px; border: 1px solid var(--border); border-radius: 16px; background: var(--primary-soft) !important; box-sizing: border-box; }
+  :root[data-menu-theme] .swal-product .product-quantity button { display: grid; place-items: center; width: 46px !important; height: 46px !important; margin: 0; padding: 0; border: 0 !important; border-radius: 12px; background: var(--surface) !important; color: var(--ink) !important; font-size: 1.45rem !important; font-weight: 600; line-height: 1; cursor: pointer; }
+  :root[data-menu-theme] .swal-product .product-quantity button:hover:not(:disabled) { background: #146447 !important; color: #fff !important; }
+  :root[data-menu-theme] .swal-product .product-quantity button:active:not(:disabled) { background: #0e4b35 !important; color: #fff !important; }
+  :root[data-menu-theme] .swal-product .product-quantity button:disabled { opacity: .4; cursor: not-allowed; }
+  :root[data-menu-theme] .swal-product .product-quantity input { width: 100% !important; min-width: 0; height: 46px !important; padding: 0 !important; margin: 0; border: 0 !important; background: transparent !important; color: var(--ink) !important; font-size: 1.1rem; font-weight: 700 !important; line-height: 1; text-align: center !important; appearance: textfield; -moz-appearance: textfield; box-shadow: none; }
+  :root[data-menu-theme] .swal-product .product-quantity input::-webkit-inner-spin-button, :root[data-menu-theme] .swal-product .product-quantity input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  :root[data-menu-theme] .swal-product .product-quantity :is(button,input):focus-visible { outline: 2px solid var(--ink) !important; outline-offset: -4px; }
+}

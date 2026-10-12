@@ -4,7 +4,7 @@ function ensureStyle() {
   if (document.querySelector('[data-product-detail-desktop-style]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = new URL('../../styles/product-detail-desktop.css?v=20260913-1', import.meta.url).href;
+  link.href = new URL('../../styles/product-detail-desktop.css?v=20261012-quantity', import.meta.url).href;
   link.setAttribute('data-product-detail-desktop-style', 'true');
   document.head.appendChild(link);
 }

@@ -79,45 +79,46 @@
     animations.add(animation);
     animation.finished.then(() => animations.delete(animation), () => animations.delete(animation));
   }
-  // Content stays visible without JavaScript. Re-entry only runs after leaving view.
+  // One entrance per element: scroll boundaries never restart opacity or transform.
   const revealElements = all('.reveal, .services__content, .menu-preview-heading, .unit-card, .faq-section > div, .footer__content, .how-order');
   const visibleMedia = new Set();
   let mediaObserver;
   if ('IntersectionObserver' in window) {
-    const lastEntry = new WeakMap();
+    const revealed = new WeakSet();
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         const element = entry.target;
-        if (!entry.isIntersecting) { element.classList.remove('visible'); return; }
-        if (element.classList.contains('visible')) return;
+        if (!entry.isIntersecting || revealed.has(element)) return;
+        revealed.add(element);
+        observer.unobserve(element);
         element.classList.add('visible');
-        const now = performance.now();
-        if (now - (lastEntry.get(element) ?? -Infinity) < 1200) return;
-        lastEntry.set(element, now);
         const siblings = [...element.parentElement.children];
         const card = element.matches('.services__content, .landing-product-card, .unit-card, .footer__content');
         const index = card ? siblings.indexOf(element) % 3 : 0;
-        const offset = card ? 48 : 30;
+        const offset = card ? 24 : 18;
         animate(element, [
-          { opacity: .08, transform: `translateY(${offset}px) scale(${card ? '.96' : '.99'})` },
+          { opacity: .65, transform: `translateY(${offset}px) scale(${card ? '.985' : '1'})` },
           { opacity: 1, transform: 'translateY(0) scale(1)' },
-        ], { delay: index * 110, duration: card ? 950 : 800 });
+        ], { delay: index * 70, duration: 650, fill: 'backwards' });
       });
     }, { threshold: .08 });
     revealElements.forEach(element => observer.observe(element));
     mediaObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) visibleMedia.add(entry.target);
-        else { visibleMedia.delete(entry.target); entry.target.style.transform = ''; }
+        else visibleMedia.delete(entry.target);
       });
       scheduleScroll();
-    });
+    }, { rootMargin: '160px 0px' });
     const watchCatalog = () => {
-      all('.landing-product-card').forEach(element => observer.observe(element));
-      all('.landing-product-media img').forEach(image => mediaObserver.observe(image));
+      visibleMedia.forEach(frame => {
+        if (!frame.isConnected) { visibleMedia.delete(frame); mediaObserver.unobserve(frame); }
+      });
+      all('.landing-product-card').forEach(element => { if (!revealed.has(element)) observer.observe(element); });
+      all('.landing-product-media').forEach(frame => mediaObserver.observe(frame));
     };
     addEventListener('landing:catalog-ready', watchCatalog);
-    addEventListener('landing:reviews-ready', () => all('.google-review-card').forEach(card => observer.observe(card)));
+    addEventListener('landing:reviews-ready', () => all('.google-review-card').forEach(card => { if (!revealed.has(card)) observer.observe(card); }));
     watchCatalog();
   }
   const sections = all('section[id]');
@@ -131,12 +132,14 @@
     topLink.classList.toggle('show-scroll', showTop);
     topLink.tabIndex = showTop ? 0 : -1;
     const motionAllowed = !motion.matches && !document.documentElement.hasAttribute('data-effects-paused') && !document.hidden;
-    hero.style.transform = motionAllowed && finePointer.matches && y < innerHeight ? `translateY(${Math.min(24, y * .045)}px)` : '';
+    hero.style.transform = motionAllowed && finePointer.matches ? `translateY(${Math.min(24, y * .045)}px)` : '';
     // Only visible photos participate; transform updates share the scroll RAF.
     const travel = finePointer.matches ? 10 : 5;
-    visibleMedia.forEach(image => {
+    visibleMedia.forEach(frame => {
+      const image = frame.querySelector('img');
+      if (!image) return;
       if (!motionAllowed) { image.style.transform = ''; return; }
-      const rect = image.parentElement.getBoundingClientRect();
+      const rect = frame.getBoundingClientRect();
       const position = Math.max(-1, Math.min(1, (innerHeight / 2 - rect.top - rect.height / 2) / (innerHeight / 2)));
       image.style.transform = `translateY(${position * travel}px) scale(${finePointer.matches ? 1.12 : 1.08})`;
     });

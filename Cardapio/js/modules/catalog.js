@@ -65,8 +65,16 @@ export function initCatalog({ categories, products }) {
   grid.setAttribute('aria-label', 'Produtos organizados por categoria');
   grid.classList.add('catalog-sections');
 
-  let featuredOnly = false;
+  let selection = 'all';
   let activeSection = 'all';
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  filterButton.setAttribute('aria-label', 'Escolher categoria');
+  const clearSearch = document.createElement('button');
+  clearSearch.type = 'button'; clearSearch.className = 'catalog-search-clear';
+  clearSearch.setAttribute('aria-label', 'Limpar busca'); clearSearch.hidden = true;
+  clearSearch.innerHTML = '<i class="fi fi-rr-cross-small" aria-hidden="true"></i>';
+  search.insertAdjacentElement('afterend', clearSearch);
+
 
   const productCategoryName = (product) => product.category_name || product.category || 'Outros';
   const productCategoryId = (product) => slug(productCategoryName(product));
@@ -129,10 +137,12 @@ export function initCatalog({ categories, products }) {
 
   const renderQuickbar = (visibleCount) => {
     const hasSearch = Boolean(search.value.trim());
-    const hasFilter = featuredOnly || hasSearch;
+    clearSearch.hidden = !search.value;
     quickbar.innerHTML = `
-      <div class="catalog-active-filter"><span>${hasFilter ? 'Filtrando' : 'Exibindo'}</span><strong>${featuredOnly ? 'Mais pedidos por categoria' : 'Cardápio por categorias'}</strong></div>
-      ${hasFilter ? '<button class="catalog-reset" type="button" data-catalog-reset>Limpar filtros</button>' : ''}`;
+      <div class="catalog-selection" role="group" aria-label="Filtrar cardápio">
+        ${[['all','Todos'],['offers','Em oferta'],['featured','Destaques']].map(([id,label]) => `<button type="button" data-catalog-selection="${id}" aria-pressed="${selection === id}">${label}</button>`).join('')}
+      </div>
+      ${selection !== 'all' || hasSearch ? '<button class="catalog-reset" type="button" data-catalog-reset>Limpar filtros</button>' : ''}`;
     resultCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'item' : 'itens'}`;
   };
 
@@ -140,14 +150,14 @@ export function initCatalog({ categories, products }) {
     const term = normalizeText(search.value);
     return baseProducts().filter((product) => {
       const text = normalizeText(`${product.name} ${product.description} ${product.category_name} ${product.promo_text || ''}`);
-      return (!term || text.includes(term)) && (!featuredOnly || product.featured);
+      return (!term || text.includes(term)) && (selection === 'all' || (selection === 'offers' ? product.promo : product.featured));
     });
   };
 
   const productBadges = (product) => {
     if (!product.available) return '<span class="product-card__badge product-card__badge--unavailable">Indisponível</span>';
     if (product.promo) return `<span class="product-card__badge product-card__badge--promo">${escapeHTML(product.promo_text || 'Oferta')}</span>`;
-    if (product.featured) return '<span class="product-card__badge product-card__badge--featured">Mais pedido</span>';
+    if (product.featured) return '<span class="product-card__badge product-card__badge--featured">Destaque</span>';
     return '';
   };
 
@@ -159,16 +169,16 @@ export function initCatalog({ categories, products }) {
       <article class="product-card product-card--premium ${product.available ? '' : 'is-unavailable'}" data-product-card="${escapeHTML(product.id)}">
         <button class="product-card__visual" type="button" data-product="${escapeHTML(product.id)}" style="--product-color:${escapeHTML(product.color || '#fff0e9')}" aria-label="Ver ${escapeHTML(product.name)}">
           <span class="product-card__badges"><span>${productBadges(product)}</span>${discount ? `<span class="product-card__discount">-${discount}%</span>` : ''}</span>
-          ${product.image_url ? `<img class="product-card__image" src="${escapeHTML(product.image_url)}" alt="${escapeHTML(product.name)}" loading="lazy" decoding="async"><span class="product-card__emoji" aria-hidden="true">${escapeHTML(product.emoji || '🍽️')}</span>` : `<span class="product-card__emoji" aria-hidden="true">${escapeHTML(product.emoji || '🍽️')}</span>`}
+          ${product.image_url ? `<img class="product-card__image" src="${escapeHTML(product.image_url)}" alt="${escapeHTML(product.name)}" loading="lazy" decoding="async"><span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Carregando foto</small></span>` : `<span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Sem foto</small></span>`}
         </button>
         <div class="product-card__content">
           <span class="product-card__category">${escapeHTML(productCategoryName(product))}</span>
           <h3><button class="product-name" type="button" data-product="${escapeHTML(product.id)}">${escapeHTML(product.name)}</button></h3>
           <p class="product-card__description">${escapeHTML(description || 'Veja os detalhes deste produto.')}</p>
-          ${promoCopy ? `<p class="product-card__promo-copy">🔥 ${escapeHTML(promoCopy)}</p>` : ''}
+          ${promoCopy ? `<p class="product-card__promo-copy">${escapeHTML(promoCopy)}</p>` : ''}
           <div class="product-card__footer">
-            <span class="product-card__price${product.promo ? ' is-promo' : ''}">${product.original_price > product.price ? `<del>${money(product.original_price)}</del>` : ''}<strong>${money(product.price)}</strong></span>
-            <button class="product-add" type="button" data-add-product="${escapeHTML(product.id)}" aria-label="Adicionar ${escapeHTML(product.name)}" ${product.available ? '' : 'disabled'}><i class="fi fi-rr-plus" aria-hidden="true"></i></button>
+            <span class="product-card__price${product.promo ? ' is-promo' : ''}">${product.promo && product.original_price > product.price ? `<del>${money(product.original_price)}</del>` : ''}<strong>${money(product.price)}</strong></span>
+            <button class="product-add" type="button" data-add-product="${escapeHTML(product.id)}" aria-label="Adicionar ${escapeHTML(product.name)}" ${product.available ? '' : 'disabled'}><i class="fi fi-rr-plus" aria-hidden="true"></i><span>Adicionar</span></button>
           </div>
         </div>
       </article>`;
@@ -182,7 +192,7 @@ export function initCatalog({ categories, products }) {
     renderQuickbar(visible.length);
 
     if (!visible.length) {
-      grid.innerHTML = '<div class="empty-state"><span>🔎</span><h3>Nada por aqui</h3><p>Tente outro nome ou remova os filtros.</p></div>';
+      grid.innerHTML = '<div class="empty-state"><i class="fi fi-rr-search" aria-hidden="true"></i><h3>Nenhum produto encontrado</h3><p>Tente outro nome ou limpe os filtros para ver o cardápio.</p><button class="button" type="button" data-catalog-reset>Ver todo o cardápio</button></div>';
       return;
     }
 
@@ -259,12 +269,15 @@ export function initCatalog({ categories, products }) {
 
   const scrollToSection = (id) => {
     activeSection = id;
-    renderCategories();
+    categoryList.querySelectorAll('[data-category]').forEach(button => {
+      const active = button.dataset.category === id;
+      button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active));
+    });
     if (id === 'all') {
-      document.querySelector('#products-start')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelector('#products-start')?.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
       return;
     }
-    document.querySelector(`#catalog-section-${CSS.escape(id)}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector(`#catalog-section-${CSS.escape(id)}`)?.scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
   };
 
   categoryList.addEventListener('click', (event) => {
@@ -273,20 +286,22 @@ export function initCatalog({ categories, products }) {
     scrollToSection(button.dataset.category);
   });
 
-  quickbar.addEventListener('click', (event) => {
-    if (!event.target.closest('[data-catalog-reset]')) return;
-    featuredOnly = false;
-    search.value = '';
-    filterButton.classList.remove('is-active');
-    renderProducts();
-    scrollToSection('all');
+  const resetFilters = () => {
+    selection = 'all'; search.value = ''; renderProducts();
+  };
+  clearSearch.addEventListener('click', () => { search.value = ''; renderProducts(); search.focus(); });
+  quickbar.addEventListener('click', event => {
+    const button = event.target.closest('[data-catalog-selection], [data-catalog-reset]');
+    if (!button) return;
+    if (button.hasAttribute('data-catalog-reset')) resetFilters();
+    else { selection = button.dataset.catalogSelection; renderProducts(); }
+    quickbar.querySelector(button.hasAttribute('data-catalog-reset') ? '[data-catalog-selection="all"]' : `[data-catalog-selection="${selection}"]`)?.focus({ preventScroll: true });
   });
 
   document.querySelectorAll('[data-hero-category]').forEach((button) => {
     button.addEventListener('click', () => {
       search.value = '';
-      featuredOnly = false;
-      filterButton.classList.remove('is-active');
+      selection = button.dataset.heroCategory === 'promocoes' ? 'offers' : 'all';
       renderProducts();
       const requested = slug(button.dataset.categoryLabel || button.dataset.heroCategory);
       const match = sections.find((section) => section.id === requested || normalizeText(section.name).includes(normalizeText(button.dataset.categoryLabel || button.dataset.heroCategory)));
@@ -295,6 +310,7 @@ export function initCatalog({ categories, products }) {
   });
 
   grid.addEventListener('click', (event) => {
+    if (event.target.closest('[data-catalog-reset]')) { resetFilters(); search.focus(); return; }
     const target = event.target.closest('[data-product], [data-add-product]');
     if (!target) return;
     const id = target.dataset.product || target.dataset.addProduct;
@@ -304,26 +320,29 @@ export function initCatalog({ categories, products }) {
       if (!product.available) return;
       cartStore.add(product);
       target.classList.add('is-added');
-      target.innerHTML = '<i class="fi fi-rr-check" aria-hidden="true"></i>';
-      setTimeout(() => { if (!target.isConnected) return; target.classList.remove('is-added'); target.innerHTML = '<i class="fi fi-rr-plus" aria-hidden="true"></i>'; }, 850);
+      target.innerHTML = '<i class="fi fi-rr-check" aria-hidden="true"></i><span>Adicionado</span>';
+      setTimeout(() => { if (!target.isConnected) return; target.classList.remove('is-added'); target.innerHTML = '<i class="fi fi-rr-plus" aria-hidden="true"></i><span>Adicionar</span>'; }, 850);
       Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `${product.name} adicionado`, showConfirmButton: false, timer: 1100 });
     } else showProduct(product);
   });
 
+  grid.addEventListener('load', event => {
+    if (event.target.matches('.product-card__image')) event.target.closest('.product-card__visual')?.classList.add('is-photo-ready');
+  }, true);
+
   grid.addEventListener('error', (event) => {
     if (event.target.matches('.product-card__image')) {
       event.target.hidden = true;
-      event.target.nextElementSibling?.style.setProperty('opacity', '1');
+      event.target.closest('.product-card__visual')?.classList.remove('is-photo-ready');
+      event.target.nextElementSibling?.classList.add('is-visible');
+      const label = event.target.nextElementSibling?.querySelector('small');
+      if (label) label.textContent = 'Sem foto';
     }
   }, true);
 
-  search.addEventListener('input', renderProducts);
-  filterButton.addEventListener('click', () => {
-    featuredOnly = !featuredOnly;
-    filterButton.classList.toggle('is-active', featuredOnly);
-    renderProducts();
-    Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: featuredOnly ? 'Mostrando os mais pedidos' : 'Mostrando todos os produtos', showConfirmButton: false, timer: 1100 });
-  });
+  search.addEventListener('input', event => { if (!event.isComposing) renderProducts(); });
+  search.addEventListener('compositionend', renderProducts);
+  // Category selection belongs to the shared filter sheet in mobile-ux.js.
 
   renderCategories();
   renderProducts();

@@ -1,3 +1,4 @@
+import { escapeHTML } from '../utils/format.js';
 import { initCartUX } from './cart-ux.js';
 import { initPurchaseFeedback } from './purchase-feedback.js';
 import { initCheckoutAddressBook } from './checkout-address-book.js';
@@ -46,21 +47,30 @@ function setupCategoryFilterSheet() {
   document.body.appendChild(sheet);
 
   const options = sheet.querySelector('[data-filter-options]');
+  let inertBefore = [];
+  let restoreFocus = null;
   const close = () => {
+    if (sheet.hidden) return;
     sheet.hidden = true;
+    inertBefore.forEach(([element, wasInert]) => { element.inert = wasInert; });
+    inertBefore = [];
+    restoreFocus?.focus({ preventScroll: true });
     document.body.classList.remove('category-filter-open');
     filterButton.setAttribute('aria-expanded', 'false');
   };
   const open = () => {
+    restoreFocus = document.activeElement;
     const chips = [...categoryList.querySelectorAll('[data-category]')];
     options.innerHTML = chips.map((chip) => {
       const id = chip.dataset.category;
       const label = chip.querySelector('span:nth-child(2)')?.textContent?.trim() || chip.textContent.trim();
       const count = chip.querySelector('.category-chip__count')?.textContent?.trim() || '';
       const active = chip.classList.contains('is-active') || chip.classList.contains('is-visible-section');
-      return `<button type="button" class="category-filter-option ${active ? 'is-active' : ''}" data-filter-category="${id}"><span>${label}</span>${count ? `<small>${count}</small>` : ''}<i class="fi fi-rr-angle-small-right" aria-hidden="true"></i></button>`;
+      return `<button type="button" class="category-filter-option ${active ? 'is-active' : ''}" data-filter-category="${escapeHTML(id)}"><span>${escapeHTML(label)}</span>${count ? `<small>${escapeHTML(count)}</small>` : ''}<i class="fi fi-rr-angle-small-right" aria-hidden="true"></i></button>`;
     }).join('');
     sheet.hidden = false;
+    inertBefore = [...document.body.children].filter(element => element instanceof HTMLElement && element !== sheet && !element.matches('script, link, style')).map(element => [element, element.inert]);
+    inertBefore.forEach(([element]) => { element.inert = true; });
     document.body.classList.add('category-filter-open');
     filterButton.setAttribute('aria-expanded', 'true');
     sheet.querySelector('.category-filter-option')?.focus({ preventScroll: true });
@@ -89,6 +99,12 @@ function setupCategoryFilterSheet() {
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !sheet.hidden) close();
+    if (event.key === 'Tab' && !sheet.hidden) {
+      const focusable = [...sheet.querySelectorAll('.category-filter-sheet__panel button:not(:disabled)')];
+      const first = focusable[0]; const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
   });
 
   filterButton.setAttribute('aria-haspopup', 'dialog');

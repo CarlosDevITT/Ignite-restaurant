@@ -23,7 +23,7 @@ function ensureFrontendPolishStyles() {
   if (document.querySelector('link[data-ignite-frontend-polish]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = './styles/frontend-polish.css?v=20260912-3';
+  link.href = './styles/frontend-polish.css?v=20261012-catalog';
   link.dataset.igniteFrontendPolish = 'true';
   document.head.appendChild(link);
 }

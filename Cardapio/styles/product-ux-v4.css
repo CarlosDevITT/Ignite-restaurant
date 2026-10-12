@@ -56,12 +56,12 @@
   .product-card--premium .product-card__content{min-width:0;padding:.72rem .72rem .68rem!important}
   .product-card--premium .product-card__category{font-size:.52rem!important;margin-bottom:.18rem!important}
   .product-card--premium h3{margin-bottom:.24rem!important}
-  .product-card--premium .product-name{font-size:.91rem!important;line-height:1.17!important;-webkit-line-clamp:2}
-  .product-card--premium .product-card__description{min-height:0!important;font-size:.67rem!important;line-height:1.32!important;-webkit-line-clamp:2}
+  .product-card--premium .product-name{font-size:1rem!important;line-height:1.3!important;-webkit-line-clamp:2}
+  .product-card--premium .product-card__description{min-height:0!important;font-size:.8rem!important;line-height:1.45!important;-webkit-line-clamp:2}
   .product-card--premium .product-card__promo-copy{margin-top:.28rem!important;font-size:.58rem!important}
   .product-card--premium .product-card__footer{padding-top:.42rem!important;align-items:center!important}
-  .product-card--premium .product-card__price{font-size:.93rem!important}
-  .product-card--premium .product-add{width:38px!important;height:38px!important;flex-basis:38px!important;border-radius:12px!important}
+  .product-card--premium .product-card__price{font-size:1.06rem!important}
+  .product-card--premium .product-add{width:102px!important;height:44px!important;flex-basis:102px!important;border-radius:12px!important}
   .product-card--premium .product-card__badges{top:.4rem!important;left:.4rem!important;right:.4rem!important}
   .product-card--premium .product-card__badge{max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .product-card--premium .product-card__discount{margin-left:auto}
@@ -85,9 +85,9 @@
   .product-card.product-card--premium{grid-template-columns:104px minmax(0,1fr)!important;min-height:124px!important}
   .product-card--premium .product-card__visual{width:104px!important;min-height:124px!important}
   .product-card--premium .product-card__content{padding:.62rem!important}
-  .product-card--premium .product-name{font-size:.86rem!important}
-  .product-card--premium .product-card__description{font-size:.63rem!important;-webkit-line-clamp:2}
-  .product-card--premium .product-card__price{font-size:.88rem!important}
+  .product-card--premium .product-name{font-size:.94rem!important}
+  .product-card--premium .product-card__description{font-size:.75rem!important;-webkit-line-clamp:2}
+  .product-card--premium .product-card__price{font-size:1rem!important}
 }
 
 @media(min-width:521px) and (max-width:679px){

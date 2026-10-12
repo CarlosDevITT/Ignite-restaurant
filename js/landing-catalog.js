@@ -62,12 +62,12 @@ function renderHero(products) {
     heroLink.classList.remove('has-dish');
     hero.onerror = null; hero.src = 'assets/images/logos/ignite2.png'; hero.alt = 'Ignite Restaurante Pub'; heroLink.href = 'Cardapio/index.html';
     heroLink.setAttribute('aria-label', 'Conhecer o cardápio Ignite');
-    document.querySelector('#hero-dish-caption').replaceChildren(element('small', '', 'O seu próximo pedido começa aqui'), element('strong', '', 'Explore o cardápio'), element('span', '', 'Ver pratos e preços ↗'));
+    document.querySelector('#hero-dish-caption').replaceChildren(element('small', '', 'Veja o que pedir hoje'), element('strong', '', 'Veja o cardápio'), element('span', '', 'Ver pratos e preços ↗'));
     return;
   }
   heroLink.classList.add('has-dish');
   heroLink.href = itemLink(product); heroLink.setAttribute('aria-label', `Ver ${product.name} no cardápio`);
-  hero.onerror = () => { hero.onerror = null; heroLink.classList.remove('has-dish'); hero.src = 'assets/images/logos/ignite2.png'; hero.alt = 'Foto indisponível — Ignite Restaurante Pub'; };
+  hero.onerror = () => { hero.onerror = null; heroLink.classList.remove('has-dish'); hero.src = 'assets/images/logos/ignite2.png'; hero.alt = 'Foto indisponível: Ignite Restaurante Pub'; };
   hero.src = imageURL(product.image_url); hero.alt = product.name;
   document.querySelector('#hero-dish-caption').replaceChildren(element('small', '', product.category_name), element('strong', '', product.name), element('span', '', `${money(product.price)} · Ver no cardápio ↗`));
 }
@@ -86,7 +86,7 @@ function renderProducts(products) {
     const copy = element('div', 'landing-product-copy');
     copy.append(element('span', 'landing-product-category', product.category_name), element('h3', '', product.name));
     const description = String(product.description || '').replace(/\s+/g, ' ').trim();
-    copy.append(element('p', '', description || 'Confira os detalhes deste produto no cardápio.'));
+    copy.append(element('p', '', description || 'Veja os detalhes no cardápio.'));
     if (product.promo && product.promo_text) copy.append(element('p', 'landing-promo-copy', String(product.promo_text)));
     copy.append(price(product), element('span', 'landing-product-action', 'Ver no cardápio ↗'));
     card.append(image, copy); fragment.append(card);
@@ -147,7 +147,7 @@ function renderSettings(result) {
   status.classList.remove('is-open', 'is-closed');
   if (!data || typeof data.store_open !== 'boolean') {
     setStatus('Consulte a disponibilidade de pedidos com a equipe.');
-    document.querySelector('#landing-delivery-copy').textContent = 'A taxa aparece no checkout antes de finalizar. Confirme a cobertura do seu endereço com a equipe.';
+    document.querySelector('#landing-delivery-copy').textContent = 'Você vê a taxa de entrega antes de finalizar o pedido. Fale com a unidade para confirmar se ela entrega no seu endereço.';
     return;
   }
   if (Array.isArray(data.units)) {
@@ -166,7 +166,7 @@ function renderSettings(result) {
   status.classList.add(data.store_open ? 'is-open' : 'is-closed');
   setStatus(data.store_open ? 'Pedidos online disponíveis' : 'Pedidos online pausados · Consulte o cardápio');
   if (Number.isFinite(Number(data.delivery_fee)) && data.delivery_fee !== null && Number(data.delivery_fee) >= 0) {
-    document.querySelector('#landing-delivery-copy').textContent = `A taxa de entrega configurada no cardápio é ${money(Number(data.delivery_fee))}. Revise o total no checkout e confirme a cobertura do seu endereço com a equipe.`;
+    document.querySelector('#landing-delivery-copy').textContent = `A taxa de entrega indicada no cardápio é ${money(Number(data.delivery_fee))}. Confira o total antes de finalizar e fale com a unidade para confirmar a entrega no seu endereço.`;
   }
 }
 async function loadCatalog() {

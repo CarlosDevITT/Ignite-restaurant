@@ -10,13 +10,21 @@ export function initScrollFire(root = document) {
     sectionVisible: false, elementVisible: false, visible: false, width: 0, height: 0, particles: [],
   })).filter(zone => zone.ctx && zone.watcher);
   if (!zones.length) return () => {};
-  // Cache the glow once; no per-frame shadows or gradients.
-  const glow = document.createElement('canvas'); glow.width = glow.height = 32;
-  const gc = glow.getContext('2d');
-  const halo = gc.createRadialGradient(16, 16, 0, 16, 16, 16);
-  halo.addColorStop(0, '#fff0c2'); halo.addColorStop(.18, '#ffc26b');
-  halo.addColorStop(.45, 'rgba(255,128,37,.35)'); halo.addColorStop(1, 'rgba(255,93,20,0)');
-  gc.fillStyle = halo; gc.fillRect(0, 0, 32, 32);
+  // Three cached ember sprites: gradients are never created inside the RAF.
+  const colors = ['#ffd98c', '#ffab50', '#ee7136'];
+  const glows = colors.map(color => {
+    const sprite = document.createElement('canvas'); sprite.width = sprite.height = 32;
+    const ctx = sprite.getContext('2d');
+    const halo = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    halo.addColorStop(0, '#fff2ce'); halo.addColorStop(.12, color);
+    halo.addColorStop(.35, color + '55'); halo.addColorStop(1, color + '00');
+    ctx.fillStyle = halo; ctx.fillRect(0, 0, 32, 32); return sprite;
+  });
+  const trail = document.createElement('canvas'); trail.width = 8; trail.height = 64;
+  const tc = trail.getContext('2d');
+  const tail = tc.createLinearGradient(0, 0, 0, 64);
+  tail.addColorStop(0, 'rgba(255,181,84,.55)'); tail.addColorStop(1, 'rgba(255,120,35,0)');
+  tc.fillStyle = tail; tc.beginPath(); tc.moveTo(0, 0); tc.lineTo(8, 0); tc.lineTo(4, 64); tc.fill();
   let raf = 0, previous = 0, lastDraw = 0, boost = 0, targetBoost = 0;
   let sampledY = scrollY, sampledAt = performance.now(), lastDownAt = 0, disposed = false;
   const buttons = [...root.querySelectorAll('[data-fire-toggle]')];
@@ -25,15 +33,17 @@ export function initScrollFire(root = document) {
   const allowed = () => enabled && !disposed && !reduced.matches && !forced.matches && !document.hidden;
   const active = () => allowed() && zones.some(zone => zone.visible);
   function reset(zone, p, seed = false) {
-    p.x = Math.random() * zone.width;
-    p.y = seed ? Math.random() * zone.height : zone.height + 12;
-    p.life = 20 + Math.random() * 16;
+    p.depth = .35 + Math.random() * .65;
+    p.speed = 20 + Math.random() * 28;
+    p.life = (zone.height + 64) / (p.speed * p.depth);
     p.age = seed ? Math.random() * p.life : 0;
-    p.speed = 14 + Math.random() * 22;
-    p.size = .8 + Math.random() * 1.8;
-    p.depth = .45 + Math.random() * .55;
+    p.x = Math.random() * zone.width;
+    p.y = zone.height + 24 - p.age * p.speed * p.depth;
+    p.drift = (Math.random() - .5) * 14;
+    p.size = (.6 + Math.random() * 1.4) * (.65 + p.depth * .5);
     p.phase = Math.random() * Math.PI * 2;
-    p.warm = Math.random() > .3;
+    p.color = Math.random() < .25 ? 2 : Math.random() < .5 ? 1 : 0;
+    p.glowing = Math.random() > .55;
   }
   function clear(zone) { zone.ctx.clearRect(0, 0, zone.width, zone.height); }
   function resize(zone) {
@@ -43,7 +53,7 @@ export function initScrollFire(root = document) {
     zone.canvas.width = Math.max(1, Math.round(rect.width * dpr));
     zone.canvas.height = Math.max(1, Math.round(rect.height * dpr));
     zone.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = mobile.matches ? 28 : 65;
+    const count = mobile.matches ? 24 : Math.min(60, Math.max(36, Math.round(rect.width * rect.height / 23000)));
     zone.particles = Array.from({ length: count }, () => { const p = {}; reset(zone, p, true); return p; });
   }
   function stop() {
@@ -69,22 +79,28 @@ export function initScrollFire(root = document) {
   }
   function draw(zone, dt, now) {
     clear(zone);
-    const air = 1 + boost * 1.6;
+    const air = 1 + boost * 1.3;
     for (const p of zone.particles) {
-      p.age += dt * (1 + boost * .35); p.y -= p.speed * p.depth * air * dt;
-      if (p.age >= p.life || p.y < 0) reset(zone, p);
-      const fade = Math.sin(Math.PI * Math.min(1, p.age / p.life));
-      zone.ctx.globalAlpha = Math.max(0, fade) * p.depth * (.55 + .15 * Math.sin(now * .003 + p.phase));
-      const x = p.x + Math.sin(now * .0015 + p.phase) * 12;
-      const radius = p.size * 5;
-      zone.ctx.drawImage(glow, x - radius, p.y - radius, radius * 2, radius * 2);
-      zone.ctx.strokeStyle = p.warm ? '#ffad52' : '#ffe1a0';
-      zone.ctx.lineWidth = p.size * .5;
-      zone.ctx.beginPath(); zone.ctx.moveTo(x, p.y);
-      zone.ctx.lineTo(x + 1 + boost, p.y + p.size * (2 + boost * 4)); zone.ctx.stroke();
-      zone.ctx.fillStyle = p.warm ? '#ffbb68' : '#ffe1a0';
+      p.age += dt * air;
+      p.y -= p.speed * p.depth * air * dt;
+      p.x += (p.drift + Math.sin(p.age * .8 + p.phase) * 7) * dt;
+      if (p.age >= p.life || p.y < -32 || p.x < -24 || p.x > zone.width + 24) reset(zone, p);
+      const progress = p.age / p.life;
+      const fade = Math.min(1, progress / .08, (1 - progress) / .18);
+      const shimmer = .88 + .12 * Math.sin(now * .0012 + p.phase);
+      const alpha = Math.max(0, fade) * (.25 + p.depth * .5) * shimmer;
+      zone.ctx.globalAlpha = alpha;
+      if (p.glowing) {
+        const radius = p.size * (4 + p.depth * 2);
+        zone.ctx.drawImage(glows[p.color], p.x - radius, p.y - radius, radius * 2, radius * 2);
+        // Sparse, tapered trails grow gently with scroll speed.
+        zone.ctx.globalAlpha = alpha * .5;
+        zone.ctx.drawImage(trail, p.x - p.size * .45, p.y, p.size * .9, p.size * (5 + boost * 5));
+      }
+      zone.ctx.globalAlpha = alpha;
+      zone.ctx.fillStyle = colors[p.color];
       zone.ctx.beginPath();
-      zone.ctx.ellipse(x, p.y, p.size * .65, p.size * (1.3 + boost), -.3, 0, Math.PI * 2);
+      zone.ctx.ellipse(p.x, p.y, p.size * .55, p.size * (1 + p.depth * .6), p.drift * .02, 0, Math.PI * 2);
       zone.ctx.fill();
     }
     zone.ctx.globalAlpha = 1;

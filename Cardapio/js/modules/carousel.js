@@ -7,7 +7,7 @@ export function initCarousel(root) {
   const autoplay = root.hasAttribute('data-carousel-autoplay');
   const toggle = root.querySelector('[data-carousel-toggle]');
   let timer;
-  let paused = motion.matches;
+  let paused = true;
   let hovered = false;
   let visible = false;
   let touching = false;
@@ -55,7 +55,7 @@ export function initCarousel(root) {
     window.addEventListener('pointercancel', () => { touching = false; schedule(); }, { passive: true });
     track.addEventListener('scroll', schedule, { passive: true });
     document.addEventListener('visibilitychange', schedule);
-    motion.addEventListener('change', () => { paused = motion.matches; updateToggle(); schedule(); });
+    motion.addEventListener('change', () => { if (motion.matches) paused = true; updateToggle(); schedule(); });
     new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; schedule(); }, { threshold: .2 }).observe(root);
     updateToggle();
   }

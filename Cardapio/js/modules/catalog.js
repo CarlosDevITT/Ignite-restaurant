@@ -1,3 +1,4 @@
+import { optimizedProductImage, productImageSrcset, restoreOriginalImage } from '../utils/media.js';
 import { cartStore } from '../store/cart-store.js';
 import { escapeHTML, money, normalizeText } from '../utils/format.js';
 
@@ -138,6 +139,7 @@ export function initCatalog({ categories, products }) {
   const renderQuickbar = (visibleCount) => {
     const hasSearch = Boolean(search.value.trim());
     clearSearch.hidden = !search.value;
+    quickbar.removeAttribute('aria-busy');
     quickbar.innerHTML = `
       <div class="catalog-selection" role="group" aria-label="Filtrar cardápio">
         ${[['all','Todos'],['offers','Em oferta'],['featured','Destaques']].map(([id,label]) => `<button type="button" data-catalog-selection="${id}" aria-pressed="${selection === id}">${label}</button>`).join('')}
@@ -169,7 +171,7 @@ export function initCatalog({ categories, products }) {
       <article class="product-card product-card--premium ${product.available ? '' : 'is-unavailable'}" data-product-card="${escapeHTML(product.id)}">
         <button class="product-card__visual" type="button" data-product="${escapeHTML(product.id)}" style="--product-color:${escapeHTML(product.color || '#fff0e9')}" aria-label="Ver ${escapeHTML(product.name)}">
           <span class="product-card__badges"><span>${productBadges(product)}</span>${discount ? `<span class="product-card__discount">-${discount}%</span>` : ''}</span>
-          ${product.image_url ? `<img class="product-card__image" src="${escapeHTML(product.image_url)}" alt="${escapeHTML(product.name)}" loading="lazy" decoding="async"><span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Carregando foto</small></span>` : `<span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Sem foto</small></span>`}
+          ${product.image_url ? `<img class="product-card__image" src="${escapeHTML(optimizedProductImage(product.image_url))}" srcset="${escapeHTML(productImageSrcset(product.image_url))}" sizes="(min-width: 900px) 300px, (min-width: 521px) 45vw, 116px" data-original-src="${escapeHTML(product.image_url)}" width="600" height="450" alt="${escapeHTML(product.name)}" loading="lazy" decoding="async"><span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Carregando foto</small></span>` : `<span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Sem foto</small></span>`}
         </button>
         <div class="product-card__content">
           <span class="product-card__category">${escapeHTML(productCategoryName(product))}</span>
@@ -228,7 +230,7 @@ export function initCatalog({ categories, products }) {
       showCloseButton: true,
       closeButtonAriaLabel: 'Fechar detalhes',
       html: `<div class="swal-product">
-        <div class="swal-product__visual" style="--product-color:${escapeHTML(product.color || '#fff0e9')}">${product.image_url ? `<img class="swal-product__image" src="${escapeHTML(product.image_url)}" alt="${escapeHTML(product.name)}"><span class="swal-product__emoji" aria-hidden="true">${escapeHTML(product.emoji || '🍽️')}</span>` : `<span class="swal-product__emoji" aria-hidden="true">${escapeHTML(product.emoji || '🍽️')}</span>`}</div>
+        <div class="swal-product__visual" style="--product-color:${escapeHTML(product.color || '#fff0e9')}">${product.image_url ? `<img class="swal-product__image" src="${escapeHTML(optimizedProductImage(product.image_url, 640))}" srcset="${escapeHTML(productImageSrcset(product.image_url))}" sizes="(min-width: 1100px) 460px, 100vw" data-original-src="${escapeHTML(product.image_url)}" alt="${escapeHTML(product.name)}" decoding="async"><span class="swal-product__emoji" aria-hidden="true">${escapeHTML(product.emoji || '🍽️')}</span>` : `<span class="swal-product__emoji" aria-hidden="true">${escapeHTML(product.emoji || '🍽️')}</span>`}</div>
         <div class="swal-product__heading"><span class="swal-product__category">${escapeHTML(productCategoryName(product))}</span><h2>${escapeHTML(product.name)}</h2></div>
         <p class="swal-product__description">${escapeHTML(product.description || 'Uma escolha deliciosa preparada pela Ignite.')}</p>
         <div class="swal-product__price"><strong>${money(product.price)}</strong>${product.original_price > product.price ? `<del>${money(product.original_price)}</del><span>${escapeHTML(product.promo_text || 'Oferta')}</span>` : ''}</div>
@@ -242,7 +244,7 @@ export function initCatalog({ categories, products }) {
       didOpen: () => {
         const image = document.querySelector('.swal-product__image');
         if (image) {
-          const fallback = () => { image.hidden = true; image.nextElementSibling?.classList.add('is-visible'); };
+          const fallback = () => { if (restoreOriginalImage(image)) { image.addEventListener('error', fallback, { once: true }); return; } image.hidden = true; image.nextElementSibling?.classList.add('is-visible'); };
           image.addEventListener('error', fallback, { once: true });
           if (image.complete && !image.naturalWidth) fallback();
         }
@@ -332,6 +334,7 @@ export function initCatalog({ categories, products }) {
 
   grid.addEventListener('error', (event) => {
     if (event.target.matches('.product-card__image')) {
+      if (restoreOriginalImage(event.target)) return;
       event.target.hidden = true;
       event.target.closest('.product-card__visual')?.classList.remove('is-photo-ready');
       event.target.nextElementSibling?.classList.add('is-visible');

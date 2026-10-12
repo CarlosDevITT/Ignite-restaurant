@@ -1,4 +1,4 @@
-const VERSION='v63-product-quantity';
+const VERSION='v64-pagespeed-assets';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;
@@ -7,13 +7,13 @@ const MAX_RUNTIME_IMAGES=80;
 
 const APP_SHELL=[
   './','./index.html','./manifest.json','./styles/cardapio.css','./styles/cart-ux.css?v=20261012-checkout-contrast','./styles/catalog-premium.css','./styles/catalog-vertical.css','./styles/product-ux-v4.css','./js/modules/mobile-ux.js','./styles/pwa.css','./styles/profile-auth.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
-  './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',
+  './assets/optimized/promocao-v1-640.webp','./assets/fonts/dm-sans-v17-latin.woff2','./js/utils/media.js',
   './icons/icon-192.png','./icons/icon-512.png','./icons/icon-192-maskable.png','./icons/icon-512-maskable.png','./icons/apple-touch-icon.png',
   './js/desktop-sidebar.js','./js/app.js','./js/config.js','./js/supabase-config.js',
   './js/utils/format.js','./js/store/cart-store.js','./js/services/supabase-client.js','./js/services/product-service.js',
   './js/services/order-service.js','./js/services/profile-service.js','./js/modules/carousel.js','./js/modules/navigation.js','./js/modules/catalog.js','./js/modules/cart.js',
-  './js/modules/orders.js','./js/modules/profile.js','./js/modules/feed.js','./js/modules/chat.js','./js/modules/pwa.js','./js/modules/notifications.js','./js/modules/notices.js',
-  './js/modules/ignite-play/index.js','./js/modules/ignite-play/game-registry.js','./js/modules/ignite-play/score-store.js','./js/modules/ignite-play/score-service.js',
+  './js/modules/orders.js','./js/modules/pwa.js','./js/modules/notifications.js','./js/modules/notices.js',
+
   './assets/uicons/css/uicons-regular-rounded.css','./assets/uicons/webfonts/uicons-regular-rounded.woff2','./assets/uicons/webfonts/uicons-regular-rounded.woff',
   '../../assets/images/logos/ignite.jpg','../../assets/images/logos/ignite2.png'
 ];
@@ -127,6 +127,11 @@ self.addEventListener('fetch',event=>{
       trimCache(IMAGE_CACHE,MAX_RUNTIME_IMAGES).catch(()=>{});
       return response;
     })());
+    return;
+  }
+
+  if (url.origin === self.location.origin && url.pathname === '/_vercel/image') {
+    event.respondWith(networkFirst(request, IMAGE_CACHE).then(response => { trimCache(IMAGE_CACHE, MAX_RUNTIME_IMAGES).catch(() => {}); return response; }));
     return;
   }
 

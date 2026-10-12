@@ -49,8 +49,10 @@ export function initAnalytics() {
 
   ensureQueue('va', 'vaq');
   ensureQueue('si', 'siq');
-  injectScript(ANALYTICS_SCRIPT_ID, '/_vercel/insights/script.js');
-  injectScript(SPEED_SCRIPT_ID, '/_vercel/speed-insights/script.js');
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
+    injectScript(ANALYTICS_SCRIPT_ID, '/_vercel/insights/script.js');
+    injectScript(SPEED_SCRIPT_ID, '/_vercel/speed-insights/script.js');
+  }
 
   window.va('beforeSend', (event) => {
     try {

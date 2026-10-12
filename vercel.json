@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "images": {
+    "sizes": [320, 640, 960],
+    "qualities": [75],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 3600,
+    "remotePatterns": [{"protocol": "https", "hostname": "qgnqztsxfeugopuhyioq.supabase.co", "pathname": "/storage/v1/object/public/products/**"}]
+  },
+  "headers": [
+    {"source": "/Cardapio/assets/optimized/:path*", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]},
+    {"source": "/Cardapio/assets/fonts/:path*", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]}
+  ]
+}

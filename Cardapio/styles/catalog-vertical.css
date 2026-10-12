@@ -49,3 +49,6 @@ body{background:radial-gradient(circle at 90% -10%,rgba(8,124,72,.06),transparen
   .hero-track .hero-card__footer .button:hover { background: #e3f0e5; }
   .hero-track .hero-card__footer p { white-space: normal; }
 }
+
+.category-list { min-height: 58px; }
+.catalog-quickbar { min-height: 62px; }

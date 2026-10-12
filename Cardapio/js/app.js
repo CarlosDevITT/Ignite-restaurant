@@ -2,15 +2,11 @@ import { initAnalytics, trackEvent } from './modules/analytics.js';
 import { initCarousel } from './modules/carousel.js';
 import { initCart } from './modules/cart.js';
 import { initCatalog } from './modules/catalog.js';
-import { initChat } from './modules/chat.js';
-import { initFeed } from './modules/feed.js';
-import { IgnitePlay } from './modules/ignite-play/index.js';
 import { initMobileUX } from './modules/mobile-ux.js';
 import { initNavigation } from './modules/navigation.js';
 import { initNotices } from './modules/notices.js';
 import { initNotifications } from './modules/notifications.js';
 import { initOrders, isWaitingStatus } from './modules/orders.js';
-import { initProfile } from './modules/profile.js';
 import { initPWA } from './modules/pwa.js';
 import { getCatalog, getStoreSettings, subscribeToCatalog } from './services/product-service.js';
 import { cartStore } from './store/cart-store.js';
@@ -107,10 +103,11 @@ async function bootstrap() {
       const cartSync = cartStore.reconcileCatalog(catalog.products);
       if (cartSync.removed.length && window.Swal) Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Carrinho atualizado', text: 'Itens indisponíveis foram removidos.', showConfirmButton: false, timer: 2600 });
       const notifications = initNotifications();
-      const orders = initOrders({ onPlayRequested: order => {
+      const orders = initOrders({ onPlayRequested: async order => {
         const orderId = order?.id;
         if (orderId == null) { console.error('Pedido sem orders.id'); return; }
         if (!isWaitingStatus(order.status)) return;
+        const { IgnitePlay } = await import('./modules/ignite-play/index.js');
         trackEvent('ignite_play_started', { order_id: orderId, order_number: order.order_number || order.numero_pedido || orderId });
         let stopWatching = () => {}; let closed = false;
         IgnitePlay.show({ orderId, orderNumber: order.order_number || order.numero_pedido || orderId, onClose: () => { closed = true; stopWatching(); } });
@@ -118,17 +115,24 @@ async function bootstrap() {
         if (closed) stopWatching();
       }});
       let feedStarted = false;
+      const deferredViews = new Map();
+      const initializeView = route => {
+        if (!['profile', 'chat'].includes(route) || deferredViews.has(route)) return;
+        const task = route === 'profile'
+          ? import('./modules/profile.js').then(({ initProfile }) => initProfile({ requestInstall: pwa.requestInstall }))
+          : import('./modules/chat.js').then(({ initChat }) => initChat(catalog.products));
+        deferredViews.set(route, task);
+        task.catch(error => { deferredViews.delete(route); console.warn('[Tela] Falha ao carregar:', route, error); });
+      };
       const navigation = initNavigation({
-        onRoute: route => { if (route === 'orders') orders.load(); },
+        onRoute: route => { if (route === 'orders') orders.load(); initializeView(route); },
         onFeedAccess: allowed => {
           if (!allowed || feedStarted) return;
           feedStarted = true;
-          initFeed().catch(error => { feedStarted = false; console.warn('[Feed] Falha na inicialização:', error); });
+          import('./modules/feed.js').then(({ initFeed }) => initFeed()).catch(error => { feedStarted = false; console.warn('[Feed] Falha na inicialização:', error); });
         },
       });
       initCatalog(catalog);
-      initChat(catalog.products);
-      initProfile({ requestInstall: pwa.requestInstall });
       initCart({
         onViewOrders: () => { navigation.navigate('orders'); orders.load(); },
         onCreateAccount: () => navigation.navigate('profile'),

@@ -196,61 +196,44 @@
   </section>
 
   <!-- FOOTER -->
-  <footer class="footer bd-container">
-    <div class="footer__container bd-grid">
-
-      <div class="footer__content">
-        <a href="#home" class="footer__logo fire-logo"><img src="assets/images/logos/ignite2.png" alt="" width="72" height="72"><span>Ignite<span class="brand-emphasis">.</span><small>Restaurante pub</small></span></a>
-        <span class="footer__description">Restaurante Pub</span>
-        <button class="fire-toggle" type="button" data-fire-toggle aria-pressed="true" hidden>Pausar efeitos</button>
-        <div>
-          <a href="https://www.instagram.com/ignite_restaurant" class="footer__social" target="_blank" rel="noopener" aria-label="Instagram">
-            <i class="fi fi-rr-camera site-icon" aria-hidden="true"></i>
-          </a>
-          <a href="#unidades" class="footer__social" aria-label="WhatsApp">
-            <i class="fi fi-rr-comment site-icon" aria-hidden="true"></i>
-          </a>
+  <footer class="footer">
+    <div class="footer__inner bd-container">
+      <div class="footer__container bd-grid">
+        <div class="footer__content footer__brand">
+          <a href="#home" class="footer__logo fire-logo" aria-label="Ignite — início"><img src="assets/images/logos/ignite2.png" alt="" width="72" height="72"><span>Ignite<span class="brand-emphasis">.</span><small>Restaurante pub</small></span></a>
+          <p class="footer__description">Sabor que acende bons momentos.<br>Encontre a sua unidade e explore o cardápio.</p>
+          <div class="footer__socials">
+            <a href="https://www.instagram.com/ignite_restaurant" class="footer__social" target="_blank" rel="noopener" aria-label="Instagram do Ignite"><i class="fi fi-rr-camera" aria-hidden="true"></i></a>
+            <a href="#unidades" class="footer__social" aria-label="Ver contatos das unidades"><i class="fi fi-rr-marker" aria-hidden="true"></i></a>
+            <button class="fire-toggle" type="button" data-fire-toggle aria-pressed="true" hidden>Pausar efeitos</button>
+          </div>
+        </div>
+        <nav class="footer__content" aria-label="Navegação do rodapé">
+          <h3 class="footer__title">Explore o Ignite</h3>
+          <ul>
+            <li><a href="Cardapio/index.html" class="footer__link">Cardápio e pedidos <i class="fi fi-rr-arrow-small-right" aria-hidden="true"></i></a></li>
+            <li><a href="#destaques" class="footer__link">Pratos em destaque</a></li>
+            <li><a href="#about" class="footer__link">Sobre o Ignite</a></li>
+            <li><a href="#unidades" class="footer__link">Unidades e atendimento</a></li>
+          </ul>
+        </nav>
+        <div class="footer__content">
+          <h3 class="footer__title">Fale com a sua unidade</h3>
+          <div class="footer__unit">
+            <a href="https://wa.me/5592985130951" class="footer__link footer__whatsapp" data-unit-whatsapp="manaus" target="_blank" rel="noopener"><i class="fi fi-rr-comment" aria-hidden="true"></i> WhatsApp Manaus · AM <i class="fi fi-rr-arrow-up-right" aria-hidden="true"></i></a>
+            <a href="tel:+5592985130951" class="footer__link footer__phone" data-unit-phone="manaus">Manaus: (92) 98513-0951</a>
+          </div>
+          <div class="footer__unit">
+            <a href="https://wa.me/5547974008620" class="footer__link footer__whatsapp" data-unit-whatsapp="itajai" target="_blank" rel="noopener"><i class="fi fi-rr-comment" aria-hidden="true"></i> WhatsApp Itajaí · SC <i class="fi fi-rr-arrow-up-right" aria-hidden="true"></i></a>
+            <a href="tel:+5547974008620" class="footer__link footer__phone" data-unit-phone="itajai">Itajaí: (47) 97400-8620</a>
+          </div>
         </div>
       </div>
-
-      <div class="footer__content">
-        <h3 class="footer__title">Serviços</h3>
-        <ul>
-          <li><a href="Cardapio/index.html" class="footer__link">Delivery</a></li>
-          <li><a href="Cardapio/index.html" class="footer__link">Cardápio</a></li>
-          <li><a href="Cardapio/index.html" class="footer__link">Fast Food</a></li>
-          <li><a href="#contact" class="footer__link">Consultar atendimento</a></li>
-        </ul>
+      <div class="footer__bottom">
+        <p class="footer__copy">© <span id="copyright-year">2026</span> Ignite Restaurante Pub · Todos os direitos reservados</p>
+        <a href="#home" class="footer__back">Voltar ao início <i class="fi fi-rr-arrow-small-up" aria-hidden="true"></i></a>
       </div>
-
-      <div class="footer__content">
-        <h3 class="footer__title">Informação</h3>
-        <ul>
-          <li><a href="https://www.instagram.com/ignite_restaurant" class="footer__link" target="_blank" rel="noopener">Instagram</a></li>
-          <li><a href="#unidades" class="footer__link">Contato</a></li>
-          <li><a href="#contact" class="footer__link">Dúvidas sobre privacidade</a></li>
-
-        </ul>
-      </div>
-
-      <div class="footer__content">
-        <h3 class="footer__title">Atendimento</h3>
-        <ul>
-          <li class="footer__unit-intro">Consulte a unidade desejada</li>
-          <li><a href="#unidades" class="footer__link"><i class="fi fi-rr-marker" aria-hidden="true"></i> Manaus – AM</a></li>
-          <li><a href="#unidades" class="footer__link"><i class="fi fi-rr-marker" aria-hidden="true"></i> Itajaí – SC</a></li>
-          <li class="footer__phones">
-            <a href="tel:+5592985130951" class="footer__link" data-unit-phone="manaus">Manaus: (92) 98513-0951</a><br><a href="tel:+5547974008620" class="footer__link" data-unit-phone="itajai">Itajaí: (47) 97400-8620</a>
-          </li>
-          <li>
-            <a href="mailto:contato@ignite.restaurant" class="footer__link">contato@ignite.restaurant</a>
-          </li>
-        </ul>
-      </div>
-
     </div>
-    <a class="icon-credit" href="https://www.flaticon.com/uicons" target="_blank" rel="noopener">Ícones UIcons por Flaticon</a>
-    <p class="footer__copy">© <span id="copyright-year">2026</span> Ignite Restaurante Pub · Todos os direitos reservados</p>
   </footer>
 
   <!-- PWA INSTALL BANNER -->

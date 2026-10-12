@@ -124,6 +124,8 @@ function renderUnits(units) {
     const contact = card.querySelector('.unit-actions .button');
     contact.href = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
     contact.textContent = `WhatsApp ${unit.name} ↗`;
+    const footerWhatsApp = document.querySelector(`[data-unit-whatsapp="${unit.id}"]`);
+    if (footerWhatsApp) footerWhatsApp.href = contact.href;
     card.querySelector('.unit-phone').href = `tel:+55${phone}`;
     card.querySelector('.unit-phone').textContent = unit.displayPhone;
     const footerPhone = document.querySelector(`[data-unit-phone="${unit.id}"]`);

@@ -7,9 +7,16 @@ export function initScrollFire(root = document) {
   const zones = [...root.querySelectorAll('canvas[data-fire-watch]')].map(canvas => ({
     canvas, ctx: canvas.getContext('2d', { alpha: true }),
     watcher: root.querySelector(canvas.dataset.fireWatch),
-    sectionVisible: false, elementVisible: false, hero: canvas.dataset.fireKind === 'hero', visible: false, width: 0, height: 0, particles: [],
+    sectionVisible: false, elementVisible: false, visible: false, width: 0, height: 0, particles: [],
   })).filter(zone => zone.ctx && zone.watcher);
   if (!zones.length) return () => {};
+  // Cache the glow once; no per-frame shadows or gradients.
+  const glow = document.createElement('canvas'); glow.width = glow.height = 32;
+  const gc = glow.getContext('2d');
+  const halo = gc.createRadialGradient(16, 16, 0, 16, 16, 16);
+  halo.addColorStop(0, '#fff0c2'); halo.addColorStop(.18, '#ffc26b');
+  halo.addColorStop(.45, 'rgba(255,128,37,.35)'); halo.addColorStop(1, 'rgba(255,93,20,0)');
+  gc.fillStyle = halo; gc.fillRect(0, 0, 32, 32);
   let raf = 0, previous = 0, lastDraw = 0, boost = 0, targetBoost = 0;
   let sampledY = scrollY, sampledAt = performance.now(), lastDownAt = 0, disposed = false;
   const buttons = [...root.querySelectorAll('[data-fire-toggle]')];
@@ -23,7 +30,8 @@ export function initScrollFire(root = document) {
     p.life = 20 + Math.random() * 16;
     p.age = seed ? Math.random() * p.life : 0;
     p.speed = 14 + Math.random() * 22;
-    p.size = .7 + Math.random() * 1.8;
+    p.size = .8 + Math.random() * 1.8;
+    p.depth = .45 + Math.random() * .55;
     p.phase = Math.random() * Math.PI * 2;
     p.warm = Math.random() > .3;
   }
@@ -61,14 +69,20 @@ export function initScrollFire(root = document) {
   }
   function draw(zone, dt, now) {
     clear(zone);
-    const air = 1 + boost * 3;
+    const air = 1 + boost * 1.6;
     for (const p of zone.particles) {
-      p.age += dt * (1 + boost * .35); p.y -= p.speed * air * dt;
+      p.age += dt * (1 + boost * .35); p.y -= p.speed * p.depth * air * dt;
       if (p.age >= p.life || p.y < 0) reset(zone, p);
       const fade = Math.sin(Math.PI * Math.min(1, p.age / p.life));
-      zone.ctx.globalAlpha = Math.max(0, fade) *  .65;
+      zone.ctx.globalAlpha = Math.max(0, fade) * p.depth * (.55 + .15 * Math.sin(now * .003 + p.phase));
       const x = p.x + Math.sin(now * .0015 + p.phase) * 12;
-      zone.ctx.fillStyle = p.warm ? '#ffab45' : '#ffda85';
+      const radius = p.size * 5;
+      zone.ctx.drawImage(glow, x - radius, p.y - radius, radius * 2, radius * 2);
+      zone.ctx.strokeStyle = p.warm ? '#ffad52' : '#ffe1a0';
+      zone.ctx.lineWidth = p.size * .5;
+      zone.ctx.beginPath(); zone.ctx.moveTo(x, p.y);
+      zone.ctx.lineTo(x + 1 + boost, p.y + p.size * (2 + boost * 4)); zone.ctx.stroke();
+      zone.ctx.fillStyle = p.warm ? '#ffbb68' : '#ffe1a0';
       zone.ctx.beginPath();
       zone.ctx.ellipse(x, p.y, p.size * .65, p.size * (1.3 + boost), -.3, 0, Math.PI * 2);
       zone.ctx.fill();

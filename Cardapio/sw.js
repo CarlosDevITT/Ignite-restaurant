@@ -1,4 +1,4 @@
-const VERSION='v64-pagespeed-assets';
+const VERSION='v65-pagespeed-final';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;
@@ -14,7 +14,7 @@ const APP_SHELL=[
   './js/services/order-service.js','./js/services/profile-service.js','./js/modules/carousel.js','./js/modules/navigation.js','./js/modules/catalog.js','./js/modules/cart.js',
   './js/modules/orders.js','./js/modules/pwa.js','./js/modules/notifications.js','./js/modules/notices.js',
 
-  './assets/uicons/css/uicons-regular-rounded.css','./assets/uicons/webfonts/uicons-regular-rounded.woff2','./assets/uicons/webfonts/uicons-regular-rounded.woff',
+  './assets/uicons/css/uicons-regular-rounded.min.css','./assets/uicons/webfonts/uicons-regular-rounded.woff2','./assets/uicons/webfonts/uicons-regular-rounded.woff',
   '../../assets/images/logos/ignite.jpg','../../assets/images/logos/ignite2.png'
 ];
 

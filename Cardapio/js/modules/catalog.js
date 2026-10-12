@@ -170,7 +170,7 @@ export function initCatalog({ categories, products }) {
     return `
       <article class="product-card product-card--premium ${product.available ? '' : 'is-unavailable'}" data-product-card="${escapeHTML(product.id)}">
         <button class="product-card__visual" type="button" data-product="${escapeHTML(product.id)}" style="--product-color:${escapeHTML(product.color || '#fff0e9')}" aria-label="Ver ${escapeHTML(product.name)}">
-          <span class="product-card__badges"><span>${productBadges(product)}</span>${discount ? `<span class="product-card__discount">-${discount}%</span>` : ''}</span>
+          <span class="product-card__badges" aria-hidden="true"><span>${productBadges(product)}</span>${discount ? `<span class="product-card__discount">-${discount}%</span>` : ''}</span>
           ${product.image_url ? `<img class="product-card__image" src="${escapeHTML(optimizedProductImage(product.image_url))}" srcset="${escapeHTML(productImageSrcset(product.image_url))}" sizes="(min-width: 900px) 300px, (min-width: 521px) 45vw, 116px" data-original-src="${escapeHTML(product.image_url)}" width="600" height="450" alt="${escapeHTML(product.name)}" loading="lazy" decoding="async"><span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Carregando foto</small></span>` : `<span class="product-card__placeholder" aria-hidden="true"><i class="fi fi-rr-restaurant"></i><small>Sem foto</small></span>`}
         </button>
         <div class="product-card__content">

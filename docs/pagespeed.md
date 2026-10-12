@@ -24,3 +24,11 @@ Primeira auditoria Lighthouse local após entrega das imagens/estilos: CLS 0, LC
 ## Manutenção
 
 Ao editar um banner ou fonte, gerar novo nome versionado: o cache immutable não aceita substituir bytes no mesmo URL. Fotos continuam vindo do Supabase; o otimizador não publica catálogo estático nem preços. URLs e medidas das miniaturas são de Cardapio/js/utils/media.js. Manter domains/path allowlist restritos. Perfil/chat iniciam apenas no primeiro acesso; login e checkout mantêm seus responsáveis existentes.
+
+## Medição no site publicado
+
+Lighthouse mobile em 12/10/2026, após o deploy 4b53c85: Performance 65, Accessibility 100, Best Practices 100, SEO 100; FCP 4,4 s; LCP 8,5 s; CLS 0; TBT 35 ms; transferência 1.589 KiB. Execução de laboratório, não dados de campo; notas variam por rede, servidor e execução. Comparado ao relatório recebido, a transferência caiu aproximadamente 96%. O LCP ainda exige acompanhamento e otimização.
+
+Endpoint nativo da Vercel verificado com uma foto real do Supabase: HTTP 200, Content-Type image/webp, 23.452 bytes e cache HIT; imagem carregada sem recorrer à origem.
+
+Após essa medição, adicionada variante de banner 960px para evitar o salto direto de 640 para 1280 em celulares com alta densidade; folha UIcons minificada (326.911 → 215.805 bytes antes de compressão HTTP), preservando as classes e fonte; badges decorativos não sobrescrevem mais o nome acessível do botão de produto.

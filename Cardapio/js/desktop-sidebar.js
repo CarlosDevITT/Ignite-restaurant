@@ -15,6 +15,7 @@ if (sidebar) {
   const render = () => {
     document.documentElement.toggleAttribute('data-sidebar-collapsed', collapsed);
     sidebar.dataset.sidebarTheme = theme;
+    document.documentElement.dataset.menuTheme = theme;
     toggle.setAttribute('aria-expanded', String(!collapsed));
     toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
     toggle.title = collapsed ? 'Expandir menu' : 'Recolher menu';

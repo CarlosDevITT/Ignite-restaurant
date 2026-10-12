@@ -17,3 +17,5 @@ Escopo deste contrato: busca, seleção de categoria, filtros, cards e inclusão
 Adicionar ao carrinho é diferente de enviar um pedido. Este trabalho não muda disponibilidade operacional, taxas, modalidades, autenticação, tabelas ou RPCs de checkout. Estado de caixa permanece no leitor existente do aplicativo.
 
 Verificação do catálogo: busca com resultado e sem resultado, limpar/reset, ofertas/destaques, painel por mouse e teclado, foto indisponível, detalhes/quantidade/observações, inclusão local e contador em mobile/desktop. Não fazer pedidos reais como teste de interface.
+
+Feed: route and entrypoints require a registered non-anonymous Supabase session. Registration without an active confirmed session does not unlock the feed. Logout clears displayed posts and redirects an active feed route to profile. getFeedSessionState/RPCs remain authoritative for social permissions; local profile fields do not grant access.

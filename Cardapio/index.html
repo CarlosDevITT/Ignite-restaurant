@@ -96,11 +96,11 @@
       <button class="nav-item" type="button" data-route="profile"><i class="fi fi-rr-user nav-icon" aria-hidden="true"></i><span>Minha conta</span></button>
     </nav>
     <div class="desktop-sidebar__bottom">
-      <div class="sidebar-theme-picker" role="group" aria-label="Cor da sidebar">
-        <button type="button" data-sidebar-theme-choice="light" aria-pressed="false" aria-label="Sidebar branca" title="Sidebar branca"><i class="fi fi-rr-sun" aria-hidden="true"></i><span>Branco</span></button>
-        <button type="button" data-sidebar-theme-choice="dark" aria-pressed="true" aria-label="Sidebar verde escura" title="Sidebar verde escura"><i class="fi fi-rr-moon" aria-hidden="true"></i><span>Verde escuro</span></button>
+      <div class="sidebar-theme-picker" role="group" aria-label="Tema do cardápio">
+        <button type="button" data-sidebar-theme-choice="light" aria-pressed="false" aria-label="Tema branco" title="Tema branco"><i class="fi fi-rr-sun" aria-hidden="true"></i><span>Branco</span></button>
+        <button type="button" data-sidebar-theme-choice="dark" aria-pressed="true" aria-label="Tema verde escuro" title="Tema verde escuro"><i class="fi fi-rr-moon" aria-hidden="true"></i><span>Verde escuro</span></button>
       </div>
-      <button class="nav-item nav-item--create" type="button" data-route="feed"><i class="fi fi-rr-megaphone nav-icon" aria-hidden="true"></i><span>Novidades do Ignite</span></button>
+      <button class="nav-item nav-item--create" type="button" data-route="feed" hidden><i class="fi fi-rr-megaphone nav-icon" aria-hidden="true"></i><span>Novidades do Ignite</span></button>
       <div class="store-mini"><span class="status-dot"></span><span><strong>Sincronizando loja</strong><small>Consultando disponibilidade</small></span></div>
     </div>
   </aside>
@@ -244,7 +244,7 @@
   <div class="quick-sheet" id="quick-sheet" role="dialog" aria-modal="true" aria-hidden="true" inert>
     <div class="quick-sheet__handle"></div>
     <div class="quick-sheet__header"><div><span class="section-kicker">Explore</span><h2>O que deseja abrir?</h2></div><button class="icon-button" type="button" data-close-quick aria-label="Fechar"><i class="fi fi-rr-cross-small" aria-hidden="true"></i></button></div>
-    <div class="quick-options"><button type="button" data-quick-route="orders"><span><i class="fi fi-rr-receipt" aria-hidden="true"></i></span><strong>Pedidos</strong><small>Acompanhe o preparo</small></button><button type="button" data-quick-route="chat"><span><i class="fi fi-rr-comments-question" aria-hidden="true"></i></span><strong>Chat IA</strong><small>Receba sugestões do cardápio</small></button><button type="button" data-quick-route="feed"><span><i class="fi fi-rr-apps" aria-hidden="true"></i></span><strong>Feed</strong><small>Ofertas e novidades do Ignite</small></button></div>
+    <div class="quick-options"><button type="button" data-quick-route="orders"><span><i class="fi fi-rr-receipt" aria-hidden="true"></i></span><strong>Pedidos</strong><small>Acompanhe o preparo</small></button><button type="button" data-quick-route="chat"><span><i class="fi fi-rr-comments-question" aria-hidden="true"></i></span><strong>Chat IA</strong><small>Receba sugestões do cardápio</small></button><button type="button" data-quick-route="feed" hidden><span><i class="fi fi-rr-apps" aria-hidden="true"></i></span><strong>Feed</strong><small>Ofertas e novidades do Ignite</small></button></div>
   </div>
 
   <nav class="mobile-bottom-nav" aria-label="Navegação do aplicativo">
@@ -252,7 +252,7 @@
     <div class="mobile-fan" aria-label="Ações rápidas">
       <button type="button" data-quick-route="orders"><span><i class="fi fi-rr-receipt" aria-hidden="true"></i></span><small>Pedidos</small></button>
       <button type="button" data-quick-route="chat"><span><i class="fi fi-rr-comments-question" aria-hidden="true"></i></span><small>Chat IA</small></button>
-      <button type="button" data-quick-route="feed"><span><i class="fi fi-rr-apps" aria-hidden="true"></i></span><small>Feed</small></button>
+      <button type="button" data-quick-route="feed" hidden><span><i class="fi fi-rr-apps" aria-hidden="true"></i></span><small>Feed</small></button>
     </div>
     <button class="mobile-nav-plus" type="button" data-open-quick aria-label="Abrir Pedidos, Chat IA ou Feed" aria-expanded="false"><i class="fi fi-rr-plus" aria-hidden="true"></i></button>
     <button class="mobile-nav-item" type="button" data-route="profile"><i class="fi fi-rr-user" aria-hidden="true"></i><small>Perfil</small></button>

@@ -39,3 +39,13 @@ body{background:radial-gradient(circle at 90% -10%,rgba(8,124,72,.06),transparen
 @media(min-width:680px){.app-header h1{max-width:none}.hero-card.hero-card--image{border-radius:30px}.hero-card__media{aspect-ratio:2.15/1}.hero-card__footer{padding:1.1rem 1.25rem}.hero-card__footer h2{font-size:1.3rem}.hero-card__footer p{font-size:.78rem}.search-wrap{top:1rem}.catalog-section__products{gap:.9rem}.product-card--premium .product-card__visual{aspect-ratio:1.18/1}}
 @media(min-width:1024px){body{background:#f5f6f4}.app-header{min-height:118px}.hero-card__media{aspect-ratio:2.45/1}.hero-card__footer{padding:1.2rem 1.4rem}.catalog-section__heading h3{font-size:1.3rem}.product-card.product-card--premium{border-radius:22px}.product-card--premium .product-card__content{padding:.9rem}.product-card--premium .product-name{font-size:.98rem}}
 @media(prefers-reduced-motion:reduce){.hero-card__banner,.floating-cart,.mobile-bottom-nav{transition:none!important}}
+
+/* Desktop banner has two bounded columns: artwork cannot push out its CTA. */
+@media (min-width: 900px) {
+  .hero-track .hero-card.hero-card--image { display: grid; grid-template-columns: minmax(0,1.65fr) minmax(240px,1fr); height: 290px; }
+  .hero-track .hero-card__media { width: 100%; height: 100%; min-height: 0; aspect-ratio: auto; }
+  .hero-track .hero-card__footer { display: flex; min-width: 0; height: 100%; padding: 24px; flex-direction: column; align-items: stretch; justify-content: center; gap: 20px; }
+  .hero-track .hero-card__footer .button { width: 100%; min-height: 48px; color: #10291e; background: #fff; }
+  .hero-track .hero-card__footer .button:hover { background: #e3f0e5; }
+  .hero-track .hero-card__footer p { white-space: normal; }
+}

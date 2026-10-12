@@ -1,9 +1,11 @@
+import { getSession } from '../services/profile-service.js';
 import { getCatalog, getFeed } from '../services/product-service.js';
 import { cartStore } from '../store/cart-store.js';
 import {
   createFeedComment,
   getFeedComments,
   getFeedSessionState,
+  isRegisteredFeedUser,
   subscribeToFeed,
   toggleFeedLike,
   toggleFeedSave,
@@ -320,7 +322,11 @@ export async function initFeed() {
     if (!silent) renderSkeleton();
     if (status) status.textContent = silent ? 'Sincronizando' : 'Atualizando novidades';
     try {
+      const session = await getSession();
+      if (!isRegisteredFeedUser(session?.user)) { posts = []; root.replaceChildren(); return; }
       const [nextPosts, catalog] = await Promise.all([getFeed(), getCatalog().catch(() => ({ products: [] })), syncSessionState()]);
+      const currentSession = await getSession();
+      if (!isRegisteredFeedUser(currentSession?.user) || currentSession.user.id !== session.user.id) { posts = []; root.replaceChildren(); return; }
       posts = [...nextPosts].sort((a, b) => Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured)) || new Date(normalizeDate(b) || 0) - new Date(normalizeDate(a) || 0));
       productMap = new Map((catalog.products || []).map(product => [String(product.id), product]));
       render();
@@ -441,7 +447,7 @@ export async function initFeed() {
 
   await load();
   subscribeToFeed(scheduleRealtimeRefresh).then(stop => { window.addEventListener('beforeunload', stop, { once: true }); }).catch(error => console.warn('[Feed] Realtime indisponível:', error));
-  watchFeedAuth(async () => { await syncSessionState(); render(); }).then(stop => { window.addEventListener('beforeunload', stop, { once: true }); }).catch(() => {});
+  watchFeedAuth(async (_event, session) => { if (!isRegisteredFeedUser(session?.user)) { posts = []; root.replaceChildren(); return; } await load(); }).then(stop => { window.addEventListener('beforeunload', stop, { once: true }); }).catch(() => {});
   window.addEventListener('online', scheduleRealtimeRefresh);
   window.addEventListener('focus', scheduleRealtimeRefresh);
 }

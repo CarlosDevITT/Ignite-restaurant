@@ -1,13 +1,13 @@
 import { getSupabase, supabaseRetry } from './supabase-client.js';
 
-const isRegistered = user => Boolean(user?.id) && user?.is_anonymous !== true;
+export const isRegisteredFeedUser = user => Boolean(user?.id) && user?.is_anonymous !== true;
 
 export async function getFeedSessionState() {
   const supabase = await getSupabase();
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) throw sessionError;
   const user = sessionData?.session?.user || null;
-  if (!isRegistered(user)) return { authenticated: false, liked: new Set(), saved: new Set(), user: null };
+  if (!isRegisteredFeedUser(user)) return { authenticated: false, liked: new Set(), saved: new Set(), user: null };
 
   const { data, error } = await supabaseRetry(() => supabase.rpc('get_my_feed_state'));
   if (error) throw error;
@@ -80,7 +80,7 @@ export async function subscribeToFeed(onChange) {
 
 export async function watchFeedAuth(onChange) {
   const supabase = await getSupabase();
-  const { data } = supabase.auth.onAuthStateChange(() => { void onChange?.(); });
+  const { data } = supabase.auth.onAuthStateChange((event, session) => { setTimeout(() => { void onChange?.(event, session); }, 0); });
   return () => data?.subscription?.unsubscribe?.();
 }
 

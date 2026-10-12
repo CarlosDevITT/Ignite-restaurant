@@ -1,4 +1,4 @@
-const VERSION='v56-sidebar-preferences';
+const VERSION='v57-desktop-theme-feed';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;

@@ -1,9 +1,14 @@
+import { getSession, onAuthStateChange } from '../services/profile-service.js';
+import { isRegisteredFeedUser } from '../services/feed-social-service.js';
+
 const TITLES = {
   home: 'O que vai pedir hoje?', orders: 'Acompanhe seus pedidos', profile: 'Seu perfil',
   feed: 'Novidades do Ignite', chat: 'Converse com a Ignite IA',
 };
 
-export function initNavigation({ onRoute }) {
+export function initNavigation({ onRoute, onFeedAccess }) {
+  let feedAllowed = false;
+  let authRevision = 0;
   const title = document.querySelector('#view-title');
   const quickSheet = document.querySelector('#quick-sheet');
   const mobileNav = document.querySelector('.mobile-bottom-nav');
@@ -36,6 +41,7 @@ export function initNavigation({ onRoute }) {
   };
 
   const navigate = (route) => {
+    if (route === 'feed' && !feedAllowed) route = 'profile';
     if (!document.querySelector(`[data-view="${route}"]`)) route = 'home';
     document.querySelectorAll('[data-view]').forEach((view) => {
       const active = view.dataset.view === route;
@@ -66,7 +72,25 @@ export function initNavigation({ onRoute }) {
   document.querySelectorAll('[data-scroll-products]').forEach((button) => button.addEventListener('click', () => document.querySelector('#products-start')?.scrollIntoView({ behavior: 'smooth' })) );
 
   const initialRoute = location.hash.slice(1);
-  if (TITLES[initialRoute]) navigate(initialRoute);
+  const applySession = session => {
+    authRevision++;
+    feedAllowed = isRegisteredFeedUser(session?.user);
+    document.querySelectorAll('[data-route="feed"], [data-quick-route="feed"]').forEach(button => { button.hidden = !feedAllowed; });
+    if (!feedAllowed) {
+      document.querySelector('#feed-list')?.replaceChildren();
+      if (document.querySelector('#view-feed.is-active')) navigate('profile');
+    }
+    onFeedAccess?.(feedAllowed);
+  };
+  const initialRevision = authRevision;
+  getSession().then(session => {
+    if (authRevision !== initialRevision) return;
+    applySession(session);
+    if (initialRoute === 'feed') navigate('feed');
+  }).catch(() => { if (authRevision !== initialRevision) return; applySession(null); if (initialRoute === 'feed') navigate('profile'); });
+  const stopAuth = onAuthStateChange((_event, session) => applySession(session));
+  window.addEventListener('pagehide', stopAuth, { once: true });
+  if (TITLES[initialRoute] && initialRoute !== 'feed') navigate(initialRoute);
 
   return { navigate, closeQuick };
 }

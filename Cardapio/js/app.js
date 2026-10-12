@@ -117,10 +117,17 @@ async function bootstrap() {
         stopWatching = orders.watchOrder(orderId, status => { if (!isWaitingStatus(status)) IgnitePlay.hide(); });
         if (closed) stopWatching();
       }});
-      const navigation = initNavigation({ onRoute: route => { if (route === 'orders') orders.load(); } });
+      let feedStarted = false;
+      const navigation = initNavigation({
+        onRoute: route => { if (route === 'orders') orders.load(); },
+        onFeedAccess: allowed => {
+          if (!allowed || feedStarted) return;
+          feedStarted = true;
+          initFeed().catch(error => { feedStarted = false; console.warn('[Feed] Falha na inicialização:', error); });
+        },
+      });
       initCatalog(catalog);
       initChat(catalog.products);
-      initFeed().catch(console.warn);
       initProfile({ requestInstall: pwa.requestInstall });
       initCart({
         onViewOrders: () => { navigation.navigate('orders'); orders.load(); },

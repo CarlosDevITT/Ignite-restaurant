@@ -75,3 +75,14 @@
   :root[data-menu-theme] #cart-drawer :is(.button,.checkout-submit) { background: #146447 !important; color: #fff !important; }
   :root[data-menu-theme] #cart-drawer :is(.button,.checkout-submit) :is(strong,span,small) { color: #fff !important; }
 }
+
+/* Desktop checkout: modality cards and guidance share the active theme. */
+@media (min-width: 900px) {
+  :root[data-menu-theme] #cart-drawer :is(.service-type-card,.checkout-context,.checkout-payment-hint,.payment-options label span) { background: var(--primary-soft) !important; border-color: var(--border) !important; color: var(--ink) !important; }
+  :root[data-menu-theme] #cart-drawer :is(.service-type-card strong,.checkout-context strong,.payment-options label span) { color: var(--ink) !important; }
+  :root[data-menu-theme] #cart-drawer :is(.service-type-card small,.checkout-context small,.checkout-section__hint,.checkout-payment-hint,.checkout-field-hint) { color: var(--body) !important; }
+  :root[data-menu-theme] #cart-drawer :is(.service-type-card__icon,.checkout-context__icon) { background: var(--surface) !important; color: var(--ink) !important; }
+  :root[data-menu-theme] #cart-drawer .service-type-card:has(input:checked), :root[data-menu-theme] #cart-drawer .payment-options label:has(input:checked) span { background: #146447 !important; border-color: #368765 !important; color: #fff !important; }
+  :root[data-menu-theme] #cart-drawer .service-type-card:has(input:checked) :is(strong,small,.service-type-card__icon) { color: #fff !important; }
+  :root[data-menu-theme] #cart-drawer .service-type-card:has(input:checked) .service-type-card__icon { background: #ffffff1f !important; }
+}

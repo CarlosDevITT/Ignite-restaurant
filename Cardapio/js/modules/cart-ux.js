@@ -2,7 +2,7 @@ import { cartStore } from '../store/cart-store.js';
 
 function ensureStyles() {
   const files = [
-    ['ignite-cart-ux', '../../styles/cart-ux.css?v=20261012-theme-shell'],
+    ['ignite-cart-ux', '../../styles/cart-ux.css?v=20261012-checkout-contrast'],
     ['ignite-checkout-polish', '../../styles/checkout-polish.css?v=20260912-2'],
   ];
   files.forEach(([id, path]) => {

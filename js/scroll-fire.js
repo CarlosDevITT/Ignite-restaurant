@@ -10,16 +10,6 @@ export function initScrollFire(root = document) {
     sectionVisible: false, elementVisible: false, hero: canvas.dataset.fireKind === 'hero', visible: false, width: 0, height: 0, particles: [],
   })).filter(zone => zone.ctx && zone.watcher);
   if (!zones.length) return () => {};
-  const flame = document.createElement('canvas'); flame.width = 48; flame.height = 96;
-  const fc = flame.getContext('2d');
-  const gradient = fc.createLinearGradient(0, 96, 0, 0);
-  gradient.addColorStop(0, 'rgba(255,239,128,0)');
-  gradient.addColorStop(.15, 'rgba(255,216,72,.9)');
-  gradient.addColorStop(.45, 'rgba(255,111,28,.7)');
-  gradient.addColorStop(.78, 'rgba(235,48,28,.4)');
-  gradient.addColorStop(1, 'rgba(230,45,24,0)');
-  fc.fillStyle = gradient; fc.beginPath(); fc.moveTo(24, 0);
-  fc.bezierCurveTo(46, 40, 52, 94, 24, 96); fc.bezierCurveTo(-3, 94, 4, 45, 24, 0); fc.fill();
   let raf = 0, previous = 0, lastDraw = 0, boost = 0, targetBoost = 0;
   let sampledY = scrollY, sampledAt = performance.now(), lastDownAt = 0, disposed = false;
   const buttons = [...root.querySelectorAll('[data-fire-toggle]')];
@@ -28,24 +18,14 @@ export function initScrollFire(root = document) {
   const allowed = () => enabled && !disposed && !reduced.matches && !forced.matches && !document.hidden;
   const active = () => allowed() && zones.some(zone => zone.visible);
   function reset(zone, p, seed = false) {
-    const pad = zone.hero ? (mobile.matches ? 28 : 48) : 16;
-    p.spark = Math.random() < .35;
-    // Perimeter emission leaves the opaque dish and caption fully readable.
-    if (zone.hero) {
-      const band = Math.random();
-      p.x = band < .22 ? pad + (zone.width - 2 * pad) * (.7 + Math.random() * .26)
-        : (band < .6 ? pad - 6 : zone.width - pad + 6) + (Math.random() - .5) * 18;
-      p.y = band < .22 ? pad + 80 : pad + (zone.height - 2 * pad) * (.3 + Math.random() * .7);
-    } else {
-      p.x = pad + Math.random() * Math.min(60, zone.width - 2 * pad);
-      p.y = zone.height - pad;
-    }
-    p.life = (p.spark ? 1.7 : .9) + Math.random();
+    p.x = Math.random() * zone.width;
+    p.y = seed ? Math.random() * zone.height : zone.height + 12;
+    p.life = 20 + Math.random() * 16;
     p.age = seed ? Math.random() * p.life : 0;
-    p.speed = (zone.hero ? 22 : 10) + Math.random() * (zone.hero ? 24 : 8);
-    p.size = p.spark ? 1 + Math.random() * 1.4 : (zone.hero ? 7 : 3) + Math.random() * (zone.hero ? 10 : 3);
+    p.speed = 14 + Math.random() * 22;
+    p.size = .7 + Math.random() * 1.8;
     p.phase = Math.random() * Math.PI * 2;
-    if (seed) p.y -= p.age * p.speed;
+    p.warm = Math.random() > .3;
   }
   function clear(zone) { zone.ctx.clearRect(0, 0, zone.width, zone.height); }
   function resize(zone) {
@@ -55,7 +35,7 @@ export function initScrollFire(root = document) {
     zone.canvas.width = Math.max(1, Math.round(rect.width * dpr));
     zone.canvas.height = Math.max(1, Math.round(rect.height * dpr));
     zone.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = zone.hero ? (mobile.matches ? 24 : 46) : (mobile.matches ? 6 : 10);
+    const count = mobile.matches ? 28 : 65;
     zone.particles = Array.from({ length: count }, () => { const p = {}; reset(zone, p, true); return p; });
   }
   function stop() {
@@ -65,10 +45,11 @@ export function initScrollFire(root = document) {
     zones.forEach(zone => { clear(zone); zone.canvas.dataset.fireState = 'paused'; });
   }
   function sync() {
+    document.documentElement.toggleAttribute('data-effects-paused', !allowed());
     buttons.forEach(button => {
       button.hidden = reduced.matches || forced.matches;
       button.setAttribute('aria-pressed', String(enabled));
-      button.textContent = enabled ? 'Pausar fogo' : 'Ativar fogo';
+      button.textContent = enabled ? 'Pausar efeitos' : 'Ativar efeitos';
     });
     zones.forEach(zone => {
       const running = allowed() && zone.visible;
@@ -85,15 +66,12 @@ export function initScrollFire(root = document) {
       p.age += dt * (1 + boost * .35); p.y -= p.speed * air * dt;
       if (p.age >= p.life || p.y < 0) reset(zone, p);
       const fade = Math.sin(Math.PI * Math.min(1, p.age / p.life));
-      zone.ctx.globalAlpha = Math.max(0, fade) * (zone.hero ? .65 : .45);
-      const x = p.x + Math.sin(now * .0015 + p.phase) * (zone.hero ? 5 : 2);
-      if (p.spark) {
-        zone.ctx.fillStyle = p.age < p.life * .45 ? '#ffda65' : '#ff6b28';
-        zone.ctx.fillRect(x, p.y, p.size, p.size * (1 + boost));
-      } else {
-        const height = p.size * (2.8 + boost);
-        zone.ctx.drawImage(flame, x - p.size / 2, p.y - height, p.size, height);
-      }
+      zone.ctx.globalAlpha = Math.max(0, fade) *  .65;
+      const x = p.x + Math.sin(now * .0015 + p.phase) * 12;
+      zone.ctx.fillStyle = p.warm ? '#ffab45' : '#ffda85';
+      zone.ctx.beginPath();
+      zone.ctx.ellipse(x, p.y, p.size * .65, p.size * (1.3 + boost), -.3, 0, Math.PI * 2);
+      zone.ctx.fill();
     }
     zone.ctx.globalAlpha = 1;
   }
@@ -130,6 +108,11 @@ export function initScrollFire(root = document) {
     });
     sync();
   }, { threshold: 0 });
+  const heroStage = root.querySelector('.hero-fire-stage');
+  const plateObserver = new IntersectionObserver(entries => {
+    heroStage?.classList.toggle('is-visible', entries[0].isIntersecting);
+  });
+  if (heroStage) plateObserver.observe(heroStage);
   zones.forEach(resize); watchers.forEach(watcher => observer.observe(watcher));
   const resizer = 'ResizeObserver' in window ? new ResizeObserver(entries => {
     for (const entry of entries) { const zone = zones.find(zone => zone.canvas === entry.target); if (zone) resize(zone); }
@@ -150,7 +133,7 @@ export function initScrollFire(root = document) {
   reduced.addEventListener('change', onPreference); forced.addEventListener('change', onPreference); mobile.addEventListener('change', onResize);
   sync();
   return () => {
-    disposed = true; stop(); observer.disconnect(); resizer?.disconnect();
+    disposed = true; stop(); observer.disconnect(); plateObserver.disconnect(); resizer?.disconnect();
     window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize);
     document.removeEventListener('visibilitychange', sync);
     buttons.forEach(button => button.removeEventListener('click', onToggle));

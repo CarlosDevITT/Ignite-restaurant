@@ -71,11 +71,12 @@
     <i class="fi fi-rr-arrow-small-up site-icon" aria-hidden="true"></i>
   </a>
 
+  <canvas class="fire-canvas fire-canvas--ambient" data-fire-kind="ambient" data-fire-watch="body" aria-hidden="true"></canvas>
+
   <!-- ===== HEADER ===== -->
   <header class="l-header" id="header">
     <nav class="nav" aria-label="Navegação principal">
       <a href="#home" class="nav__logo fire-logo" aria-label="Ignite — início">
-        <canvas class="fire-canvas fire-canvas--logo" data-fire-kind="logo" data-fire-watch="#home" aria-hidden="true"></canvas>
         <span class="nav__logo-mark"><img src="assets/images/logos/ignite.jpg" alt="" width="44" height="44"></span>
         <span class="nav__brand"><strong>Ignite<span>.</span></strong><small>Restaurante pub</small></span>
       </a>
@@ -119,12 +120,11 @@
             </a>
           </div>
 
-          <button class="fire-toggle" type="button" data-fire-toggle aria-pressed="true" hidden>Pausar fogo</button>
+          <button class="fire-toggle" type="button" data-fire-toggle aria-pressed="true" hidden>Pausar efeitos</button>
           <p class="home__locations"><i class="fi fi-rr-marker" aria-hidden="true"></i> <a href="#unidades">Manaus, AM</a> <span class="location-divider">/</span> <a href="#unidades">Itajaí, SC</a></p>
         </div>
 
         <div class="hero-fire-stage">
-          <canvas class="fire-canvas fire-canvas--hero" data-fire-kind="hero" data-fire-watch="#home" aria-hidden="true"></canvas>
           <div class="hero-brand-seal"><img src="assets/images/logos/ignite2.png" alt="Ignite Restaurante Pub" width="112" height="112"><span>Sabor que acende</span></div>
           <a class="home__img-wrap hero-dish reveal" id="hero-dish-link" href="Cardapio/index.html" aria-label="Conhecer o cardápio Ignite">
             <img src="assets/images/logos/ignite2.png" alt="Ignite Restaurante Pub" class="home__img" id="hero-dish-image" width="600" height="640" fetchpriority="high">
@@ -200,9 +200,9 @@
     <div class="footer__container bd-grid">
 
       <div class="footer__content">
-        <a href="#home" class="footer__logo fire-logo"><canvas class="fire-canvas fire-canvas--logo" data-fire-kind="logo" data-fire-watch=".footer" aria-hidden="true"></canvas><img src="assets/images/logos/ignite2.png" alt="" width="72" height="72"><span>Ignite<span class="brand-emphasis">.</span><small>Restaurante pub</small></span></a>
+        <a href="#home" class="footer__logo fire-logo"><img src="assets/images/logos/ignite2.png" alt="" width="72" height="72"><span>Ignite<span class="brand-emphasis">.</span><small>Restaurante pub</small></span></a>
         <span class="footer__description">Restaurante Pub</span>
-        <button class="fire-toggle" type="button" data-fire-toggle aria-pressed="true" hidden>Pausar fogo</button>
+        <button class="fire-toggle" type="button" data-fire-toggle aria-pressed="true" hidden>Pausar efeitos</button>
         <div>
           <a href="https://www.instagram.com/ignite_restaurant" class="footer__social" target="_blank" rel="noopener" aria-label="Instagram">
             <i class="fi fi-rr-camera site-icon" aria-hidden="true"></i>

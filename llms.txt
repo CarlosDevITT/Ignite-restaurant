@@ -1,0 +1,88 @@
+# Ignite Restaurante Pub
+
+> Restaurante pub com unidades em Itajaí, Santa Catarina, e Manaus, Amazonas, Brasil. Itajaí atende somente delivery; Manaus atende delivery e consumo no local. O site oferece um cardápio digital com pratos, fotos, preços e disponibilidade atualizados.
+
+Idioma: português do Brasil (pt-BR). Valores do cardápio: reais (BRL). Este documento reúne informações confirmadas pelo proprietário; não é um feed de disponibilidade em tempo real.
+
+## Fontes públicas principais
+
+- [Site oficial](https://ignite-restaurant-kappa.vercel.app/): apresentação, pratos em destaque, unidades e perguntas frequentes.
+- [Cardápio digital e pedidos](https://ignite-restaurant-kappa.vercel.app/Cardapio/index.html): fonte atual para produtos, preços, disponibilidade e opções de checkout.
+- [Unidades e contatos](https://ignite-restaurant-kappa.vercel.app/#unidades): endereços, atendimento e contato por cidade.
+- [Perguntas frequentes](https://ignite-restaurant-kappa.vercel.app/#duvidas): pedidos, entrega, pagamento e atendimento.
+
+Os fragmentos dessas URLs apontam para seções da mesma página, não para páginas independentes. `/` e `/index.html` exibem a mesma landing page; a URL canônica é `/`.
+
+## Unidade de Itajaí — SC
+
+- Nome: Ignite Restaurante Pub — Itajaí.
+- Endereço informado: Rua Frindolim Heathl Junior, Itajaí, SC, Brasil.
+- Modalidade: somente delivery.
+- Horário informado: 18h às 23h30, no horário local da unidade.
+- Dias da semana de funcionamento: não confirmados neste documento; consultar a unidade.
+- Telefone: (47) 97400-8620.
+- [Ligar para Itajaí](tel:+5547974008620).
+- [WhatsApp Itajaí](https://wa.me/5547974008620).
+
+## Unidade de Manaus — AM
+
+- Nome: Ignite Restaurante Pub — Manaus.
+- Endereço informado: Rua São José, bairro Lírio do Vale 1, Manaus, AM, Brasil.
+- Modalidades: delivery e consumo no local.
+- Horário informado: 18h às 23h30, no horário local da unidade.
+- Dias da semana de funcionamento: não confirmados neste documento; consultar a unidade.
+- Telefone: (92) 98513-0951.
+- [Ligar para Manaus](tel:+5592985130951).
+- [WhatsApp Manaus](https://wa.me/5592985130951).
+
+Não há número de imóvel, CEP ou coordenadas confirmados nestas fontes. Não completar esses dados por aproximação.
+
+## Pedidos, cardápio e disponibilidade
+
+Para pedir, abrir o cardápio digital, escolher os itens e conferir as opções disponíveis no checkout. O site apresenta pratos, combos e bebidas; a lista atual é mantida pelo sistema de gestão conectado ao Supabase.
+
+Preços, promoções, estoque e disponibilidade podem mudar. Consultar o cardápio no momento do pedido; não usar exemplos, imagens ou preços previamente vistos como uma oferta permanente. O checkout é a referência para o total antes de finalizar.
+
+O status de pedidos online é sincronizado com o sistema do restaurante. “Pedidos online pausados” significa que o canal online está pausado; não comprova que a unidade física esteja fechada. Horário informado e disponibilidade atual são informações distintas. Se o status não puder ser confirmado, consultar a unidade.
+
+## Respostas rápidas
+
+### Onde fica o Ignite?
+
+O Ignite possui duas unidades: Rua Frindolim Heathl Junior, em Itajaí, SC, e Rua São José, bairro Lírio do Vale 1, em Manaus, AM. Endereços e contatos estão na seção Unidades do site.
+
+### É possível comer no local?
+
+Em Manaus, há delivery e consumo no local. A unidade de Itajaí atende somente delivery.
+
+### Qual é o horário?
+
+O horário informado para as duas unidades é das 18h às 23h30, no horário local de cada cidade. Confirmar os dias de atendimento com a unidade.
+
+### Como faço meu pedido?
+
+Acessar o cardápio digital, escolher os itens e revisar as opções de atendimento no checkout. Os pedidos online dependem da disponibilidade indicada pelo sistema. Para atendimento direto, usar o WhatsApp da unidade desejada.
+
+### Quanto custa a entrega e quais regiões são atendidas?
+
+A taxa é apresentada no checkout antes da finalização. Confirmar a cobertura do endereço e as condições de entrega com a unidade. Não há taxa fixa nem raio de entrega publicados neste documento.
+
+### Como funciona o pagamento?
+
+O checkout apresenta as formas de pagamento disponíveis. Revisar a opção escolhida e as instruções do restaurante. Não assumir formas de pagamento que não estejam disponíveis no checkout.
+
+### Onde encontro as avaliações?
+
+Consultar o perfil do Google enviado pelo proprietário. A landing page tem uma seção de avaliações. A exibição de comentários depende da integração oficial com o Google Places; sem integração ativa, há apenas o link do perfil. Não há nota média, quantidade de avaliações ou depoimentos confirmados neste documento.
+
+## Perfis externos
+
+- [Instagram do Ignite](https://www.instagram.com/ignite_restaurant).
+- [Perfil do Google informado pelo proprietário](https://share.google/vL5oBr2LOXtuQyCfm). A correspondência deste perfil com uma unidade específica ainda não está confirmada neste documento.
+
+## Referências técnicas públicas
+
+- [Sitemap](https://ignite-restaurant-kappa.vercel.app/sitemap.xml): páginas públicas e respectivas datas de alteração de código.
+- [Robots](https://ignite-restaurant-kappa.vercel.app/robots.txt): regras de rastreamento.
+
+Este arquivo é uma referência editorial em Markdown para sistemas de leitura e assistentes. Não substitui o cardápio, o checkout, as regras de rastreamento nem controles de acesso. Não contém credenciais ou endpoints internos de gestão.

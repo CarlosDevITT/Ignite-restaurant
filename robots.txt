@@ -7,6 +7,7 @@ Disallow: /DESIGN.md
 Disallow: /.git/
 Disallow: /.env
 Disallow: /offline.html
+# llms.txt permanece público, assim como as páginas e recursos
 # Demais páginas e recursos (CSS, JavaScript, fontes e imagens) liberados.
 Allow: /
 

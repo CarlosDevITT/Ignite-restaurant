@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#146447">
-  <meta name="description" content="Conheça os pratos, combos e bebidas do Ignite. Consulte fotos e preços atualizados do cardápio e fale com a equipe para combinar seu pedido.">
-  <meta name="keywords" content="restaurante, pub, delivery, manaus, itajaí, ignite">
+  <meta name="description" content="Ignite Restaurante Pub: delivery em Itajaí e delivery ou consumo no local em Manaus. Veja o cardápio, preços, horários e contatos das unidades.">
+
+  <link rel="canonical" href="https://ignite-restaurant-kappa.vercel.app/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="Informações do Ignite para assistentes de IA">
 
   <link rel="shortcut icon" href="assets/images/logos/ignite.jpg" type="image/jpeg">
   <link rel="apple-touch-icon" href="assets/images/logos/ignite.jpg">
@@ -15,12 +18,19 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ignite">
 
-  <meta property="og:title" content="Ignite – Restaurante Pub">
-  <meta property="og:description" content="As melhores refeições e delivery da cidade. Confira nosso cardápio online!">
+  <meta property="og:title" content="Ignite Restaurante Pub | Delivery em Itajaí e Manaus">
+  <meta property="og:description" content="Ignite Restaurante Pub: delivery em Itajaí e delivery ou consumo no local em Manaus. Veja o cardápio, preços, horários e contatos das unidades.">
   <meta property="og:image" content="https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg">
-  <meta property="og:url" content="https://ignite-restaurant-kappa.vercel.app">
+  <meta property="og:url" content="https://ignite-restaurant-kappa.vercel.app/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Ignite Restaurante Pub">
+  <meta property="og:image:alt" content="Logo do Ignite Restaurante Pub">
+  <meta name="twitter:title" content="Ignite Restaurante Pub | Delivery em Itajaí e Manaus">
+  <meta name="twitter:description" content="Ignite Restaurante Pub: delivery em Itajaí e delivery ou consumo no local em Manaus. Veja o cardápio, preços, horários e contatos das unidades.">
+  <meta name="twitter:image" content="https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg">
+  <meta name="twitter:image:alt" content="Logo do Ignite Restaurante Pub">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,19 +54,146 @@
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "name": "Ignite – Restaurante Pub",
-  "image": "https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg",
-  "url": "https://ignite-restaurant-kappa.vercel.app/index.html",
-  "menu": "https://ignite-restaurant-kappa.vercel.app/Cardapio/index.html",
-  "servesCuisine": [
-    "Brasileira",
-    "Pub"
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://ignite-restaurant-kappa.vercel.app/#organization",
+      "name": "Ignite Restaurante Pub",
+      "url": "https://ignite-restaurant-kappa.vercel.app/",
+      "logo": "https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg",
+      "sameAs": [
+        "https://www.instagram.com/ignite_restaurant",
+        "https://share.google/vL5oBr2LOXtuQyCfm"
+      ],
+      "department": [
+        {
+          "@id": "https://ignite-restaurant-kappa.vercel.app/#itajai"
+        },
+        {
+          "@id": "https://ignite-restaurant-kappa.vercel.app/#manaus"
+        }
+      ]
+    },
+    {
+      "@type": "Restaurant",
+      "@id": "https://ignite-restaurant-kappa.vercel.app/#itajai",
+      "name": "Ignite Restaurante Pub — Itajaí",
+      "parentOrganization": {
+        "@id": "https://ignite-restaurant-kappa.vercel.app/#organization"
+      },
+      "url": "https://ignite-restaurant-kappa.vercel.app/#unidades",
+      "hasMenu": "https://ignite-restaurant-kappa.vercel.app/Cardapio/index.html",
+      "image": "https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg",
+      "telephone": "+5547974008620",
+      "description": "Somente delivery. Horário informado: 18h às 23h30. Consulte a unidade para confirmar os dias de atendimento.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua Frindolim Heathl Junior",
+        "addressLocality": "Itajaí",
+        "addressRegion": "SC",
+        "addressCountry": "BR"
+      }
+    },
+    {
+      "@type": "Restaurant",
+      "@id": "https://ignite-restaurant-kappa.vercel.app/#manaus",
+      "name": "Ignite Restaurante Pub — Manaus",
+      "parentOrganization": {
+        "@id": "https://ignite-restaurant-kappa.vercel.app/#organization"
+      },
+      "url": "https://ignite-restaurant-kappa.vercel.app/#unidades",
+      "hasMenu": "https://ignite-restaurant-kappa.vercel.app/Cardapio/index.html",
+      "image": "https://ignite-restaurant-kappa.vercel.app/assets/images/logos/ignite.jpg",
+      "telephone": "+5592985130951",
+      "description": "Delivery e consumo no local. Horário informado: 18h às 23h30. Consulte a unidade para confirmar os dias de atendimento.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Rua São José, Lírio do Vale 1",
+        "addressLocality": "Manaus",
+        "addressRegion": "AM",
+        "addressCountry": "BR"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://ignite-restaurant-kappa.vercel.app/#website",
+      "url": "https://ignite-restaurant-kappa.vercel.app/",
+      "name": "Ignite Restaurante Pub",
+      "inLanguage": "pt-BR",
+      "publisher": {
+        "@id": "https://ignite-restaurant-kappa.vercel.app/#organization"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://ignite-restaurant-kappa.vercel.app/#webpage",
+      "url": "https://ignite-restaurant-kappa.vercel.app/",
+      "name": "Ignite Restaurante Pub | Delivery em Itajaí e Manaus",
+      "description": "Ignite Restaurante Pub: delivery em Itajaí e delivery ou consumo no local em Manaus. Veja o cardápio, preços, horários e contatos das unidades.",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@id": "https://ignite-restaurant-kappa.vercel.app/#website"
+      },
+      "about": {
+        "@id": "https://ignite-restaurant-kappa.vercel.app/#organization"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://ignite-restaurant-kappa.vercel.app/#duvidas",
+      "url": "https://ignite-restaurant-kappa.vercel.app/#duvidas",
+      "inLanguage": "pt-BR",
+      "isPartOf": {
+        "@id": "https://ignite-restaurant-kappa.vercel.app/#website"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Como faço meu pedido?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Abra o Cardápio, escolha seus itens e confira as opções de atendimento no checkout. O status dos pedidos online aparece nesta página quando conseguimos confirmá-lo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quanto custa a entrega?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A taxa aparece no checkout antes de finalizar. Confirme a cobertura do seu endereço com a equipe."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como cada unidade atende?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Itajaí atende somente delivery. Manaus atende delivery e consumo no local. Confira as informações da sua unidade antes de finalizar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quais são os horários e endereços?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As duas unidades atendem das 18h às 23h30. Em Itajaí: Rua Frindolim Heathl Junior, somente delivery. Em Manaus: Rua São José, Lírio do Vale 1, delivery e consumo no local. Consulte a unidade para orientações de acesso. Ver os contatos das unidades ↓"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como funciona o pagamento?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "O checkout apresenta as formas de pagamento disponíveis. Revise sua escolha e confirme as instruções com o restaurante; consultar esta página não gera cobrança."
+          }
+        }
+      ]
+    }
   ]
 }
   </script>
 
-  <title>Ignite – Restaurante Pub</title>
+  <title>Ignite Restaurante Pub | Delivery em Itajaí e Manaus</title>
 </head>
 
 <body>

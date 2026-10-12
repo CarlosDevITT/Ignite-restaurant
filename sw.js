@@ -1,7 +1,7 @@
 // sw.js — Ignite Restaurant PWA v3.1
 // Estratégia: Cache First para assets, Network First para páginas HTML/JS.
 
-const CACHE_NAME   = 'ignite-v12-live-menu';
+const CACHE_NAME   = 'ignite-v13-header-uicons';
 const OFFLINE_PAGE = '/offline.html';
 
 const PRE_CACHE = [
@@ -12,6 +12,9 @@ const PRE_CACHE = [
   '/styles/styles.css',
   '/styles/brand.css',
   '/styles/landing-menu.css',
+  '/styles/header.css',
+  '/Cardapio/assets/uicons/css/uicons-regular-rounded.css',
+  '/Cardapio/assets/uicons/webfonts/uicons-regular-rounded.woff2',
   '/js/landing-catalog.js',
   '/js/data/storefront.js',
   '/js/main.js',

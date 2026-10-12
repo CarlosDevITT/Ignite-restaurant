@@ -3,7 +3,7 @@
   'use strict';
   const $ = selector => document.querySelector(selector);
   const all = selector => [...document.querySelectorAll(selector)];
-  const icon = name => `<svg class="site-icon" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
+  const icon = name => `<i class="fi fi-rr-${({ menu: "menu-burger", close: "cross-small", moon: "moon", sun: "sun" })[name]} site-icon" aria-hidden="true"></i>`;
   const read = (store, key) => { try { return window[store].getItem(key); } catch { return null; } };
   const write = (store, key, value) => { try { window[store].setItem(key, value); } catch { /* Storage is optional. */ } };
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -23,7 +23,8 @@
   function applyTheme(dark) {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     document.body.classList.toggle('dark-theme', dark);
-    theme.innerHTML = icon(dark ? 'sun' : 'moon');
+    theme.innerHTML = icon(dark ? 'sun' : 'moon') + `<span>${dark ? 'Tema claro' : 'Tema escuro'}</span>`;
+    theme.title = dark ? 'Ativar tema claro' : 'Ativar tema escuro';
     theme.setAttribute('aria-label', dark ? 'Ativar tema claro' : 'Ativar tema escuro');
     theme.setAttribute('aria-pressed', String(dark));
   }
@@ -39,12 +40,17 @@
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
     toggle.innerHTML = icon(open ? 'close' : 'menu');
+    if (open) menu.querySelector('a')?.focus();
     if (restoreFocus) toggle.focus();
   }
   toggle.addEventListener('click', event => { event.stopPropagation(); setMenu(!menuOpen); });
   menu.addEventListener('click', event => { if (event.target.closest('a')) setMenu(false); });
   document.addEventListener('click', event => { if (menuOpen && !event.composedPath().includes(menu) && !event.composedPath().includes(toggle)) setMenu(false); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && menuOpen) setMenu(false, true); });
+
+  document.addEventListener('focusin', event => {
+    if (menuOpen && !menu.contains(event.target) && !toggle.contains(event.target)) setMenu(false);
+  });
 
   function notify(message) {
     const status = $('#site-status');
@@ -66,7 +72,6 @@
     }
   }
   $('#share-button').addEventListener('click', () => share({ title: document.title, text: 'Conheça o Ignite Restaurante Pub.', url: location.href }));
-  window.shareProduct = (name, description, id) => share({ title: name, text: description, url: `${location.origin}/Cardapio/index.html?item=${encodeURIComponent(id)}` });
 
   function animate(element, keyframes, options) {
     if (motion.matches || !element.animate) return;
@@ -111,7 +116,7 @@
   }
   function scheduleScroll() { if (!frame) frame = requestAnimationFrame(updateScroll); }
   addEventListener('scroll', scheduleScroll, { passive: true });
-  addEventListener('resize', () => { if (innerWidth > 768) setMenu(false); scheduleScroll(); });
+  addEventListener('resize', () => { if (innerWidth > 920) setMenu(false); scheduleScroll(); });
   motion.addEventListener('change', () => { if (motion.matches) animations.forEach(animation => animation.cancel()); scheduleScroll(); });
   finePointer.addEventListener('change', scheduleScroll);
   all('a[href^="#"]').forEach(link => link.addEventListener('click', event => {
@@ -156,7 +161,7 @@
   addEventListener('appinstalled', () => { installPrompt = null; hideInstall(); notify('Ignite instalado.'); });
   function connectivity() {
     const toast = $('#offline-toast');
-    toast.style.display = navigator.onLine ? 'none' : 'flex';
+    toast.hidden = navigator.onLine;
     toast.textContent = 'Você está offline. Alguns recursos podem não estar disponíveis.';
   }
   addEventListener('offline', connectivity);

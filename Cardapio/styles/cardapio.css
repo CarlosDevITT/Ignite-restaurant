@@ -336,23 +336,41 @@ body:has(.mobile-bottom-nav.is-fan-open) .floating-cart { visibility: hidden; }
   .products-carousel .product-grid { grid-auto-columns: calc((100% - 3rem) / 4); }
 }
 
-/* Desktop restaurant menu sidebar. Mobile retains its existing navigation. */
+/* Desktop sidebar preferences are isolated from mobile layout and colors. */
 @media (min-width: 900px) {
-  .desktop-sidebar { background: #f5f4ec; color: var(--ink); border-right: 1px solid #dce3d9; padding: 28px 20px 22px; overflow-y: auto; }
+  :root[data-sidebar-collapsed] { --sidebar-width: 88px; }
+  .desktop-sidebar { --sidebar-bg: #fff; --sidebar-text: #183c2b; --sidebar-muted: #526151; --sidebar-line: #dce3d9; --sidebar-hover: #e7eee4; background: var(--sidebar-bg); color: var(--sidebar-text); border-right: 1px solid var(--sidebar-line); padding: 18px 20px 22px; overflow-y: auto; }
+  .desktop-sidebar[data-sidebar-theme="dark"] { --sidebar-bg: #10291e; --sidebar-text: #f1f6ed; --sidebar-muted: #bfd3c5; --sidebar-line: #ffffff24; --sidebar-hover: #1b422f; }
+  .sidebar-controls { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .sidebar-collapse { width: 44px; height: 44px; display: grid; place-items: center; background: transparent; color: var(--sidebar-text); border: 1px solid var(--sidebar-line); border-radius: 12px; cursor: pointer; }
+  .sidebar-collapse:hover { background: var(--sidebar-hover); }
   .desktop-sidebar .brand { flex-direction: column; gap: 12px; padding: 4px 0 24px; text-align: center; }
   .desktop-sidebar .brand__mark { width: 112px; height: 112px; background: transparent; border-radius: 0; overflow: visible; }
   .desktop-sidebar .brand__mark img { width: 112px; max-width: 100%; }
-  .desktop-sidebar .brand strong { color: #146447; font-size: 1.7rem; }
-  .desktop-sidebar .brand small { color: var(--body); margin-top: 4px; }
-  .sidebar-menu-caption { padding: 18px 0; margin-bottom: 12px; text-align: center; border-top: 1px solid #dce3d9; border-bottom: 1px solid #dce3d9; color: var(--body); font-size: .78rem; }
+  .desktop-sidebar .brand strong { color: var(--sidebar-text); font-size: 1.7rem; }
+  .desktop-sidebar .brand small { color: var(--sidebar-muted); margin-top: 4px; }
+  .sidebar-menu-caption { padding: 18px 0; margin-bottom: 12px; text-align: center; border-top: 1px solid var(--sidebar-line); border-bottom: 1px solid var(--sidebar-line); color: var(--sidebar-muted); font-size: .78rem; }
   .desktop-sidebar .desktop-nav { gap: 10px; }
-  .desktop-sidebar .nav-item { border-radius: 12px; min-height: 52px; color: var(--body); font-weight: 600; }
-  .desktop-sidebar .nav-item:hover { background: #e7eee4; color: #146447; }
+  .desktop-sidebar .nav-item { border-radius: 12px; min-height: 52px; color: var(--sidebar-muted); font-weight: 600; }
+  .desktop-sidebar .nav-item:hover { background: var(--sidebar-hover); color: var(--sidebar-text); }
   .desktop-sidebar .nav-item.is-active { background: #146447; color: #fff; }
   .desktop-sidebar .nav-icon { background: transparent; font-size: 1.1rem; }
-  .desktop-sidebar__bottom { padding-top: 32px; gap: 16px; }
-  .desktop-sidebar .nav-item--create { background: transparent; color: #146447; font-size: .82rem; }
-  .desktop-sidebar .store-mini { border: 0; border-top: 1px solid #dce3d9; border-radius: 0; background: transparent; padding: 18px 4px 0; }
-  .desktop-sidebar .store-mini strong { color: var(--ink); }
-  .desktop-sidebar .store-mini small { color: var(--body); }
+  .desktop-sidebar__bottom { padding-top: 28px; gap: 16px; }
+  .desktop-sidebar .nav-item--create { background: transparent; color: var(--sidebar-text); font-size: .82rem; }
+  .desktop-sidebar .store-mini { border: 0; border-top: 1px solid var(--sidebar-line); border-radius: 0; background: transparent; padding: 18px 4px 0; }
+  .desktop-sidebar .store-mini strong { color: var(--sidebar-text); }
+  .desktop-sidebar .store-mini small { color: var(--sidebar-muted); }
+  .sidebar-theme-picker { display: flex; gap: 6px; }
+  .sidebar-theme-picker button { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; min-height: 44px; padding: 6px; border: 1px solid var(--sidebar-line); border-radius: 10px; background: transparent; color: var(--sidebar-muted); font-size: .68rem; cursor: pointer; }
+  .sidebar-theme-picker button[aria-pressed="true"] { background: var(--sidebar-hover); color: var(--sidebar-text); border-color: var(--sidebar-muted); }
+  .sidebar-theme-picker button:hover { background: var(--sidebar-hover); }
+  .desktop-sidebar button:focus-visible, .desktop-sidebar a:focus-visible { outline: 2px solid var(--sidebar-text); outline-offset: 3px; }
+  :root[data-sidebar-collapsed] .desktop-sidebar { padding-inline: 12px; }
+  :root[data-sidebar-collapsed] .sidebar-controls { justify-content: center; }
+  :root[data-sidebar-collapsed] .desktop-sidebar .brand__mark, :root[data-sidebar-collapsed] .desktop-sidebar .brand__mark img { width: 60px; height: 60px; }
+  :root[data-sidebar-collapsed] .desktop-sidebar .brand > span:last-child, :root[data-sidebar-collapsed] .sidebar-menu-caption, :root[data-sidebar-collapsed] .desktop-sidebar .nav-item > span, :root[data-sidebar-collapsed] .sidebar-theme-picker span, :root[data-sidebar-collapsed] .store-mini > span:last-child { display: none; }
+  :root[data-sidebar-collapsed] .desktop-sidebar .nav-item { justify-content: center; padding-inline: 0; }
+  :root[data-sidebar-collapsed] .sidebar-theme-picker { flex-direction: column; }
+  :root[data-sidebar-collapsed] .store-mini { justify-content: center; min-height: 44px; }
+  :root[data-sidebar-collapsed] .desktop-sidebar .brand { padding-bottom: 20px; }
 }

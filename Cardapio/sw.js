@@ -1,4 +1,4 @@
-const VERSION='v55-desktop-sidebar';
+const VERSION='v56-sidebar-preferences';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;
@@ -9,7 +9,7 @@ const APP_SHELL=[
   './','./index.html','./manifest.json','./styles/cardapio.css','./styles/catalog-premium.css','./styles/catalog-vertical.css','./styles/product-ux-v4.css','./js/modules/mobile-ux.js','./styles/pwa.css','./styles/profile-auth.css','./styles/ignite-play.css','./styles/ignite-play-library.css',
   './assets/bebidas.png','./assets/combos.png','./assets/pratos.png','./assets/promo%C3%A7%C3%A3o.png',
   './icons/icon-192.png','./icons/icon-512.png','./icons/icon-192-maskable.png','./icons/icon-512-maskable.png','./icons/apple-touch-icon.png',
-  './js/app.js','./js/config.js','./js/supabase-config.js',
+  './js/desktop-sidebar.js','./js/app.js','./js/config.js','./js/supabase-config.js',
   './js/utils/format.js','./js/store/cart-store.js','./js/services/supabase-client.js','./js/services/product-service.js',
   './js/services/order-service.js','./js/services/profile-service.js','./js/modules/carousel.js','./js/modules/navigation.js','./js/modules/catalog.js','./js/modules/cart.js',
   './js/modules/orders.js','./js/modules/profile.js','./js/modules/feed.js','./js/modules/chat.js','./js/modules/pwa.js','./js/modules/notifications.js','./js/modules/notices.js',

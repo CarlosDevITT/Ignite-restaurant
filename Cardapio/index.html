@@ -81,7 +81,10 @@
 <body>
   <a class="skip-link" href="#app-content">Ir para o conteúdo</a>
 
-  <aside class="desktop-sidebar" aria-label="Navegação principal">
+  <aside class="desktop-sidebar" id="desktop-sidebar" data-sidebar-theme="dark" aria-label="Navegação principal">
+    <div class="sidebar-controls">
+      <button type="button" class="sidebar-collapse" data-sidebar-collapse aria-controls="desktop-sidebar" aria-expanded="true" aria-label="Recolher menu" title="Recolher menu"><i class="fi fi-rr-angle-small-left" aria-hidden="true"></i></button>
+    </div>
     <a class="brand" href="../index.html" aria-label="Voltar ao site Ignite">
       <span class="brand__mark"><img src="../../assets/images/logos/ignite2.png" alt=""></span>
       <span><strong>Ignite<span>.</span></strong><small>Restaurante Pub</small></span>
@@ -93,6 +96,10 @@
       <button class="nav-item" type="button" data-route="profile"><i class="fi fi-rr-user nav-icon" aria-hidden="true"></i><span>Minha conta</span></button>
     </nav>
     <div class="desktop-sidebar__bottom">
+      <div class="sidebar-theme-picker" role="group" aria-label="Cor da sidebar">
+        <button type="button" data-sidebar-theme-choice="light" aria-pressed="false" aria-label="Sidebar branca" title="Sidebar branca"><i class="fi fi-rr-sun" aria-hidden="true"></i><span>Branco</span></button>
+        <button type="button" data-sidebar-theme-choice="dark" aria-pressed="true" aria-label="Sidebar verde escura" title="Sidebar verde escura"><i class="fi fi-rr-moon" aria-hidden="true"></i><span>Verde escuro</span></button>
+      </div>
       <button class="nav-item nav-item--create" type="button" data-route="feed"><i class="fi fi-rr-megaphone nav-icon" aria-hidden="true"></i><span>Novidades do Ignite</span></button>
       <div class="store-mini"><span class="status-dot"></span><span><strong>Sincronizando loja</strong><small>Consultando disponibilidade</small></span></div>
     </div>
@@ -253,6 +260,7 @@
 
   <div class="connection-badge" id="connection-badge" role="status" hidden></div>
   <template id="product-skeleton"><article class="product-card product-card--skeleton"><div></div><span></span><span></span><span></span></article></template>
+  <script type="module" src="js/desktop-sidebar.js"></script>
   <script type="module" src="js/app.js?v=canonical-20260912"></script>
 </body>
 </html>

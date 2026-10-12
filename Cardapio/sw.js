@@ -1,4 +1,4 @@
-const VERSION='v58-desktop-contrast';
+const VERSION='v59-paired-theme-colors';
 const SCOPE_KEY=encodeURIComponent(self.registration.scope);
 const SHELL_CACHE=`ignite-cardapio-${VERSION}-${SCOPE_KEY}`;
 const GAME_CACHE=`ignite-play-games-v3-${SCOPE_KEY}`;

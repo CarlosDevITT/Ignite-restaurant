@@ -411,3 +411,22 @@ body:has(.mobile-bottom-nav.is-fan-open) .floating-cart { visibility: hidden; }
   :root[data-menu-theme="dark"] .product-favorite.is-active { color: #ffb5c5 !important; }
   :root[data-menu-theme] button:disabled { opacity: .65; }
 }
+
+/* Pair desktop surfaces with their text colors in BOTH themes. */
+@media (min-width: 900px) {
+  :root[data-menu-theme="light"] { --ink: #142019; --body: #45584c; --muted: #566b5c; --surface: #fff; --primary-soft: #e8f2eb; --desktop-price-accent: #9b3c17; }
+  :root[data-menu-theme="dark"] { --desktop-price-accent: #ffc08f; }
+  :root[data-menu-theme] :is(.account-welcome,.profile-hub__hero,.profile-hub__stat,.cart-drawer,.cart-item,.cart-summary,.swal-product,.swal-product__content,.swal-product__price-row,.swal-product__price,.product-dialog__actions,.checkout-summary) { background: var(--surface) !important; border-color: var(--border) !important; color: var(--body) !important; }
+  :root[data-menu-theme] :is(.view,.cart-drawer,.swal2-popup,.category-filter-sheet__panel) :is(h1,h2,h3,h4) { color: var(--ink) !important; }
+  :root[data-menu-theme] :is(.account-welcome p,.account-welcome .section-kicker,.account-auth small,.profile-hub__identity p,.profile-hub__level-row,.profile-hub__stat small,.cart-item__details p,.cart-summary small,.cart-summary>div:first-child>span,.swal-product__description,.swal-product__trust,.swal-product__price del) { color: var(--body) !important; }
+  :root[data-menu-theme] :is(.cart-item__price,.cart-summary strong,.cart-summary #cart-total,.cart-item__details h3,.quantity-control span,.swal-product__price strong,.product-card__price strong,.profile-order__total,.profile-hub__stat strong) { color: var(--ink) !important; }
+  :root[data-menu-theme] :is(.product-card__price.is-promo strong,.swal-product__price span,.product-card__promo-copy) { color: var(--desktop-price-accent) !important; }
+  :root[data-menu-theme] .account-welcome__mark { background: #183c2b !important; color: #e5f3e8 !important; }
+  :root[data-menu-theme] .hero-card__footer :is(h2,h3,p) { color: #eff5eb !important; }
+  :root[data-menu-theme] .floating-cart :is(strong,small,span), :root[data-menu-theme] .button :is(strong,span,small) { color: #fff !important; }
+  :root[data-menu-theme] .hero-card__footer .button--light :is(strong,span,small) { color: #183c2b !important; }
+  :root[data-menu-theme] .quantity-control { background: var(--primary-soft) !important; border-color: var(--border) !important; }
+  :root[data-menu-theme] .quantity-control button { color: var(--ink) !important; }
+  :root[data-menu-theme="dark"] .cart-item__remove { color: #ffb9a6 !important; }
+  :root[data-menu-theme="light"] .cart-item__remove { color: #92361f !important; }
+}

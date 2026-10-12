@@ -97,3 +97,5 @@ Desktop theme now applies to the whole Cardápio via data-menu-theme, with dark 
 Desktop contrast fixes: filled actions use #146447 / white in both themes; light muted text uses #596b5f. Dark headings, account controls, badges and secondary surfaces derive from dark ink/body/surface tokens. Banner CTA keeps a white surface and dark text. These overrides remain scoped above 900px.
 
 Both desktop themes explicitly pair profile welcome/hero, cart summary/items and product-detail price surfaces with their text colors. Prices use theme ink; promotion accents use #9b3c17 light / #ffc08f dark. Floating cart and filled actions keep white text, while banner light actions keep dark text. Verify actual open cart/detail/profile states, not only catalog cards.
+
+Cart shell contrast: cart-ux.css owns ID-scoped #cart-drawer theme rules above 900px, including sticky header, body, summary and checkout surfaces. A class-only override cannot beat the previous ID + important white background. Verify the actual drawer and header computed backgrounds as well as text/price contrast.

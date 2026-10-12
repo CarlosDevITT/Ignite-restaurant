@@ -62,3 +62,16 @@
 }
 
 @media(prefers-reduced-motion:reduce){.cart-drawer,.cart-item,.checkout-submit{transition:none!important}}
+
+/* Desktop theme owns the complete drawer, including its ID-level shell. */
+@media (min-width: 900px) {
+  :root[data-menu-theme] #cart-drawer { background: var(--surface) !important; color: var(--body) !important; }
+  :root[data-menu-theme] #cart-drawer :is(.drawer-header,.cart-step,.cart-items,.cart-summary,.checkout-step,.checkout-form) { background: var(--surface) !important; color: var(--body) !important; border-color: var(--border) !important; }
+  :root[data-menu-theme] #cart-drawer :is(h2,h3,h4,strong,.cart-item__price,.quantity-control span,.checkout-total-card__total span) { color: var(--ink) !important; }
+  :root[data-menu-theme] #cart-drawer :is(p,small,label,legend,.drawer-header__meta,.section-kicker,.cart-summary>div>span,.checkout-total-card span,.checkout-security) { color: var(--body) !important; }
+  :root[data-menu-theme] #cart-drawer :is(.drawer-header .icon-button,.checkout-total-card,.checkout-section,.checkout-section__body,.quantity-control,.checkout-input-wrap) { background: var(--primary-soft) !important; color: var(--ink) !important; border-color: var(--border) !important; }
+  :root[data-menu-theme] #cart-drawer :is(input,textarea,select) { background: var(--surface) !important; color: var(--ink) !important; border-color: var(--border) !important; }
+  :root[data-menu-theme] #cart-drawer .drawer-header .icon-button { color: var(--ink) !important; }
+  :root[data-menu-theme] #cart-drawer :is(.button,.checkout-submit) { background: #146447 !important; color: #fff !important; }
+  :root[data-menu-theme] #cart-drawer :is(.button,.checkout-submit) :is(strong,span,small) { color: #fff !important; }
+}
